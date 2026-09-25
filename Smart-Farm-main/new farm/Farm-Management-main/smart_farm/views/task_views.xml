@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List View -->
+    <record id="view_smart_farm_task_list" model="ir.ui.view">
+        <field name="name">smart.farm.task.list</field>
+        <field name="model">smart.farm.task</field>
+        <field name="arch" type="xml">
+            <list string="Công việc nông trại" default_order="is_done asc, date asc, id desc"
+                  decoration-success="is_done"
+                  decoration-muted="is_done">
+                <field name="name"/>
+                <field name="task_type"/>
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="is_done" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_smart_farm_task_form" model="ir.ui.view">
+        <field name="name">smart.farm.task.form</field>
+        <field name="model">smart.farm.task</field>
+        <field name="arch" type="xml">
+            <form string="Công việc nông trại">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Tiêu đề công việc"/>
+                        <h1>
+                            <field name="name" placeholder="Ví dụ: Bật hệ thống tưới khu A..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Thông tin công việc">
+                            <field name="task_type"/>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group string="Trạng thái">
+                            <field name="is_done" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="Ghi chú chi tiết">
+                        <field name="notes" placeholder="Chi tiết các lưu ý hoặc thông số kỹ thuật..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_smart_farm_task_search" model="ir.ui.view">
+        <field name="name">smart.farm.task.search</field>
+        <field name="model">smart.farm.task</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm công việc">
+                <field name="name"/>
+                <field name="task_type"/>
+                <field name="user_id"/>
+                <filter string="Chưa hoàn thành" name="filter_pending" domain="[('is_done', '=', False)]"/>
+                <filter string="Đã hoàn thành" name="filter_done" domain="[('is_done', '=', True)]"/>
+                <separator/>
+                <filter string="Hôm nay" name="filter_today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Trạng thái" name="group_by_is_done" context="{'group_by': 'is_done'}"/>
+                    <filter string="Phân loại" name="group_by_task_type" context="{'group_by': 'task_type'}"/>
+                    <filter string="Ngày" name="group_by_date" context="{'group_by': 'date'}"/>
+                    <filter string="Người phụ trách" name="group_by_user" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_smart_farm_task" model="ir.actions.act_window">
+        <field name="name">Công việc nông trại</field>
+        <field name="res_model">smart.farm.task</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_smart_farm_task_search"/>
+        <field name="context">{'search_default_filter_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo công việc nông trại đầu tiên!
+            </p>
+        </field>
+    </record>
+
+</odoo>
