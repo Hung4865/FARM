@@ -8,6 +8,7 @@
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
+        'views/task_views.xml',
         'views/menu.xml',
         'views/dashboard.xml',
         'views/gps_views.xml',

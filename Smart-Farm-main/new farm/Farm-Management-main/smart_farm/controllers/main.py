@@ -1,4 +1,4 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
 from datetime import datetime
 import json
@@ -111,6 +111,20 @@ class SmartFarmDashboard(http.Controller):
             [('is_resolved', '=', False)]
         )
 
+        today = fields.Date.today()
+        tasks = env['smart.farm.task'].search(
+            [('date', '=', today)],
+            order='sequence asc, is_done asc, id asc'
+        )
+        task_total = len(tasks)
+        task_done = len(tasks.filtered(lambda t: t.is_done))
+        task_remaining = task_total - task_done
+
+        all_tasks = env['smart.farm.task'].search(
+            [],
+            order='sequence asc, date desc, id desc'
+        )
+
         values = {
             'gps_records': gps_records,
             'weather': weather,
@@ -119,6 +133,13 @@ class SmartFarmDashboard(http.Controller):
             'unresolved_count': unresolved_count,
             'now': datetime.now(),
             'chart_data_json': chart_data_json,
+            'user': env.user,
+            'tasks': tasks,
+            'all_tasks': all_tasks,
+            'today': today,
+            'task_total': task_total,
+            'task_done': task_done,
+            'task_remaining': task_remaining,
         }
 
         return request.render('smart_farm.dashboard_main', values)
@@ -144,3 +165,328 @@ class SmartFarmDashboard(http.Controller):
             return request.make_response('OK', status=200)
         except Exception as e:
             return request.make_response(str(e), status=500)
+
+    @http.route('/smart_farm/profile/update', type='http', auth='user', methods=['POST'], csrf=False)
+    def update_profile(self, **kwargs):
+        """API cập nhật thông tin profile người dùng (họ tên, SĐT, email, password)"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+
+            user = request.env.user
+            name = (data.get('name') or '').strip()
+            email = (data.get('email') or '').strip()
+            phone = (data.get('phone') or '').strip()
+            password = data.get('password')
+
+            if not name:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Họ và tên không được để trống.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            if not email:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Email đăng nhập không được để trống.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+
+            # Kiểm tra trùng email nếu thay đổi login
+            if email != user.login:
+                existing = request.env['res.users'].sudo().search([('login', '=', email), ('id', '!=', user.id)], limit=1)
+                if existing:
+                    return request.make_response(
+                        json.dumps({'success': False, 'message': f'Email {email} đã được sử dụng bởi tài khoản khác.'}),
+                        headers={'Content-Type': 'application/json'},
+                        status=400
+                    )
+
+            vals = {
+                'name': name,
+                'email': email,
+                'login': email,
+                'phone': phone,
+            }
+            if password and password.strip():
+                vals['password'] = password.strip()
+
+            user.sudo().write(vals)
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Cập nhật thông tin hồ sơ thành công!',
+                    'data': {
+                        'name': user.name,
+                        'email': user.email or user.login,
+                        'phone': user.phone or '',
+                    }
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/task/toggle', type='http', auth='user', methods=['POST'], csrf=False)
+    def toggle_task(self, **kwargs):
+        """API toggle trạng thái hoàn thành của công việc"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+
+            task_id = data.get('task_id')
+            if not task_id:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Thiếu ID công việc'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+
+            task = request.env['smart.farm.task'].browse(int(task_id))
+            if not task.exists():
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Không tìm thấy công việc'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=404
+                )
+
+            new_state = not task.is_done
+            task.write({'is_done': new_state})
+
+            today = fields.Date.today()
+            today_tasks = request.env['smart.farm.task'].search([('date', '=', today)])
+            total = len(today_tasks)
+            done = len(today_tasks.filtered(lambda t: t.is_done))
+            remaining = total - done
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'task_id': task.id,
+                    'is_done': new_state,
+                    'task_total': total,
+                    'task_done': done,
+                    'task_remaining': remaining,
+                    'message': 'Đã đánh dấu hoàn thành!' if new_state else 'Đã chuyển về chưa hoàn thành!'
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/task/create', type='http', auth='user', methods=['POST'], csrf=False)
+    def create_task(self, **kwargs):
+        """API tạo công việc mới"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            name = (data.get('name') or '').strip()
+            if not name:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Vui lòng nhập tên công việc.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            task_type = data.get('task_type') or 'irrigation'
+            date_str = data.get('date') or str(fields.Date.today())
+            notes = (data.get('notes') or '').strip()
+
+            last_task = request.env['smart.farm.task'].search([], order='sequence desc', limit=1)
+            next_seq = (last_task.sequence + 10) if last_task else 10
+
+            task = request.env['smart.farm.task'].create({
+                'name': name,
+                'task_type': task_type,
+                'date': date_str,
+                'notes': notes,
+                'sequence': next_seq,
+                'user_id': request.env.user.id,
+                'is_done': False,
+            })
+
+            type_labels = {
+                'irrigation': 'Tưới tiêu',
+                'sensor': 'Cảm biến',
+                'gps': 'GPS',
+                'season': 'Mùa vụ',
+                'inventory': 'Kho',
+                'report': 'Báo cáo',
+            }
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Đã tạo công việc mới thành công!',
+                    'task': {
+                        'id': task.id,
+                        'name': task.name,
+                        'task_type': task.task_type,
+                        'task_type_label': type_labels.get(task.task_type, 'Khác'),
+                        'date': str(task.date),
+                        'is_done': task.is_done,
+                        'user_name': task.user_id.name or 'Farm Admin',
+                        'notes': task.notes or '',
+                        'sequence': task.sequence,
+                    }
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/task/update', type='http', auth='user', methods=['POST'], csrf=False)
+    def update_task(self, **kwargs):
+        """API cập nhật công việc"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            task_id = data.get('task_id')
+            if not task_id:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Thiếu ID công việc'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            task = request.env['smart.farm.task'].browse(int(task_id))
+            if not task.exists():
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Không tìm thấy công việc'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=404
+                )
+            name = (data.get('name') or '').strip()
+            if not name:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Vui lòng nhập tên công việc.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            task_type = data.get('task_type') or task.task_type
+            date_str = data.get('date') or str(task.date)
+            notes = (data.get('notes') or '').strip()
+
+            task.write({
+                'name': name,
+                'task_type': task_type,
+                'date': date_str,
+                'notes': notes,
+            })
+
+            type_labels = {
+                'irrigation': 'Tưới tiêu',
+                'sensor': 'Cảm biến',
+                'gps': 'GPS',
+                'season': 'Mùa vụ',
+                'inventory': 'Kho',
+                'report': 'Báo cáo',
+            }
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Cập nhật công việc thành công!',
+                    'task': {
+                        'id': task.id,
+                        'name': task.name,
+                        'task_type': task.task_type,
+                        'task_type_label': type_labels.get(task.task_type, 'Khác'),
+                        'date': str(task.date),
+                        'is_done': task.is_done,
+                        'user_name': task.user_id.name or 'Farm Admin',
+                        'notes': task.notes or '',
+                        'sequence': task.sequence,
+                    }
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/task/delete', type='http', auth='user', methods=['POST'], csrf=False)
+    def delete_task(self, **kwargs):
+        """API xóa công việc"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            task_id = data.get('task_id')
+            if not task_id:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Thiếu ID công việc'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            task = request.env['smart.farm.task'].browse(int(task_id))
+            if not task.exists():
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Không tìm thấy công việc'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=404
+                )
+            task.unlink()
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Đã xóa công việc thành công!'
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/task/reorder', type='http', auth='user', methods=['POST'], csrf=False)
+    def reorder_tasks(self, **kwargs):
+        """API sắp xếp thứ tự công việc (kéo thả)"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            task_ids = data.get('task_ids', [])
+            if not isinstance(task_ids, list):
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Danh sách task_ids không hợp lệ'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            for idx, tid in enumerate(task_ids):
+                try:
+                    task = request.env['smart.farm.task'].browse(int(tid))
+                    if task.exists():
+                        task.write({'sequence': (idx + 1) * 10})
+                except Exception:
+                    pass
+            return request.make_response(
+                json.dumps({'success': True, 'message': 'Đã lưu thứ tự công việc!'}),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )

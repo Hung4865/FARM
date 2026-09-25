@@ -57,4 +57,13 @@
         sequence="30"
     />
 
+    <!-- Menu con: Công việc -->
+    <menuitem
+        id="menu_smart_farm_task"
+        name="Công việc"
+        parent="menu_smart_farm_root"
+        action="action_smart_farm_task"
+        sequence="5"
+    />
+
 </odoo>

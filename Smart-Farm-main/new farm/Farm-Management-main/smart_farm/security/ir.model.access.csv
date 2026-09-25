@@ -5,3 +5,5 @@ access_smart_farm_weather_user,smart.farm.weather.user,model_smart_farm_weather,
 access_smart_farm_weather_admin,smart.farm.weather.admin,model_smart_farm_weather,group_smart_farm_admin,1,1,1,1
 access_smart_farm_alert_user,smart.farm.alert.user,model_smart_farm_alert,group_smart_farm_user,1,1,1,0
 access_smart_farm_alert_admin,smart.farm.alert.admin,model_smart_farm_alert,group_smart_farm_admin,1,1,1,1
+access_smart_farm_task_user,smart.farm.task.user,model_smart_farm_task,group_smart_farm_user,1,1,1,0
+access_smart_farm_task_admin,smart.farm.task.admin,model_smart_farm_task,group_smart_farm_admin,1,1,1,1
