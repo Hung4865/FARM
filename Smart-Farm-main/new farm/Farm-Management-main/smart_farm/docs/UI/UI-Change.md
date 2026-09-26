@@ -4,6 +4,81 @@
 
 ---
 
+## [2026-09-26] – Nâng cấp Thiết kế Bản đồ GIS Cao cấp & Tách biệt Header Độc lập theo Tab
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **1. Đóng gói Header & Huy hiệu Cập nhật vào Tab Tổng quan:**
+  * Di chuyển thẻ `.sf-header` (chứa tiêu đề "Tổng quan trang trại" và nhịp tim "Cập nhật: ...") vào bên trong vùng chứa `#tab-overview`. Khi người dùng chuyển sang tab "Bản đồ", "Công việc" hoặc "Kho vật tư", header này tự động ẩn hoàn toàn theo cơ chế đóng gói giao diện tự nhiên.
+  * Trang Bản đồ được trang bị header riêng biệt: *"Bản đồ số nông trại"* kèm huy hiệu trạng thái *"🟢 Giám sát trực tuyến"*.
+  * **Chuyển liên kết "Hệ thống Odoo" vào menu Cài đặt (Settings)**: Bỏ nút "Hệ thống Odoo" khỏi cụm điều hướng chính giữa Navbar (`.sf-nav-pills`), giữ navbar cân đối và thuần túy các phân hệ Farm. Bổ sung mục "Hệ thống Odoo" vào đầu menu dropdown Cài đặt hệ thống (`#sf-settings-menu`).
+* **2. Nâng cấp Thẩm mỹ Bản đồ & Tránh vỡ giao diện (Offcanvas Drawer):**
+  * Di chuyển Backdrop và Drawer (`#sf-zone-drawer`) ra cấp độc lập ở cuối thẻ `<body>` với thuộc tính phòng vệ `style="display:none;"`, triệt tiêu hoàn toàn hiện tượng text trôi xuống dưới chân bản đồ khi tải trang.
+  * Tích hợp thanh điều khiển lớp bản đồ kiểu Pill hiện đại (`.sf-layer-btn-pro`) với số lượng đếm trực quan và hiệu ứng phát sáng khi kích hoạt.
+  * Thay thế tooltip vuông thô sơ bằng các Chip HUD vi khí hậu kính mờ cao cấp (`.sf-zone-chip`) trên từng phân khu (Zone A, Zone B, Zone C). **Ẩn mặc định (`opacity: 0; visibility: hidden;`) để không che khuất chữ và chi tiết gốc trên bản đồ**, chỉ khi người dùng di chuột (hover) vào phân khu thì chip mới trượt nhẹ và hiện lên mượt mà.
+  * Thiết kế lại ghim máy cày định vị GPS (`.sf-vehicle-hud-pin`) với chip vận tốc và sóng radar 2 tầng.
+  * Tối ưu hóa bảng trượt Offcanvas Drawer với hệ thống lưới 4 thẻ vi khí hậu có thanh tiến độ (Progress bar) và danh sách thiết bị IoT gắn công tắc trượt chuẩn iOS cùng huy hiệu trạng thái "ĐANG CHẠY / ĐANG TẮT" cập nhật thời gian thực.
+  * Nhúng CSS trọng yếu trực tiếp trong `<style>` với CDATA và nâng cấp tham số cache buster `?v=105` cho cả CSS và JS.
+
+---
+
+## [2026-09-26] – Sửa lỗi QWeb 500 & Chuẩn hoá Data Attributes cho Điểm Cảnh báo Sự cố
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **Nguyên nhân lỗi 500:** Trong `dashboard.xml` tại thẻ `.sf-alert-beacon`, thuộc tính `t-attf-onclick` chứa chuỗi lồng dấu nháy thoát `\'Toàn trang trại\'` khiến bộ phân tích QWeb của Odoo báo lỗi biên dịch cú pháp `ValueError: Can not compile expression`.
+* **Giải pháp khắc phục:**
+  * Chuyển toàn bộ tham số truyền hàm (`alert.id`, `alert.name`, `alert.area`, `alert.content`) sang chuẩn HTML5 `data-*` attributes (`t-att-data-id`, `t-att-data-name`, `t-att-data-area`, `t-att-data-content`).
+  * Gọi hàm trung gian `onclick="sfOnAlertClick(event, this)"` trong `dashboard.js` để đọc dữ liệu từ `dataset` và gọi `sfShowAlertDetails()`.
+  * Đảm bảo tính tương thích tuyệt đối với engine biên dịch QWeb Odoo 18.
+
+---
+
+## [2026-09-26] – Ra mắt Bản đồ Nông trại Tương tác (Interactive Smart Farm Map – Feature 002)
+
+### 1. 🗂️ Thanh bộ lọc lớp bản đồ đa tầng (`.sf-map-toolbar`)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **Chi tiết kỹ thuật:**
+  * Bổ sung thanh công cụ `.sf-map-toolbar` với 3 nút chuyển đổi trạng thái lớp: `🚜 Phương tiện GPS`, `💧 Thủy lợi & Cảm biến`, `⚠️ Cảnh báo sự cố`.
+  * Xử lý ẩn/hiện tức thì qua hàm `sfToggleMapLayer(layerName, btn)` mà không giật khung hình.
+
+### 2. 🚜 Giám sát Phương tiện GPS di động & Popover thông tin (`.sf-vehicle-marker`)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **Chi tiết kỹ thuật:**
+  * Tạo marker nổi `.sf-vehicle-marker` định vị tại Khu B với hiệu ứng sóng radar tỏa ra 2 nhịp (`.sf-radar-ring`).
+  * Khi click, hiển thị thẻ nổi `#sf-vehicle-popover` với đầy đủ thông tin: Tên máy cày Kubota L4018, Tọa độ GPS thực tế từ database, Tốc độ (7.2 km/h), Tài xế phụ trách và Trạng thái hoạt động.
+
+### 3. ⚠️ Điểm Cảnh báo Sự cố nhấp nháy & Xác nhận xử lý nhanh (`.sf-alert-beacon`)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **Chi tiết kỹ thuật:**
+  * Render tự động các điểm ghim cảnh báo `.sf-alert-beacon` theo các khu vực đang có sự cố (`active_alerts`).
+  * Hiệu ứng sóng nhịp đập cảnh báo màu đỏ (`@keyframes sfBeaconWave`).
+  * Click mở popover chi tiết sự cố và nút `✓ Xác nhận đã xử lý` kết nối API `POST /smart_farm/api/alert/resolve` cập nhật database tức thì và xóa icon khỏi bản đồ.
+
+### 4. 🎛️ Bảng Chi tiết Phân khu & Điều khiển Thiết bị IoT (`#sf-zone-drawer`)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **Chi tiết kỹ thuật:**
+  * Nhấp vào từng phân khu (Zone A, B, C) sẽ kích hoạt thanh trượt Offcanvas `#sf-zone-drawer` với backdrop làm mờ.
+  * Hiển thị lưới chỉ số môi trường (Độ ẩm đất, nhiệt độ, độ ẩm không khí, cường độ ánh sáng lux).
+  * Danh sách công tắc điều khiển IoT thực tế theo phân khu:
+    * **Khu A (Nhà màng):** Phun sương làm mát, Quạt thông gió đối lưu, Mái che tự động.
+    * **Khu B (Cánh đồng):** Tưới nhỏ giọt ngầm, Bơm phân bón tự động.
+    * **Khu C (Hồ chứa):** Trạm máy bơm cấp nước hồ, Máy sục khí đáy hồ.
+  * Mỗi lần gạt công tắc, hệ thống gửi lệnh qua API `POST /smart_farm/api/zone/control` và hiển thị thông báo Toast xác nhận.
+
+---
+
+## [2026-09-26] – Đồng bộ động tiêu đề trang và huy hiệu thời gian theo từng Tab điều hướng
+
+### 1. 🏷️ Đổi tiêu đề trang (`#sf-page-title`) & Trạng thái huy hiệu (`#sf-page-badge`)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **Chi tiết thay đổi:**
+  * Bổ sung định danh `id="sf-page-title"` cho tiêu đề trang và `id="sf-page-badge"` cho huy hiệu nhịp tim hiển thị thời gian cập nhật.
+  * Cập nhật hàm điều hướng tab `sfOpenTab(evt, tabName)` trong Javascript:
+    * Khi ở tab **Tổng quan (`tab-overview`)**: Tiêu đề hiển thị `"Tổng quan trang trại"`, huy hiệu thời gian được bật hiển thị (`display: inline-flex`).
+    * Khi chuyển sang tab **Công việc (`tab-tasks`)**: Tiêu đề đổi thành `"Quản lý công việc"`, huy hiệu thời gian tự động ẩn (`display: none`).
+    * Khi chuyển sang tab **Bản đồ (`tab-map`)**: Tiêu đề đổi thành `"Bản đồ nông trại"`, huy hiệu thời gian tự động ẩn (`display: none`).
+    * Khi chuyển sang tab **Kho & Sản phẩm (`tab-inventory`)**: Tiêu đề đổi thành `"Kho vật tư & Sản phẩm"`, huy hiệu thời gian tự động ẩn (`display: none`).
+  * Khởi tạo đồng bộ ngay khi load trang từ trạng thái lưu trong `localStorage`.
+
+---
+
 ## [2026-09-26] – Ra mắt không gian Quản lý Công việc Nông trại (Task Management Workspace) & Kéo thả sắp xếp
 
 ### 1. 📋 Nút điều hướng Tab "Công việc" trên Navbar
