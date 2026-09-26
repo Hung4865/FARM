@@ -4,6 +4,112 @@
 
 ---
 
+## [2026-09-26] – Hoàn Thiện Tương Tác Click Cây 3D, Diễn Hoạt Các Hệ Thống Tưới Tiêu 3D & Khắc Phục Lỗi Xoay Sơ Đồ Khu A (Feature 003.4)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **1. Khắc phục Triệt để Lỗi Không Mở Bảng Cây (`#sf-plant-drawer`) Khi Nhấp Vào Cây Trong 3D:**
+  * *Thu nhỏ hitbox phun sương trần (`mistHit`):* Kích thước cũ $16\text{m} \times 1.4\text{m} \times 30\text{m}$ phủ kín trần làm tia Raycaster luôn đâm trúng trước cây trồng. Đã thu nhỏ thành thanh mảnh $1.2\text{m} \times 0.5\text{m}$ dọc đúng ống trung tâm ($x \in [-0.6, 0.6]$).
+  * *Ưu tiên tuyệt đối Cây trồng trong Raycasting:* Khi duyệt qua danh sách va chạm `intersects`, hệ thống luôn ưu tiên chọn cây trồng trước các thiết bị trần.
+  * *Mở rộng hitbox cây và liên kết toàn bộ bộ phận:* Mở rộng `plantHit` lên bán kính $1.15\text{m}$, cao $3.8\text{m}$; gắn `userData` và đăng ký tương tác cho toàn bộ các khối tán lá (`foliage`), dây leo (`cable`), và quả (`melon`).
+  * *Bổ sung nút chọn nhanh:* Thêm nút **`🌱 Cây`** trên cụm phím điều hướng D-Pad và thanh công cụ 3D, hỗ trợ nhấp đúp (Double-click) vào cây để mở ngay bảng điều khiển chi tiết `#sf-plant-drawer`.
+* **2. Bổ Sung Đầy Đủ Các Hành Động Tưới 3D Khác Nhau Trong Không Gian Nhà Màng:**
+  * *Tưới phun mưa tự động (`sprinkler`):* Dựng 8 béc phun xoay tự động tại độ cao $4.2\text{m}$ dọc 2 hàng dầm nóc; diễn hoạt 480 hạt nước phun mưa (`sprinklerPoints`) xoay tròn xòe rộng hình nón và rơi phủ đều các luống lá cây trong `animate()`.
+  * *Châm dinh dưỡng NPK (`fert`):* Dựng 4 đường ống mờ dẫn vi lượng dọc 4 luống trồng; diễn hoạt 160 hạt tinh thể vi lượng màu xanh ngọc huỳnh quang (`fertPoints`, `#22c55e`) chuyển động tuần hoàn liên tục dọc đường ống và nhỏ giọt vào 40 bầu rễ cây.
+  * *Tưới nhỏ giọt tự động (`drip`):* Diễn hoạt 80 giọt nước rơi tí tách vào từng bầu rễ.
+  * *Đồng bộ thời gian thực:* Khi bật/tắt thiết bị trong bảng điều khiển bên phải, các hành động mô phỏng 3D bật/tắt ngay lập tức.
+* **3. Khắc Phục Hiện Tượng Nhạy Chuột Khi Xoay Sơ Đồ Khu A 3D:**
+  * Bắt sự kiện `start` và `end` của `OrbitControls` để nhận diện chính xác trạng thái xoay phân khu (`isOrbitingCampus`).
+  * So khớp điểm bắt đầu nhấn chuột (`cpDownTarget`) và điểm nhả chuột (`cpUpTarget`). Chỉ khi người dùng click dứt khoát tại chỗ (`dist < 4px`, `elapsed < 350ms`) trên cùng một ngôi nhà màng thì mới chuyển trang. Loại bỏ 100% việc xoay hoặc kéo chuột qua nhà màng làm kích hoạt chuyển vào 3D.
+
+---
+
+## [2026-09-26] – Thiết Kế Lại Thẻ Điều Khiển Thiết Bị IoT & Khắc Phục Tương Tác Click Cây Trồng 3D (Feature 003.3)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **1. Khắc phục Triệt để Lỗi Không Mở Bảng Cài Đặt Tưới & Thông Số Khi Click Vào Cây 3D:**
+  * *Chuyển đổi Hitbox sang Transparent Opacity 0:* Loại bỏ vật liệu `{ visible: false }` gây ra hiện tượng Raycaster của Three.js bỏ qua không phát hiện va chạm. Chuyển sang `new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })` bao bọc quanh mỗi cây hình trụ rộng $0.9\text{m} \times 3.6\text{m}$.
+  * *Gán tương tác cho quả dưa và tán lá:* Gán `userData` sinh học trực tiếp vào quả dưa (`melon`) và thân lá, đưa quả dưa vào `interactiveObjects` để người dùng click trúng quả hoặc thân cây đều kích hoạt tương tác ngay lập tức.
+  * *Bắt sự kiện Click chuẩn xác qua `pointerdown` + `pointerup`:* Tránh hiện tượng `THREE.OrbitControls` nuốt mất sự kiện `click` khi người dùng rê nhẹ tay ($\Delta < 6\text{px}$). Bổ sung debounce $150\text{ms}$ loại bỏ xung đột click đúp.
+  * *Mở bảng thông số & Đóng mượt Zone Drawer:* Khi nhấp vào cây, nếu Bảng điều khiển phân khu A đang mở, hệ thống sẽ ẩn mượt nó đi và trượt ra `#sf-plant-drawer` với `z-index: 1070;`, điền đầy đủ 6 chỉ số nông học gốc và tùy chọn tưới riêng.
+  * *Nút điều hướng quay lại:* Bổ sung nút bấm `"← Quay lại thiết bị Khu A"` trên đầu `#sf-plant-drawer` giúp người dùng chuyển đổi qua lại thuận tiện.
+* **2. Thiết Kế Lại Toàn Diện Thẻ Thiết Bị IoT (Tránh Co Cụm, Vỡ Bố Cục Thẻ):**
+  * *Tách biệt bố cục 2 tầng (Column Layout):* Sửa `.sf-device-card` từ `display: flex; flex-direction: row` thành `flex-direction: column; align-items: stretch;`.
+  * *Hàng chính phía trên (`.sf-device-main-row`):* Icon thiết bị bo góc mềm $40\times 40\text{px}$, tiêu đề, badge trạng thái `ĐANG CHẠY` / `ĐANG TẮT` và mô tả phụ chiếm trọn không gian bên trái; công tắc toggle switch cố định ngay ngắn ở góc trên bên phải, không còn bị ép chen vào giữa dòng chữ.
+  * *Khối cài đặt phụ phía dưới (`.sf-device-subcontrols`):* Chiếm trọn $100\%$ chiều rộng thẻ, nền xám thanh lịch `#f8fafc`, viền vi mô `#e2e8f0`, bo góc $10\text{px}$, hiệu ứng chuyển cảnh trượt mở (`@keyframes sfFadeSlideDown`).
+  * *Hàng cài đặt (`.sf-subctrl-row`):* Icon minh họa rõ ràng (`💧 Mức nhỏ giọt`, `🕒 Chu kỳ tưới`, `🚿 Lượng nước`, `⏱️ Thời gian tưới`), nhãn căn trái, và dropdown select căn phải với viền mềm, bo góc $8\text{px}$, chuẩn SaaS hiện đại.
+
+---
+
+## [2026-09-26] – Giám Sát Cây Trồng Gốc 1-1, Hệ Thống Điều Khiển Tưới Tiêu Thông Minh & Điều Hướng Đi Dạo 3D (Feature 003.2)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **1. Đồng nhất 100% Định dạng Thông số khi Di chuột (Uniform Hover Metrics):**
+  * Chuẩn hóa định dạng hiển thị thông số vi khí hậu & sinh trưởng cho toàn bộ 40 cây trồng độc lập trong nhà màng:
+    - *Tiêu đề:* `🌱 [Tên giống cây] #[Mã cây]` (Ví dụ: `🌱 Dưa Lưới Nhật Bản CNC #GH01-P05`)
+    - *Nội dung:* `Độ ẩm: 72% • Nhiệt độ quanh gốc: 26.5°C • Độ tuổi: 45 ngày • Dự kiến thu hoạch: 20 ngày nữa`
+  * Đảm bảo tính nhất quán tuyệt đối, không còn hiện tượng mỗi cây hiển thị một kiểu thông số rời rạc.
+* **2. Bảng Giám Sát Cây Trồng Gốc 1-1 & Cài Đặt Tưới Tiêu Riêng (`#sf-plant-drawer`):**
+  * Khi nhấp chuột vào bất kỳ cây trồng nào trong mô hình 3D, camera sẽ lướt nhẹ nhàng đến cận cảnh cây đó và mở bảng điều khiển trượt độc lập từ cạnh phải:
+    - **Tóm tắt sức khỏe sinh học:** Tình trạng sinh trưởng (🟢 Khỏe mạnh tối ưu), thanh tiến trình vòng đời (45/65 ngày).
+    - **Lưới 6 chỉ số nông học cảm biến rễ:** Độ ẩm bầu rễ (72%), Nhiệt độ quanh gốc (26.5°C), Độ chua đất (6.2 pH), Dinh dưỡng khoáng (1.8 mS/cm EC), Cường độ quang hợp (8,400 lux), Độ ngọt Brix ước tính (14.2° Brix chuẩn GlobalGAP).
+    - **Hệ thống điều khiển tưới tiêu riêng cho từng cây:**
+      - Công tắc: *Kích hoạt chế độ tưới riêng (Ghi đè cài đặt tổng)*.
+      - Phương thức tưới: Tưới nhỏ giọt bù ẩm gốc / Tưới châm phân NPK / Tạm ngưng (xiết nước làm ngọt).
+      - Lượng nước: Ít (100ml) / Chuẩn (200ml) / Nhiều (350ml).
+      - Tần suất: Mỗi 2h / Mỗi 4h / Tự động theo cảm biến rễ.
+      - Nút bấm tức thời: **`💧 Kích hoạt tưới ngay cho cây này (150ml)`** kèm hiệu ứng giọt nước và tăng trực tiếp chỉ số độ ẩm rễ trong thời gian thực.
+* **3. Điều Hướng Đi Dạo 3D Toàn Diện (Camera Walk & D-Pad Navigation):**
+  * Tích hợp cụm phím điều hướng HUD nổi góc trên bên trái (`.sf-3d-nav-overlay`):
+    - **`▲ Tiến vào trong (W)`**, **`▼ Lùi ra ngoài (S)`**, **`◀ Sang trái (A)`**, **`▶ Sang phải (D)`**, **`● Đặt lại vị trí mặc định`**, **`🔍+ Phóng to`**, **`🔍- Thu nhỏ`**.
+  * Hỗ trợ phím tắt bàn phím trực tiếp: `W` / `↑` (Đi sâu vào hành lang), `S` / `↓` (Lùi ra ngoài), `A` / `←` (Trượt trái), `D` / `→` (Trượt phải), `R` (Đặt lại góc nhìn).
+  * Hỗ trợ **Double-click (Nhấp đúp chuột)** vào bất kỳ vị trí lối đi hoặc luống cây để lướt camera đến ngay vị trí đó.
+* **4. Khắc phục Triệt để Lỗi Không Đồng Bộ Thiết bị IoT & Lưu trữ Bền vững (`sfDeviceStore`):**
+  * Xây dựng module `window.sfDeviceStore` lưu trữ tập trung vào `localStorage`, khắc phục lỗi công tắc bị reset về trạng thái bật mặc định khi đóng/mở bảng hay chuyển tab.
+  * Sửa lỗi sai lệch định danh thiết bị (`mist` / `fan` / `shade` / `drip` / `sprinkler`), gạt công tắc là mô hình 3D bên ngoài lập tức phản hồi (quạt dừng quay, sương mù biến mất, hạt nước tưới nhỏ giọt ngắt).
+  * Khi mở bảng điều khiển trong chế độ 3D, backdrop chuyển sang kính trong suốt (`.sf-3d-clean`), giúp người dùng nhìn rõ mô hình 3D phản ứng ngay bên cạnh bảng điều khiển.
+* **5. Hệ Thống Điều Khiển Thủy Lợi & Tưới Tiêu Tổng Phân Khu:**
+  * Bổ sung vào Bảng điều khiển phân khu A:
+    - **Hệ thống tưới nhỏ giọt tự động:** Công tắc Master, chọn tốc độ nhỏ giọt (Chậm 20ml/h, Chuẩn 50ml/h, Bù ẩm nhanh 100ml/h), chu kỳ tưới (2h, 4h, theo cảm biến).
+    - **Hệ thống tưới phun mưa tự động:** Công tắc Master, điều chỉnh lượng nước (3L, 5L, 8L/m²), thời gian ca tưới (10m, 15m, 30m).
+    - **Hệ thống châm dinh dưỡng NPK:** Bơm định lượng hòa tan vi lượng tự động.
+* **6. Giám Sát Dung Tích Bồn Chứa Nước Ở Khu A 3D (Water Tank Telemetry):**
+  * Trang bị vòng đo mực nước kỹ thuật số (LED Ring) và hitbox cảm biến cho 4 bồn chứa nước (`WT-01` đến `WT-04`).
+  * Khi di chuột vào bồn nước, hiển thị ngay thẻ HUD: Tên bồn chứa, Dung tích còn lại (ví dụ $42.500 / 50.000\text{ Lít}$ - $85\%$), Tình trạng áp lực bơm (3.2 bar) và trạm cấp nước.
+
+---
+
+## [2026-09-26] – Nâng cấp Mô hình 3D Campus Phân Khu A & Hoàn thiện Đồ họa Nội thất Nhà màng (Feature 003.1)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **1. Toàn cảnh 3D Phân Khu A (3D Campus Overview - `sfInitZoneA3D`):**
+  * Thay thế sơ đồ 2D tĩnh bằng mô hình không gian 3D tương tác toàn diện với cụm 16 nhà màng công nghệ cao (lưới 4x4) bằng kính phản chiếu.
+  * Tích hợp mạng lưới hạ tầng đồng bộ: Đường nhựa nội bộ Asphalt có vạch kẻ tim đường phản quang, 4 cụm giàn pin năng lượng mặt trời trên mái, 2 bồn chứa nước tưới và trạm bơm điều áp.
+  * Tương tác thông minh (Raycasting): Rê chuột qua bất kỳ nhà màng nào sẽ phát sáng viền và hiển thị HUD Card vi khí hậu (`#sf-zone-a-hover-card`). Click vào nhà màng lập tức lướt camera vào bên trong mô hình 3D Digital Twin của nhà màng đó.
+  * Cụm nút chuyển đổi chế độ hiển thị linh hoạt: **`🎮 3D Phân khu`** và **`🗺️ Sơ đồ 2D`**.
+* **2. Khắc phục triệt để Lỗi Đồ họa Khung Kính & Xà dầm Nội thất 3D:**
+  * **Chân móng bê tông vững chắc**: Bổ sung hệ dầm móng bê tông đúc khối (`curbH = 0.7m`) bao quanh 4 mặt chân tường, loại bỏ tình trạng cột thép cắm lơ lửng.
+  * **Sửa góc nghiêng xà gồ mái chính xác**: Tính toán lại độ dốc hình học (`rafterAngle = Math.atan2(3.0, 10) = 0.291 rad`), các thanh xà kèo trái và phải nối khớp hoàn hảo từ mép tường lên đỉnh nóc (ridge beam), giải quyết triệt để lỗi các thanh xà lơ lửng trong không trung.
+  * **Tối ưu độ trong suốt và tương phản kính**: Nâng độ chắn sáng kính (`opacity: 0.40, color: 0x93c5fd`), nẹp khung nhôm đố kính dày dặn rõ nét giúp nhìn rõ phân tầng giữa mái trần và đáy sàn luống dưa.
+  * **Bổ sung phụ kiện nhà màng chuyên nghiệp**: Lưới cắt nắng nhiệt dạng sợi nhôm phản xạ (`Aluminet`) màu xám bạc luồn dưới xà mái và hệ thống thanh đèn LED quang phổ hồng/magenta chuyên dụng cho quang hợp.
+* **3. Tương tác Cảm biến Sinh học Cây trồng & Trái cây (Plant & Fruit Raycasting):**
+  * Mở rộng phạm vi tương tác con trỏ chuột sang toàn bộ sinh khối nông nghiệp trong nhà màng: Bọc hitbox cho 4 luống cây dưa lưới và từng trái dưa chín vàng.
+  * Khi rê chuột vào luống cây hoặc trái dưa, hiển thị ngay thẻ thông số sinh học chi tiết: Giống cây (*Dưa lưới TL3 GlobalGAP*), Ngày tuổi (*42/65 ngày*), Chiều cao cây (*1.85m*), Độ ẩm rễ (*72%*), Nồng độ dinh dưỡng EC (*1.8 mS/cm*), Độ pH (*6.2*), Độ ngọt Brix ước tính (*14.2° Brix*) và Khối lượng (*1.42 kg*).
+
+---
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js), [`specs/003-3d-digital-twin-greenhouse/`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/specs/003-3d-digital-twin-greenhouse/)
+* **1. Điều hướng Bản đồ Đa tầng (Multi-level Map Navigation):**
+  * **Tầng 1 (Toàn cảnh Farm)**: Giữ nguyên bản đồ GIS vĩ mô. Nhấp vào Khu A chuyển cảnh mượt sang sơ đồ mặt bằng chi tiết Khu A.
+  * **Tầng 2 (Sơ đồ Mặt bằng Khu A - `#sf-map-level-zone-a`)**: Hiển thị ảnh quy hoạch chi tiết 16 nhà kính công nghệ cao (lưới 4 hàng x 4 cột). Từng nhà kính là một hotspot tương tác (`.sf-gh-hotspot`) kèm badge vi khí hậu nổi bật khi rê chuột.
+  * **Tầng 3 (Không gian 3D Digital Twin - `#sf-map-level-greenhouse-3d`)**: Nhấp chọn bất kỳ nhà màng nào (ví dụ GH-01) để bước vào không gian 3D Three.js WebGL tham quan nội thất thực tế.
+* **2. Mô phỏng 3D Procedural Kiến trúc & Thiết bị Nông nghiệp Thông minh:**
+  * Dựng khung vòm thép chịu lực mạ kẽm trắng cao cấp, vách và mái kính cường lực mờ phản chiếu ánh sáng tự nhiên.
+  * 4 dãy máng composite trồng dưa lưới thủy canh đều đặn, giàn dây leo vươn lên xà mái, khóm lá xanh và chùm dưa lưới chín vàng rực rỡ.
+  * Hệ thống quạt đối lưu gắn tường với cánh quạt xoay tít theo trạng thái thời gian thực.
+  * Hệ thống béc phun sương trần phát 700 hạt nước chuyển động li ti tạo hiệu ứng sương mù thực tế.
+  * Cọc cảm biến môi trường IoT cắm tại luống đất có đèn LED xanh ngọc bích phát sáng nhịp tim.
+* **3. Tương tác 2 chiều (Bidirectional Interaction & Raycasting):**
+  * Raycasting 3D nhận diện con trỏ: Rê chuột hiện thẻ thông tin thiết bị, Click vào thiết bị trong 3D lập tức mở Drawer bên phải và làm nhấp nháy công tắc điều khiển tương ứng.
+  * Gạt công tắc ở Drawer bên phải đồng bộ ngay lập tức sang mô hình 3D (kích hoạt quay quạt, phun sương hạt nước).
+  * Bộ nút chuyển nhanh góc nhìn camera trực quan: Toàn cảnh, Luống dưa, Thiết bị trần, Tự động xoay 360 độ.
+
+---
+
 ## [2026-09-26] – Nâng cấp Thiết kế Bản đồ GIS Cao cấp & Tách biệt Header Độc lập theo Tab
 * **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
 * **1. Đóng gói Header & Huy hiệu Cập nhật vào Tab Tổng quan:**
