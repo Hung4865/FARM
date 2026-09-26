@@ -4,9 +4,66 @@
 
 ---
 
-## [v0.6.0] – 2026-09-26 (Hiện tại)
+## [v0.6.1] – 2026-09-26 (Hiện tại)
+
+### 🐛 Sửa lỗi & Nâng cấp Trải nghiệm 3D (3D Bug Fixes & Action Enhancements)
+1. **Khắc Phục Triệt Để Lỗi Không Thể Nhấp Vào Cây Để Mở Bảng Cài Đặt Bên Phải (`#sf-plant-drawer`)**:
+   - *Nguyên nhân cốt lõi*: Hộp va chạm `mistHit` (Hệ thống phun sương trần) được tạo với kích thước quá lớn ($16\text{m} \times 1.4\text{m} \times 30\text{m}$) che phủ kín toàn bộ nóc nhà màng; tia Raycaster từ camera nhìn xuống luôn đâm xuyên qua `mistHit` trước, dẫn đến việc luôn kích hoạt highlight thiết bị phun sương và mở bảng Zone Drawer thay vì bảng cây; đồng thời các khối tán lá xanh (`foliage`) và dây leo chưa được gán `userData` và chưa được đưa vào danh sách `interactiveObjects`.
+   - *Giải pháp*:
+     + Thu nhỏ hộp va chạm `mistHit` thành thanh mảnh $1.2\text{m} \times 0.5\text{m} \times (ghL - 2)$ dọc theo đúng đường ống trung tâm đỉnh nóc ($x \in [-0.6, 0.6]$), giải phóng hoàn toàn không gian trên đầu 4 luống cây.
+     + Mở rộng hitbox cây `plantHit` hình trụ bán kính $1.15\text{m}$, cao $3.8\text{m}$; gán dữ liệu nông học `userData` và đăng ký tương tác cho toàn bộ các khối tán lá (`foliage`), dây leo (`cable`), quả dưa (`melon`) của cả 40 cây trồng.
+     + Tái cấu trúc logic Raycast trong `handle3DClick` và `onMouseMove`: Lặp qua toàn bộ mảng `intersects` và **ưu tiên tuyệt đối đối tượng cây trồng (`plant`, `crop`, `fruit`)** trước các thiết bị trần.
+     + Bổ sung nút truy cập nhanh **`🌱 Cây`** trên cụm phím điều hướng D-Pad và thanh công cụ 3D, hỗ trợ nhấp đúp (Double-click) vào cây để mở ngay bảng điều khiển chi tiết `#sf-plant-drawer`.
+
+2. **Bổ Sung Đầy Đủ Các Hành Động Tưới 3D Trực Quan & Sống Động (Distinct 3D Irrigation Actions)**:
+   - *Hệ thống tưới phun mưa tự động (`sprinkler`)*: Bổ sung 8 béc phun xoay tự động treo dọc 2 hàng xà dầm nóc kết hợp hệ thống 480 hạt nước (`sprinklerPoints`) xòe rộng hình nón xoay tròn và rơi theo quỹ đạo trọng lực tưới đẫm tán lá cây trong vòng lặp `animate()`.
+   - *Hệ thống châm dinh dưỡng NPK (`fert`)*: Bổ sung 4 đường ống dẫn vi lượng mờ trong suốt chạy dọc 4 luống máng trồng cùng hệ thống 160 hạt tinh thể vi lượng màu xanh ngọc huỳnh quang (`fertPoints`, `#22c55e`) chuyển động tuần hoàn liên tục dọc đường ống và nhỏ giọt nhịp nhàng vào từng bầu rễ cây.
+   - *Hệ thống tưới nhỏ giọt (`drip`)*: Cải tiến hệ thống giọt nước tí tách rơi trực tiếp từ van tưới vào từng khối giá thể rễ cây.
+   - *Đồng bộ 2 chiều*: Khi người dùng gạt công tắc các thiết bị trong bảng điều khiển, các hiệu ứng mô phỏng 3D tương ứng bật/tắt tức thì.
+
+3. **Khắc Phục Triệt Để Hiện Tượng Nhạy Chuột Khi Xoay 3D Sơ Đồ Khu A (Accidental Campus Navigation)**:
+   - *Nguyên nhân*: Khi người dùng giữ chuột để xoay (Orbit) góc nhìn toàn cảnh phân khu, sự kiện nhả chuột (`pointerup`) hoặc lướt chuột qua hitbox của các nhà màng dễ bị hiểu nhầm là thao tác click chọn.
+   - *Giải pháp*:
+     + Lắng nghe sự kiện `start` và `end` của `OrbitControls` để khóa cờ `isOrbitingCampus`.
+     + Ghi nhận đối tượng nhà màng lúc bắt đầu nhấn chuột (`cpDownTarget`) và lúc nhả chuột (`cpUpTarget`).
+     + Ràng buộc điều kiện điều hướng nghiêm ngặt: Chỉ chuyển vào không gian 3D của nhà màng khi `!isOrbitingCampus`, không có thao tác kéo di chuyển (`dist < 4px`, `elapsed < 350ms`), và điểm nhấn chuột xuống & nhả chuột lên **bắt buộc phải là cùng một ngôi nhà màng**. Người dùng có thể thoải mái giữ chuột xoay 360° qua mọi nhà màng mà không bao giờ bị nhảy trang ngoài ý muốn.
+
+---
+
+## [v0.6.0] – 2026-09-26
 
 ### 🐛 Sửa lỗi & Hoàn thiện Giao diện (Bug Fixes & UI Polish)
+- **Khắc Phục 100% Lỗi Không Mở Bảng Cài Đặt Tưới & Thông Số Chi Tiết Khi Nhấp Vào Cây (`#sf-plant-drawer`)**:
+  - *Nguyên nhân cốt lõi*: Vật liệu hitbox cũ sử dụng `{ visible: false }` khiến động cơ va chạm Raycaster của Three.js tự động bỏ qua toàn bộ các đối tượng va chạm của cây trồng; đồng thời thao tác nhấp chuột trên canvas WebGL dễ bị `OrbitControls` nuốt mất sự kiện nếu chuột dịch chuyển vi mô (1-2px) khi nhả chuột.
+  - *Giải pháp*:
+    + Chuyển toàn bộ vật liệu hitbox sang `new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })` giúp đối tượng vô hình hoàn toàn trong mắt người dùng nhưng vẫn giữ nguyên diện tích va chạm 3D hoàn chỉnh cho Raycaster.
+    + Gán dữ liệu sinh học `userData` trực tiếp vào cả quả dưa (`melon`) và thân lá cây, đưa quả vào danh sách `interactiveObjects`.
+    + Tích hợp cơ chế phát hiện cú nhấp chuột chính xác qua `pointerdown` + `pointerup` (khoảng cách dịch chuyển $\Delta < 6\text{px}$ và thời gian $< 600\text{ms}$) kèm debounce tránh click đúp.
+    + Khi click vào cây hoặc quả dưa: Camera lướt cận cảnh cây, ẩn mượt mà bảng điều khiển Zone Drawer nếu đang mở, đồng thời trượt ra bảng `#sf-plant-drawer` với đầy đủ 6 chỉ số nông học gốc (Độ ẩm rễ, Nhiệt độ quanh gốc, pH, EC, Ánh sáng Lux, Độ ngọt Brix) và tùy chọn tưới tiêu riêng (ghi đè lịch tưới, chỉnh mức nhỏ giọt, tần suất, và nút tưới 150ml tức thời).
+    + Bổ sung nút bấm điều hướng "← Quay lại thiết bị Khu A" trên header của `#sf-plant-drawer` giúp người dùng chuyển đổi qua lại thuận tiện.
+- **Thiết Kế Lại Toàn Diện Layout Bảng Điều Khiển Thiết Bị IoT (Tránh Co Cụm, Vỡ Thẻ)**:
+  - *Nguyên nhân*: Thẻ `.sf-device-card` sử dụng Flexbox hàng ngang (`flex-direction: row`), khi render thêm khối cài đặt phụ `.sf-device-subcontrols` (mức nhỏ giọt, chu kỳ tưới, lượng nước) khiến thẻ bị chia đôi thành 2 cột 50%-50%, ép công tắc switch chen vào giữa tiêu đề và chữ bị rớt dòng méo mó.
+  - *Giải pháp*:
+    + Đổi cấu trúc `.sf-device-card` thành layout chiều dọc (`flex-direction: column; align-items: stretch;`).
+    + Hàng trên cùng `.sf-device-main-row`: Icon thiết bị bo góc mềm mại, tên thiết bị, badge trạng thái `ĐANG CHẠY` / `ĐANG TẮT` và mô tả phụ chiếm trọn không gian bên trái; công tắc toggle switch chuẩn iOS luôn cố định ngay ngắn ở góc trên bên phải.
+    + Khối cài đặt phụ `.sf-device-subcontrols`: Nằm trọn vẹn ở hàng dưới với chiều rộng 100%, nền xám sáng thanh lịch (`#f8fafc`), bo góc 10px, hiệu ứng trượt mở mượt mà khi bật công tắc. Các hàng cài đặt (`.sf-subctrl-row`) hiển thị rõ ràng icon minh họa, nhãn và dropdown `<select>` tinh tế chuẩn thiết kế SaaS cao cấp.
+- **Đồng nhất 100% Định dạng Thông số khi Di chuột vào Cây trồng**: Chuẩn hóa định dạng hiển thị thông số vi khí hậu & sinh trưởng cho toàn bộ 40 cây trồng độc lập trong nhà màng (`🌱 [Tên giống cây] #[Mã cây]`, `Độ ẩm: 72% • Nhiệt độ quanh gốc: 26.5°C • Độ tuổi: 45 ngày • Dự kiến thu hoạch: 20 ngày nữa`).
+- **Bảng Giám Sát Cây Trồng Gốc 1-1 & Điều Khiển Tưới Tiêu Riêng (`#sf-plant-drawer`)**: Nhấp vào từng cây mở bảng trượt bên phải hiển thị đầy đủ 6 chỉ số nông học cảm biến rễ (Độ ẩm rễ, Nhiệt độ quanh gốc, pH, EC, PAR/Lux, Độ ngọt Brix), hỗ trợ thiết lập chế độ tưới riêng (nhỏ giọt, châm phân NPK, tạm ngưng, chỉnh lượng nước 100-350ml, tần suất) và nút bấm "💧 Tưới ngay lập tức (150ml)" kèm hiệu ứng thời gian thực.
+- **Điều Hướng Đi Dạo 3D Toàn Diện (Camera Walk & D-Pad Navigation)**: Tích hợp cụm phím điều hướng HUD nổi (`.sf-3d-nav-overlay`) cho phép tiến sâu vào hành lang (`W` / `↑`), lùi ra ngoài (`S` / `↓`), trượt sang trái/phải (`A` / `D`), phóng to/thu nhỏ và nhấp đúp chuột (Double-click) lướt camera đến bất kỳ điểm nào.
+- **Khắc phục Triệt để Lỗi Không Đồng Bộ Thiết bị IoT & Lưu trữ Bền vững (`sfDeviceStore`)**: Xây dựng `window.sfDeviceStore` lưu trữ `localStorage`, sửa lỗi định danh thiết bị (`mist` / `fan` / `shade` / `drip` / `sprinkler`), gạt công tắc là mô hình 3D phản hồi ngay lập tức và giữ nguyên trạng thái khi đóng/mở bảng hoặc chuyển tab. Backdrop chuyển sang kính trong suốt giúp người dùng quan sát trực tiếp mô hình 3D.
+- **Hệ Thống Điều Khiển Thủy Lợi & Tưới Tiêu Toàn Khu**: Bổ sung điều khiển hệ thống tưới nhỏ giọt tự động (chỉnh lưu lượng 20-100ml/h, chu kỳ 2-4h), hệ thống tưới phun mưa tự động (chỉnh lượng nước 3-8L/m², thời gian ca tưới 10-30m), và hệ thống châm phân vi lượng NPK.
+- **Giám Sát Mực Nước Bồn Chứa Khu A 3D (Water Tank Telemetry)**: Di chuột vào 4 bồn chứa nước hiển thị thông số dung tích còn lại (ví dụ $42.500 / 50.000\text{ Lít}$ - $85\%$), tình trạng bơm áp lực và nguồn cấp.
+- **Nâng cấp Toàn cảnh 3D Phân Khu A (3D Campus Overview)**:
+  - Thay thế sơ đồ tĩnh 2D bằng mô hình 3D tương tác toàn diện cho toàn bộ phân khu Khu A (`#sf-zone-a-3d-viewport`), dựng 16 nhà màng kính 3D với ánh sáng và bóng đổ chân thực, hạ tầng đường nội bộ asphalt, tấm pin mặt trời và hồ chứa nước.
+  - Tích hợp Raycasting tương tác: Rê chuột làm sáng khối nhà và hiện thẻ vi khí hậu (`#sf-zone-a-hover-card`), nhấp chuột phóng camera vào tham quan nội thất 3D bên trong.
+  - Cụm nút chuyển đổi mượt mà giữa chế độ **🎮 3D Phân khu** và **🗺️ Sơ đồ 2D**.
+- **Hoàn thiện Đồ họa Nội thất 3D Nhà màng (Greenhouse 3D Overhaul)**:
+  - Khắc phục triệt để lỗi kết cấu xà dầm lơ lửng: Tính toán góc nghiêng kèo mái chính xác (`rafterAngle = 0.291 rad`), kết nối khớp tuyệt đối từ mép tường lên đỉnh nóc nhà màng.
+  - Bổ sung chân móng bê tông đúc khối (`curbH = 0.7m`) bao quanh 4 mặt, tạo điểm tựa kiến trúc kiên cố và chân thực.
+  - Tinh chỉnh độ trong suốt và tương phản kính (`opacity: 0.40, color: 0x93c5fd`), nẹp khung nhôm rõ nét giúp phân tầng rõ ràng giữa mái vòm và lòng nhà màng.
+  - Bổ sung hệ thống lưới cắt nắng nhiệt phản xạ ánh sáng (`Aluminet`) và giàn đèn LED quang phổ hồng/magenta chuyên dụng cho quang hợp cây trồng.
+- **Tương tác Cảm biến Sinh học Cây trồng & Trái cây (Plant & Fruit Raycasting)**:
+  - Bổ sung Raycasting cho toàn bộ 4 dãy luống cây và quả dưa lưới: Khi di chuột vào cây hoặc trái dưa, hiển thị ngay HUD Card chi tiết các thông số nông học (giống cây, ngày tuổi, chiều cao, độ ẩm bầu rễ, EC, pH, độ ngọt Brix ước tính, khối lượng).
 - **Chuyển liên kết "Hệ thống Odoo" vào Cài đặt (Settings Dropdown)**: Bỏ nút "Hệ thống Odoo" khỏi cụm điều hướng chính giữa Navbar (`.sf-nav-pills`), đưa vào vị trí đầu tiên trong menu dropdown Cài đặt (`#sf-settings-menu`), giúp navbar trung tâm tinh gọn và cân đối.
 - **Tách biệt Header Độc lập theo Tab**: Di chuyển cụm tiêu đề "Tổng quan trang trại" và nhịp tim "Cập nhật..." vào hẳn bên trong `#tab-overview`. Khi chuyển sang các tab khác ("Bản đồ", "Công việc", "Kho vật tư"), tiêu đề tổng quan và badge tự động biến mất, tab Bản đồ sở hữu tiêu đề riêng biệt "Bản đồ số nông trại" kèm badge "🟢 Giám sát trực tuyến".
 - **Khắc phục triệt để vỡ giao diện Bảng điều khiển Phân khu (Zone Drawer)**: Di chuyển `#sf-zone-drawer` và backdrop ra cấp `<body>` với `style="display:none;"` phòng vệ, loại bỏ hoàn toàn hiện tượng text tràn dưới chân bản đồ khi tải trang.
@@ -19,6 +76,22 @@
 ### 🆕 Thêm mới
 
 #### UI & Navigation
+- **Mô hình 3D Digital Twin Nhà màng Nông nghiệp Công nghệ cao (3D Digital Twin High-Tech Greenhouse – Feature 003)**:
+  - **Hệ thống Bản đồ Đa tầng (Multi-level Navigation)**:
+    - *Tầng 1 (Vĩ mô toàn trang trại)*: Click vào **Khu A (Nhà màng công nghệ cao)** để tiến vào sơ đồ phân khu chi tiết.
+    - *Tầng 2 (Sơ đồ mặt bằng chi tiết Khu A)*: Thể hiện cụm 12+ nhà kính công nghệ cao (GH-01 đến GH-16), hồ điều hòa, tấm pin mặt trời và luống ngoài trời. Mỗi nhà màng là một hotspot tương tác có chip vi khí hậu hiển thị nhiệt độ & độ ẩm khi hover.
+    - *Tầng 3 (Không gian 3D Digital Twin)*: Click vào bất kỳ nhà màng nào (đặc biệt **Nhà màng 01 (GH-01) - Dưa lưới CNC**) sẽ mở ra viewport 3D Three.js WebGL tương tác trực quan 360 độ.
+  - **Mô phỏng 3D Procedural Sinh động & Tối ưu**:
+    - Khung vòm thép chịu lực mạ kẽm trắng, vách và mái kính cường lực trong suốt phản chiếu ánh sáng tự nhiên.
+    - 4 dãy luống máng trồng dưa lưới/cà chua thủy canh với tán lá xanh mướt, quả chín vàng treo dọc giàn dây leo, đường ống tưới nhỏ giọt dẫn tới từng gốc cây.
+    - Quạt thông gió đối lưu gắn tường với cánh quạt quay tít theo trạng thái thời gian thực.
+    - Hệ thống béc phun sương trần phát hạt sương mù hạt nước chuyển động li ti lơ lửng trong không gian nhà kính.
+    - Cọc cảm biến môi trường IoT cắm tại luống đất có đèn LED xanh ngọc bích phát sáng nhịp tim.
+  - **Tương tác 2 chiều (Bidirectional Sync)**:
+    - Raycasting nhận diện con trỏ chuột: Rê chuột hiện thẻ thông tin thiết bị, Click vào thiết bị 3D sẽ tự động mở Bảng điều khiển IoT bên phải (`#sf-zone-drawer`) và làm nhấp nháy công tắc điều khiển tương ứng.
+    - Bật/Tắt công tắc quạt hoặc phun sương ở Drawer bên phải lập tức kích hoạt hiệu ứng quay quạt hoặc phun hạt sương trong mô hình 3D.
+    - Cụm nút chuyển nhanh góc nhìn camera: **🎥 Toàn cảnh**, **🌱 Luống dưa**, **⚙️ Thiết bị trần**, và **🔄 Tự động xoay 360°**.
+  - Chi tiết tại [UI/UI-Change.md](UI/UI-Change.md).
 - **Bản đồ Nông trại Tương tác (Interactive Smart Farm Map – Feature 002)**:
   - Nâng cấp `#tab-map` thành trung tâm điều hành trực quan với thanh lọc lớp bản đồ (Phương tiện, Thủy lợi, Cảnh báo), điểm ghim máy kéo GPS có radar ping, điểm cảnh báo sự cố nhấp nháy hỗ trợ giải quyết nhanh qua API, và thanh trượt Offcanvas (`#sf-zone-drawer`) hiển thị vi khí hậu cùng công tắc điều khiển IoT thực tế cho từng phân khu. Chi tiết tại [UI/UI-Change.md](UI/UI-Change.md).
 - **APIs Điều khiển & Cảnh báo mới**:

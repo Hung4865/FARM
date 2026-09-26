@@ -907,11 +907,84 @@ window.sfResolveAlertFromPopover = function() {
     });
 };
 
-// 4. Zone Drawer & Device Controls (T013)
+// 4. Centralized Device Store & Persistent State Management (T013)
+window.sfDeviceStore = (function() {
+    var stored = null;
+    try {
+        var raw = localStorage.getItem('sf_device_store_v2');
+        if (raw) stored = JSON.parse(raw);
+    } catch(e) {}
+
+    var defaults = {
+        'A': {
+            drip: true,
+            dripRate: 'standard', // 'slow' (20ml), 'standard' (50ml), 'boost' (100ml)
+            dripInterval: '4h',
+            sprinkler: false,
+            sprinklerAmount: '5L',
+            sprinklerDuration: '15m',
+            fert: true,
+            fertEc: 1.8,
+            mist: true,
+            fan: true,
+            shade: false
+        },
+        'B': { drip: false, fert: false },
+        'C': { pump: true, aerator: true },
+        plants: {}
+    };
+
+    var current = Object.assign({}, defaults, stored || {});
+    current['A'] = Object.assign({}, defaults['A'], (stored && stored['A']) || {});
+    if (!current.plants) current.plants = {};
+
+    function save() {
+        try {
+            localStorage.setItem('sf_device_store_v2', JSON.stringify(current));
+        } catch(e) {}
+    }
+
+    return {
+        get: function(zone, device) {
+            if (!current[zone]) return false;
+            return current[zone][device] !== undefined ? current[zone][device] : false;
+        },
+        set: function(zone, device, value) {
+            if (!current[zone]) current[zone] = {};
+            current[zone][device] = value;
+            save();
+        },
+        getPlant: function(plantId) {
+            return current.plants[plantId] || null;
+        },
+        setPlant: function(plantId, data) {
+            current.plants[plantId] = Object.assign({}, current.plants[plantId] || {}, data);
+            save();
+        },
+        getAll: function() {
+            return current;
+        }
+    };
+})();
+
+// Zone Drawer & Device Controls
 window.sfOpenZoneDrawer = function(zoneId) {
     var drawer = document.getElementById('sf-zone-drawer');
     var backdrop = document.getElementById('sf-drawer-backdrop');
     if (!drawer) return;
+
+    var lvl3D = document.getElementById('sf-map-level-greenhouse-3d');
+    var lvlZA = document.getElementById('sf-map-level-zone-a');
+    var is3D = (lvl3D && lvl3D.style.display !== 'none') || (lvlZA && lvlZA.style.display !== 'none');
+    if (backdrop) {
+        if (is3D) {
+            backdrop.classList.add('sf-3d-clean');
+            backdrop.style.pointerEvents = 'none';
+        } else {
+            backdrop.classList.remove('sf-3d-clean');
+            backdrop.style.pointerEvents = 'auto';
+        }
+    }
 
     var zones = {
         'A': {
@@ -926,9 +999,46 @@ window.sfOpenZoneDrawer = function(zoneId) {
             hum: '68%',
             lux: '8,400',
             devices: [
-                { id: 'mist', name: 'Hệ thống phun sương làm mát', sub: 'Tự động kích hoạt khi nhiệt độ > 32°C', icon: '💨', defaultState: true },
-                { id: 'fan', name: 'Quạt thông gió đối lưu', sub: 'Lưu thông không khí nhà kính', icon: '🌀', defaultState: true },
-                { id: 'shade', name: 'Hệ thống mái che tự động', sub: 'Giảm bức xạ nhiệt buổi trưa', icon: '⛺', defaultState: false }
+                {
+                    id: 'drip',
+                    name: 'Hệ thống tưới nhỏ giọt tự động',
+                    sub: 'Cấp ẩm rễ đều đặn • Bù ẩm chính xác theo độ ẩm giá thể',
+                    icon: '💧',
+                    hasSubcontrols: true,
+                    subcontrolsType: 'drip'
+                },
+                {
+                    id: 'sprinkler',
+                    name: 'Hệ thống tưới phun mưa tự động',
+                    sub: 'Tưới rau & làm mát tán lá định kỳ hàng ngày',
+                    icon: '🚿',
+                    hasSubcontrols: true,
+                    subcontrolsType: 'sprinkler'
+                },
+                {
+                    id: 'fert',
+                    name: 'Hệ thống châm dinh dưỡng NPK',
+                    sub: 'Bơm định lượng hòa tan vi lượng vào dòng nước tưới',
+                    icon: '🧪'
+                },
+                {
+                    id: 'mist',
+                    name: 'Hệ thống phun sương làm mát',
+                    sub: 'Hạ nhiệt độ & bổ sung độ ẩm vi khí hậu trần',
+                    icon: '💨'
+                },
+                {
+                    id: 'fan',
+                    name: 'Quạt thông gió đối lưu',
+                    sub: 'Lưu thông không khí tươi trong toàn bộ nhà kính',
+                    icon: '🌀'
+                },
+                {
+                    id: 'shade',
+                    name: 'Hệ thống mái che tự động',
+                    sub: 'Lưới dệt Aluminet giảm bức xạ nhiệt buổi trưa',
+                    icon: '⛺'
+                }
             ]
         },
         'B': {
@@ -943,8 +1053,8 @@ window.sfOpenZoneDrawer = function(zoneId) {
             hum: '74%',
             lux: '11,200',
             devices: [
-                { id: 'drip', name: 'Hệ thống tưới nhỏ giọt ngầm', sub: 'Van tưới điện từ thông minh Zone B', icon: '💧', defaultState: false },
-                { id: 'fert', name: 'Hệ thống châm phân bón tự động', sub: 'Bơm định lượng Venturi hòa tan', icon: '🌱', defaultState: false }
+                { id: 'drip', name: 'Hệ thống tưới nhỏ giọt ngầm', sub: 'Van tưới điện từ thông minh Zone B', icon: '💧' },
+                { id: 'fert', name: 'Hệ thống châm phân bón tự động', sub: 'Bơm định lượng Venturi hòa tan', icon: '🌱' }
             ]
         },
         'C': {
@@ -959,8 +1069,8 @@ window.sfOpenZoneDrawer = function(zoneId) {
             hum: '82%',
             lux: '7,800',
             devices: [
-                { id: 'pump', name: 'Trạm máy bơm cấp nước hồ chứa', sub: 'Công suất 15kW bơm nước lên kênh dẫn', icon: '🌊', defaultState: true },
-                { id: 'aerator', name: 'Máy sục khí đáy hồ sinh học', sub: 'Tăng lượng oxy hòa tan trong nước', icon: '🫧', defaultState: true }
+                { id: 'pump', name: 'Trạm máy bơm cấp nước hồ chứa', sub: 'Công suất 15kW bơm nước lên kênh dẫn', icon: '🌊' },
+                { id: 'aerator', name: 'Máy sục khí đáy hồ sinh học', sub: 'Tăng lượng oxy hòa tan trong nước', icon: '🫧' }
             ]
         }
     };
@@ -998,23 +1108,88 @@ window.sfOpenZoneDrawer = function(zoneId) {
         z.devices.forEach(function(dev) {
             var card = document.createElement('div');
             card.className = 'sf-device-card';
-            var stateText = dev.defaultState ? 'ĐANG CHẠY' : 'ĐANG TẮT';
-            var stateClass = dev.defaultState ? 'active' : 'inactive';
-            card.innerHTML =
-                '<div class="sf-device-info">' +
-                    '<div class="sf-device-icon">' + dev.icon + '</div>' +
-                    '<div>' +
-                        '<div class="sf-device-name">' +
-                            dev.name +
-                            '<span class="sf-device-status-badge ' + stateClass + '" id="dev-badge-' + dev.id + '">' + stateText + '</span>' +
+            card.id = 'dev-card-' + dev.id;
+            var isRunning = window.sfDeviceStore.get(zoneId, dev.id);
+            var stateText = isRunning ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+            var stateClass = isRunning ? 'active' : 'inactive';
+
+            var subcontrolsHtml = '';
+            if (dev.subcontrolsType === 'drip') {
+                var currentRate = window.sfDeviceStore.get(zoneId, 'dripRate') || 'standard';
+                var currentInterval = window.sfDeviceStore.get(zoneId, 'dripInterval') || '4h';
+                subcontrolsHtml = 
+                    '<div class="sf-device-subcontrols" id="subctrl-drip" style="' + (isRunning ? 'display:flex;' : 'display:none;') + '">' +
+                        '<div class="sf-subctrl-row">' +
+                            '<div class="sf-subctrl-label-wrap">' +
+                                '<span class="sf-subctrl-icon">💧</span>' +
+                                '<span class="sf-subctrl-label">Mức nhỏ giọt:</span>' +
+                            '</div>' +
+                            '<select class="sf-subctrl-select" onchange="sfUpdateSubSetting(\'' + zoneId + '\', \'dripRate\', this.value)">' +
+                                '<option value="slow"' + (currentRate === 'slow' ? ' selected' : '') + '>Chậm (20ml/h)</option>' +
+                                '<option value="standard"' + (currentRate === 'standard' ? ' selected' : '') + '>Tiêu chuẩn (50ml/h)</option>' +
+                                '<option value="boost"' + (currentRate === 'boost' ? ' selected' : '') + '>Bù ẩm nhanh (100ml/h)</option>' +
+                            '</select>' +
                         '</div>' +
-                        '<div class="sf-device-sub">' + dev.sub + '</div>' +
+                        '<div class="sf-subctrl-row">' +
+                            '<div class="sf-subctrl-label-wrap">' +
+                                '<span class="sf-subctrl-icon">🕒</span>' +
+                                '<span class="sf-subctrl-label">Chu kỳ tưới:</span>' +
+                            '</div>' +
+                            '<select class="sf-subctrl-select" onchange="sfUpdateSubSetting(\'' + zoneId + '\', \'dripInterval\', this.value)">' +
+                                '<option value="2h"' + (currentInterval === '2h' ? ' selected' : '') + '>Mỗi 2 giờ/lần</option>' +
+                                '<option value="4h"' + (currentInterval === '4h' ? ' selected' : '') + '>Mỗi 4 giờ/lần</option>' +
+                                '<option value="auto"' + (currentInterval === 'auto' ? ' selected' : '') + '>Tự động theo ẩm rễ (&lt;65%)</option>' +
+                            '</select>' +
+                        '</div>' +
+                    '</div>';
+            } else if (dev.subcontrolsType === 'sprinkler') {
+                var currentAmount = window.sfDeviceStore.get(zoneId, 'sprinklerAmount') || '5L';
+                var currentDuration = window.sfDeviceStore.get(zoneId, 'sprinklerDuration') || '15m';
+                subcontrolsHtml = 
+                    '<div class="sf-device-subcontrols" id="subctrl-sprinkler" style="' + (isRunning ? 'display:flex;' : 'display:none;') + '">' +
+                        '<div class="sf-subctrl-row">' +
+                            '<div class="sf-subctrl-label-wrap">' +
+                                '<span class="sf-subctrl-icon">🚿</span>' +
+                                '<span class="sf-subctrl-label">Lượng nước tưới:</span>' +
+                            '</div>' +
+                            '<select class="sf-subctrl-select" onchange="sfUpdateSubSetting(\'' + zoneId + '\', \'sprinklerAmount\', this.value)">' +
+                                '<option value="3L"' + (currentAmount === '3L' ? ' selected' : '') + '>3 Lít/m² (Nhẹ)</option>' +
+                                '<option value="5L"' + (currentAmount === '5L' ? ' selected' : '') + '>5 Lít/m² (Tiêu chuẩn)</option>' +
+                                '<option value="8L"' + (currentAmount === '8L' ? ' selected' : '') + '>8 Lít/m² (Đẫm nước)</option>' +
+                            '</select>' +
+                        '</div>' +
+                        '<div class="sf-subctrl-row">' +
+                            '<div class="sf-subctrl-label-wrap">' +
+                                '<span class="sf-subctrl-icon">⏱️</span>' +
+                                '<span class="sf-subctrl-label">Thời gian tưới:</span>' +
+                            '</div>' +
+                            '<select class="sf-subctrl-select" onchange="sfUpdateSubSetting(\'' + zoneId + '\', \'sprinklerDuration\', this.value)">' +
+                                '<option value="10m"' + (currentDuration === '10m' ? ' selected' : '') + '>10 phút mỗi ca</option>' +
+                                '<option value="15m"' + (currentDuration === '15m' ? ' selected' : '') + '>15 phút mỗi ca</option>' +
+                                '<option value="30m"' + (currentDuration === '30m' ? ' selected' : '') + '>30 phút mỗi ca</option>' +
+                            '</select>' +
+                        '</div>' +
+                    '</div>';
+            }
+
+            card.innerHTML =
+                '<div class="sf-device-main-row">' +
+                    '<div class="sf-device-info">' +
+                        '<div class="sf-device-icon">' + dev.icon + '</div>' +
+                        '<div class="sf-device-meta">' +
+                            '<div class="sf-device-title-row">' +
+                                '<span class="sf-device-name">' + dev.name + '</span>' +
+                                '<span class="sf-device-status-badge ' + stateClass + '" id="dev-badge-' + dev.id + '">' + stateText + '</span>' +
+                            '</div>' +
+                            '<div class="sf-device-sub">' + dev.sub + '</div>' +
+                        '</div>' +
                     '</div>' +
+                    '<label class="sf-switch">' +
+                        '<input type="checkbox" ' + (isRunning ? 'checked' : '') + ' onchange="sfToggleDevice(\'' + zoneId + '\', \'' + dev.id + '\', this)"/>' +
+                        '<span class="sf-slider"></span>' +
+                    '</label>' +
                 '</div>' +
-                '<label class="sf-switch">' +
-                    '<input type="checkbox" ' + (dev.defaultState ? 'checked' : '') + ' onchange="sfToggleDevice(\'' + zoneId + '\', \'' + dev.id + '\', this)"/>' +
-                    '<span class="sf-slider"></span>' +
-                '</label>';
+                subcontrolsHtml;
             controlsContainer.appendChild(card);
         });
     }
@@ -1027,6 +1202,11 @@ window.sfOpenZoneDrawer = function(zoneId) {
     }, 10);
 };
 
+window.sfUpdateSubSetting = function(zone, key, val) {
+    window.sfDeviceStore.set(zone, key, val);
+    window.sfShowToast('✓ Đã cập nhật: ' + val, 'success');
+};
+
 window.sfCloseZoneDrawer = function() {
     var drawer = document.getElementById('sf-zone-drawer');
     var backdrop = document.getElementById('sf-drawer-backdrop');
@@ -1034,17 +1214,71 @@ window.sfCloseZoneDrawer = function() {
     if (backdrop) backdrop.classList.remove('show');
     setTimeout(function() {
         if (drawer && !drawer.classList.contains('show')) drawer.style.display = 'none';
-        if (backdrop && !backdrop.classList.contains('show')) backdrop.style.display = 'none';
+        if (backdrop && !backdrop.classList.contains('show')) {
+            backdrop.style.display = 'none';
+            backdrop.classList.remove('sf-3d-clean');
+        }
     }, 350);
 };
 
 window.sfToggleDevice = function(zone, device, checkboxEl) {
     var isChecked = checkboxEl.checked;
+    window.sfDeviceStore.set(zone, device, isChecked);
+
     var badge = document.getElementById('dev-badge-' + device);
     if (badge) {
         badge.textContent = isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
         badge.className = 'sf-device-status-badge ' + (isChecked ? 'active' : 'inactive');
     }
+
+    // Toggle subcontrols
+    var subctrl = document.getElementById('subctrl-' + device);
+    if (subctrl) {
+        subctrl.style.display = isChecked ? 'flex' : 'none';
+    }
+
+    // 2-way Sync to 3D Digital Twin if active
+    if (window.sf3D && window.sf3D.state) {
+        if (device === 'mist' || device === 'misting' || device === 'phun_suong') {
+            window.sf3D.state.misting = isChecked;
+            if (window.sf3D.mistingSystem) {
+                window.sf3D.mistingSystem.visible = isChecked;
+            }
+            var stMist = document.getElementById('sf-3d-status-misting');
+            if (stMist) {
+                stMist.textContent = isChecked ? 'ĐANG PHUN' : 'ĐANG TẮT';
+                stMist.style.color = isChecked ? '#16a34a' : '#64748b';
+            }
+        } else if (device === 'fan' || device === 'quat') {
+            window.sf3D.state.fan = isChecked;
+            var stFan = document.getElementById('sf-3d-status-fan');
+            if (stFan) {
+                stFan.textContent = isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+                stFan.style.color = isChecked ? '#16a34a' : '#64748b';
+            }
+        } else if (device === 'shade' || device === 'mai_che') {
+            window.sf3D.state.shade = isChecked;
+            if (window.sf3D.shadeScreen) {
+                window.sf3D.shadeScreen.visible = isChecked;
+            }
+        } else if (device === 'drip') {
+            window.sf3D.state.drip = isChecked;
+            if (window.sf3D.dripDrops) {
+                window.sf3D.dripDrops.visible = isChecked;
+            }
+        } else if (device === 'sprinkler') {
+            window.sf3D.state.sprinkler = isChecked;
+            if (window.sf3D.sprinklerSystem) {
+                window.sf3D.sprinklerSystem.visible = isChecked;
+            }
+        } else if (device === 'fert' || device === 'npk' || device === 'phan_bon') {
+            window.sf3D.state.fert = isChecked;
+            if (window.sf3D.fertSystem) {
+                window.sf3D.fertSystem.visible = isChecked;
+            }
+        }
+    }
+
     fetch('/smart_farm/api/zone/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1056,23 +1290,171 @@ window.sfToggleDevice = function(zone, device, checkboxEl) {
             window.sfShowToast(data.message, 'success');
         } else {
             window.sfShowToast(data.message || 'Lỗi khi điều khiển thiết bị', 'error');
-            checkboxEl.checked = !isChecked;
-            if (badge) {
-                badge.textContent = !isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
-                badge.className = 'sf-device-status-badge ' + (!isChecked ? 'active' : 'inactive');
-            }
         }
     })
     .catch(function(err) {
         console.error(err);
         window.sfShowToast('Lỗi kết nối khi gửi lệnh điều khiển!', 'error');
-        checkboxEl.checked = !isChecked;
-        if (badge) {
-            badge.textContent = !isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
-            badge.className = 'sf-device-status-badge ' + (!isChecked ? 'active' : 'inactive');
-        }
     });
 };
+
+/* ==========================================================================
+   INDIVIDUAL PLANT INSPECTION & IRRIGATION CONTROLS (TỪNG CÂY RIÊNG LẺ)
+   ========================================================================== */
+
+window.sfCurrentPlant = null;
+
+window.sfOpenPlantDrawer = function(plantData) {
+    if (!plantData) return;
+    window.sfCurrentPlant = plantData;
+
+    var drawer = document.getElementById('sf-plant-drawer');
+    var zoneDrawer = document.getElementById('sf-zone-drawer');
+    var backdrop = document.getElementById('sf-drawer-backdrop');
+
+    // Nếu Zone Drawer đang mở, đóng ngay để nhường không gian cho bảng cây
+    if (zoneDrawer) {
+        zoneDrawer.classList.remove('show');
+        zoneDrawer.style.display = 'none';
+    }
+
+    if (!drawer) {
+        console.error('Không tìm thấy element #sf-plant-drawer');
+        return;
+    }
+
+    if (backdrop) {
+        backdrop.classList.add('sf-3d-clean');
+        backdrop.style.pointerEvents = 'none';
+    }
+
+    // Populate plant values
+    var titleEl = document.getElementById('sf-pd-title');
+    var subEl = document.getElementById('sf-pd-sub');
+    var healthEl = document.getElementById('sf-pd-health');
+    var cycleEl = document.getElementById('sf-pd-cycle');
+    var cycleBarEl = document.getElementById('sf-pd-cycle-bar');
+    var moistureEl = document.getElementById('sf-pd-moisture');
+    var moistureBarEl = document.getElementById('sf-pd-moisture-bar');
+    var tempEl = document.getElementById('sf-pd-temp');
+    var phEl = document.getElementById('sf-pd-ph');
+    var ecEl = document.getElementById('sf-pd-ec');
+    var luxEl = document.getElementById('sf-pd-lux');
+    var brixEl = document.getElementById('sf-pd-brix');
+
+    if (titleEl) titleEl.textContent = (plantData.plantName || 'Cây trồng') + ' #' + (plantData.id || '');
+    if (subEl) subEl.textContent = (plantData.bedName || 'Nhà màng CNC') + ' • Giống: ' + (plantData.variety || 'Muskmelon F1');
+    if (healthEl) healthEl.textContent = plantData.health || '🟢 Rất khỏe mạnh (Tối ưu)';
+    if (cycleEl) cycleEl.textContent = (plantData.age || 45) + ' / 65 ngày (Còn ' + (plantData.harvestDays || 20) + ' ngày)';
+    if (cycleBarEl) cycleBarEl.style.width = Math.min(100, Math.round(((plantData.age || 45) / 65) * 100)) + '%';
+    if (moistureEl) moistureEl.textContent = (plantData.moisture || 72) + '%';
+    if (moistureBarEl) moistureBarEl.style.width = (plantData.moisture || 72) + '%';
+    if (tempEl) tempEl.textContent = (plantData.temp || 26.5) + '°C';
+    if (phEl) phEl.textContent = (plantData.ph || 6.2) + ' pH';
+    if (ecEl) ecEl.textContent = (plantData.ec || 1.8) + ' mS/cm';
+    if (luxEl) luxEl.textContent = (plantData.lux || 8400).toLocaleString() + ' lux';
+    if (brixEl) brixEl.textContent = (plantData.brix || 14.2) + '° Brix';
+
+    // Load custom plant irrigation settings from store
+    var custom = window.sfDeviceStore.getPlant(plantData.id);
+    var chk = document.getElementById('sf-pd-override-chk');
+    var methodSel = document.getElementById('sf-pd-method-sel');
+    var rateSel = document.getElementById('sf-pd-rate-sel');
+    var intervalSel = document.getElementById('sf-pd-interval-sel');
+
+    if (chk) chk.checked = custom ? !!custom.override : false;
+    if (methodSel && custom) methodSel.value = custom.method || 'drip';
+    if (rateSel && custom) rateSel.value = custom.rate || '200ml';
+    if (intervalSel && custom) intervalSel.value = custom.interval || '4h';
+
+    window.sfTogglePlantOverride(chk);
+
+    drawer.style.display = 'flex';
+    void drawer.offsetWidth; // Force layout reflow
+    drawer.classList.add('show');
+};
+
+window.sfBackToZoneDrawer = function() {
+    window.sfClosePlantDrawer();
+    setTimeout(function() {
+        window.sfOpenZoneDrawer('A');
+    }, 200);
+};
+
+window.sfClosePlantDrawer = function() {
+    var drawer = document.getElementById('sf-plant-drawer');
+    var backdrop = document.getElementById('sf-drawer-backdrop');
+    if (drawer) drawer.classList.remove('show');
+    if (backdrop) backdrop.classList.remove('show');
+    setTimeout(function() {
+        if (drawer && !drawer.classList.contains('show')) drawer.style.display = 'none';
+        if (backdrop && !backdrop.classList.contains('show')) {
+            backdrop.style.display = 'none';
+            backdrop.classList.remove('sf-3d-clean');
+        }
+    }, 350);
+};
+
+window.sfTogglePlantOverride = function(chk) {
+    var settingsBox = document.getElementById('sf-pd-custom-settings');
+    if (!settingsBox) return;
+    if (chk && chk.checked) {
+        settingsBox.style.opacity = '1';
+        settingsBox.style.pointerEvents = 'auto';
+    } else {
+        settingsBox.style.opacity = '0.75';
+    }
+};
+
+window.sfSaveCurrentPlantSettings = function() {
+    if (!window.sfCurrentPlant) return;
+    var chk = document.getElementById('sf-pd-override-chk');
+    var methodSel = document.getElementById('sf-pd-method-sel');
+    var rateSel = document.getElementById('sf-pd-rate-sel');
+    var intervalSel = document.getElementById('sf-pd-interval-sel');
+
+    var data = {
+        override: chk ? chk.checked : false,
+        method: methodSel ? methodSel.value : 'drip',
+        rate: rateSel ? rateSel.value : '200ml',
+        interval: intervalSel ? intervalSel.value : '4h'
+    };
+    window.sfDeviceStore.setPlant(window.sfCurrentPlant.id, data);
+};
+
+window.sfWaterSinglePlantNow = function() {
+    if (!window.sfCurrentPlant) return;
+    var btn = document.getElementById('sf-pd-water-now-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ Đang tưới nhỏ giọt (150ml)...</span>';
+    }
+
+    setTimeout(function() {
+        window.sfCurrentPlant.moisture = Math.min(85, window.sfCurrentPlant.moisture + 4);
+        var moistureEl = document.getElementById('sf-pd-moisture');
+        var moistureBarEl = document.getElementById('sf-pd-moisture-bar');
+        if (moistureEl) moistureEl.textContent = window.sfCurrentPlant.moisture + '%';
+        if (moistureBarEl) moistureBarEl.style.width = window.sfCurrentPlant.moisture + '%';
+
+        window.sfShowToast('💧 Đã tưới thành công 150ml cho ' + window.sfCurrentPlant.plantName + ' #' + window.sfCurrentPlant.id + '! Độ ẩm rễ: ' + window.sfCurrentPlant.moisture + '%', 'success');
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span>✓ Đã hoàn tất cữ tưới (150ml)</span>';
+            setTimeout(function() {
+                btn.innerHTML = '<span>💧 Kích hoạt tưới ngay cho cây này (150ml)</span>';
+            }, 3000);
+        }
+    }, 1000);
+};
+
+window.sfSavePlantAndClose = function() {
+    window.sfSaveCurrentPlantSettings();
+    window.sfShowToast('✓ Đã lưu cấu hình tưới riêng cho cây!', 'success');
+    window.sfClosePlantDrawer();
+};
+
 
 // Dismiss popovers when clicking elsewhere on map
 document.addEventListener('click', function(e) {
@@ -1083,3 +1465,1628 @@ document.addEventListener('click', function(e) {
         window.sfHideAlertDetails();
     }
 });
+
+/* ==========================================================================
+   MULTI-LEVEL MAP NAVIGATION & 3D DIGITAL TWIN GREENHOUSE
+   ========================================================================== */
+
+window.sfNavigateMapLevel = function(level, data) {
+    var lvlMacro = document.getElementById('sf-map-level-macro');
+    var lvlZoneA = document.getElementById('sf-map-level-zone-a');
+    var lvl3D = document.getElementById('sf-map-level-greenhouse-3d');
+    var titleEl = document.getElementById('sf-map-main-title');
+    var subEl = document.getElementById('sf-map-main-sub');
+
+    if (level === 'macro') {
+        if (lvlMacro) lvlMacro.style.display = 'block';
+        if (lvlZoneA) lvlZoneA.style.display = 'none';
+        if (lvl3D) lvl3D.style.display = 'none';
+        if (titleEl) titleEl.textContent = 'Bản đồ số nông trại';
+        if (subEl) subEl.textContent = 'Hệ thống giám sát vi khí hậu, định vị phương tiện GPS & điều khiển IoT trực tiếp';
+        window.sfStop3DLoop();
+        window.sfStopZoneA3DLoop();
+    } else if (level === 'zone-a') {
+        if (lvlMacro) lvlMacro.style.display = 'none';
+        if (lvlZoneA) lvlZoneA.style.display = 'block';
+        if (lvl3D) lvl3D.style.display = 'none';
+        if (titleEl) titleEl.textContent = 'Khu A: High-Tech Glass Greenhouses';
+        if (subEl) subEl.textContent = 'Mô hình 3D tổng quan phân khu & hệ thống 12 nhà màng công nghệ cao';
+        window.sfStop3DLoop();
+        // Initialize Zone A 3D Campus by default
+        setTimeout(function() {
+            window.sfInitZoneA3D();
+        }, 50);
+    } else if (level === 'greenhouse-3d') {
+        if (lvlMacro) lvlMacro.style.display = 'none';
+        if (lvlZoneA) lvlZoneA.style.display = 'none';
+        if (lvl3D) lvl3D.style.display = 'block';
+
+        var houseName = (data && data.name) ? data.name : 'Nhà màng 01 (GH-01) - Dưa lưới Nhật Bản CNC';
+        var badgeTitle = document.getElementById('sf-3d-title-badge');
+        if (badgeTitle) badgeTitle.textContent = houseName + ' • 3D Digital Twin';
+        if (titleEl) titleEl.textContent = houseName;
+        if (subEl) subEl.textContent = 'Mô hình 3D tương tác bên trong nhà kính • Điều khiển IoT & kiểm tra luống cây';
+
+        window.sfStopZoneA3DLoop();
+        setTimeout(function() {
+            window.sfInitGreenhouse3D(data || {});
+        }, 50);
+    }
+};
+
+window.sfSwitchZoneAMode = function(mode) {
+    var c3d = document.getElementById('sf-zone-a-3d-container');
+    var c2d = document.getElementById('sf-zone-a-wrapper');
+    var b3d = document.getElementById('sf-za-mode-3d-btn');
+    var b2d = document.getElementById('sf-za-mode-2d-btn');
+
+    if (mode === '3d') {
+        if (c3d) c3d.style.display = 'block';
+        if (c2d) c2d.style.display = 'none';
+        if (b3d) b3d.classList.add('active');
+        if (b2d) b2d.classList.remove('active');
+        window.sfInitZoneA3D();
+    } else {
+        if (c3d) c3d.style.display = 'none';
+        if (c2d) c2d.style.display = 'block';
+        if (b3d) b3d.classList.remove('active');
+        if (b2d) b2d.classList.add('active');
+        window.sfStopZoneA3DLoop();
+    }
+};
+
+/* ==========================================================================
+   ZONE A 3D CAMPUS OVERVIEW (TỔNG THỂ PHÂN KHU A 3D)
+   ========================================================================== */
+
+window.sfZoneA3D = {
+    scene: null,
+    camera: null,
+    renderer: null,
+    controls: null,
+    animId: null,
+    greenhouses: [],
+    raycaster: null,
+    mouse: null
+};
+
+window.sfStopZoneA3DLoop = function() {
+    if (window.sfZoneA3D && window.sfZoneA3D.animId) {
+        cancelAnimationFrame(window.sfZoneA3D.animId);
+        window.sfZoneA3D.animId = null;
+    }
+};
+
+window.sfInitZoneA3D = function() {
+    if (typeof THREE === 'undefined') return;
+
+    var container = document.getElementById('sf-zone-a-3d-viewport');
+    if (!container) return;
+
+    window.sfStopZoneA3DLoop();
+
+    var width = container.clientWidth || 900;
+    var height = container.clientHeight || 600;
+
+    container.innerHTML = '';
+
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xdbeafe);
+    scene.fog = new THREE.FogExp2(0xdbeafe, 0.007);
+    window.sfZoneA3D.scene = scene;
+
+    var camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 800);
+    camera.position.set(-36, 48, 62);
+    window.sfZoneA3D.camera = camera;
+
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+    window.sfZoneA3D.renderer = renderer;
+
+    var isOrbitingCampus = false;
+    var controls = null;
+    if (typeof THREE.OrbitControls !== 'undefined') {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05;
+        controls.minDistance = 15;
+        controls.maxDistance = 150;
+        controls.target.set(0, 2, 0);
+
+        controls.addEventListener('start', function() {
+            isOrbitingCampus = true;
+        });
+        controls.addEventListener('end', function() {
+            setTimeout(function() {
+                isOrbitingCampus = false;
+            }, 120);
+        });
+    }
+    window.sfZoneA3D.controls = controls;
+
+    // Lights
+    var ambient = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambient);
+
+    var sun = new THREE.DirectionalLight(0xfffaed, 1.25);
+    sun.position.set(40, 70, 30);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 1024;
+    sun.shadow.mapSize.height = 1024;
+    scene.add(sun);
+
+    // 1. Campus Ground Terrain
+    var groundGeo = new THREE.PlaneGeometry(120, 100);
+    var groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.85 });
+    var ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // 2. Asphalt Roads & Walkways
+    var roadMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+    var roadV = new THREE.Mesh(new THREE.PlaneGeometry(6, 90), roadMat);
+    roadV.rotation.x = -Math.PI / 2;
+    roadV.position.set(0, 0.03, 0);
+    scene.add(roadV);
+
+    var roadH = new THREE.Mesh(new THREE.PlaneGeometry(90, 6), roadMat);
+    roadH.rotation.x = -Math.PI / 2;
+    roadH.position.set(0, 0.04, 0);
+    scene.add(roadH);
+
+    // 3. 16 Modern 3D Greenhouses in 4 Quadrants
+    var ghList = [
+        // Top-Left Quadrant
+        { id: 'GH-01', name: 'Nhà màng 01 (GH-01) - Dưa lưới Nhật Bản CNC', x: -24, z: -22, color: 0xf59e0b, plant: 'Dưa lưới • 26.5°C' },
+        { id: 'GH-02', name: 'Nhà màng 02 (GH-02) - Cà chua bi Cherry', x: -10, z: -22, color: 0xef4444, plant: 'Cà chua • 27.0°C' },
+        { id: 'GH-05', name: 'Nhà màng 05 (GH-05) - Ớt chuông Sweet Pepper', x: -24, z: -10, color: 0x10b981, plant: 'Ớt chuông • 26.2°C' },
+        { id: 'GH-06', name: 'Nhà màng 06 (GH-06) - Rau thủy canh xà lách', x: -10, z: -10, color: 0x22c55e, plant: 'Thủy canh • 25.0°C' },
+
+        // Top-Right Quadrant
+        { id: 'GH-03', name: 'Nhà màng 03 (GH-03) - Dâu tây Hàn Quốc', x: 10, z: -22, color: 0xf43f5e, plant: 'Dâu tây • 24.2°C' },
+        { id: 'GH-04', name: 'Nhà màng 04 (GH-04) - Dưa lưới Hoàng Kim', x: 24, z: -22, color: 0xf59e0b, plant: 'Dưa lưới • 26.8°C' },
+        { id: 'GH-07', name: 'Nhà màng 07 (GH-07) - Cà chua Beef Hà Lan', x: 10, z: -10, color: 0xef4444, plant: 'Cà chua Beef • 26.7°C' },
+        { id: 'GH-08', name: 'Nhà màng 08 (GH-08) - Dưa leo Baby', x: 24, z: -10, color: 0x84cc16, plant: 'Dưa leo • 26.4°C' },
+
+        // Bottom-Left Quadrant
+        { id: 'GH-09', name: 'Nhà màng 09 (GH-09) - Dưa lưới Taki', x: -24, z: 10, color: 0xf59e0b, plant: 'Dưa lưới • 26.1°C' },
+        { id: 'GH-10', name: 'Nhà màng 10 (GH-10) - Nho móng tay', x: -10, z: 10, color: 0x8b5cf6, plant: 'Nho móng tay • 25.8°C' },
+        { id: 'GH-13', name: 'Nhà màng 13 (GH-13) - Dưa lưới Honey Globe', x: -24, z: 22, color: 0xf59e0b, plant: 'Dưa lưới • 26.3°C' },
+        { id: 'GH-14', name: 'Nhà màng 14 (GH-14) - Cà chua Socola', x: -10, z: 22, color: 0xef4444, plant: 'Cà chua • 26.6°C' },
+
+        // Bottom-Right Quadrant
+        { id: 'GH-11', name: 'Nhà màng 11 (GH-11) - Dâu tây Bạch Tuyết', x: 10, z: 10, color: 0xf43f5e, plant: 'Dâu Bạch Tuyết • 23.9°C' },
+        { id: 'GH-12', name: 'Nhà màng 12 (GH-12) - Khu ươm giống CNC', x: 24, z: 10, color: 0x10b981, plant: 'Ươm giống • 27.2°C' },
+        { id: 'GH-15', name: 'Nhà màng 15 (GH-15) - Dưa lưới Vân Lưới', x: 10, z: 22, color: 0xf59e0b, plant: 'Dưa lưới • 26.9°C' },
+        { id: 'GH-16', name: 'Nhà màng 16 (GH-16) - Dưa lưới Kim Cô Nương', x: 24, z: 22, color: 0xf59e0b, plant: 'Dưa lưới • 27.1°C' }
+    ];
+
+    window.sfZoneA3D.greenhouses = [];
+
+    var ghBaseMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
+    var ghGlassMat = new THREE.MeshStandardMaterial({
+        color: 0x7dd3fc,
+        transparent: true,
+        opacity: 0.55,
+        roughness: 0.1,
+        metalness: 0.3
+    });
+    var ghTrussMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, metalness: 0.8 });
+
+    ghList.forEach(function(gh) {
+        var group = new THREE.Group();
+        group.position.set(gh.x, 0, gh.z);
+
+        // Concrete Base
+        var base = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.4, 9.6), ghBaseMat);
+        base.position.y = 0.2;
+        base.castShadow = true;
+        group.add(base);
+
+        // Glass Body
+        var body = new THREE.Mesh(new THREE.BoxGeometry(9.0, 2.6, 9.4), ghGlassMat);
+        body.position.y = 1.7;
+        group.add(body);
+
+        // Gable Roof (2 sloped glass roofs)
+        var roofL = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.08, 9.4), ghGlassMat);
+        roofL.position.set(-2.3, 3.8, 0);
+        roofL.rotation.z = -0.38;
+        group.add(roofL);
+
+        var roofR = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.08, 9.4), ghGlassMat);
+        roofR.position.set(2.3, 3.8, 0);
+        roofR.rotation.z = 0.38;
+        group.add(roofR);
+
+        // Ridge Beam
+        var ridge = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 9.4), ghTrussMat);
+        ridge.position.set(0, 4.8, 0);
+        group.add(ridge);
+
+        // Miniature Crops inside
+        for (var row = -2.8; row <= 2.8; row += 1.8) {
+            var plantRow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 8.0), new THREE.MeshStandardMaterial({ color: 0x16a34a }));
+            plantRow.position.set(row, 0.6, 0);
+            group.add(plantRow);
+        }
+
+        // Raycasting Hit Mesh (Covers the whole house)
+        var hit = new THREE.Mesh(new THREE.BoxGeometry(9.8, 5.2, 10.0), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+        hit.position.set(gh.x, 2.6, gh.z);
+        hit.userData = {
+            id: gh.id,
+            name: gh.name,
+            plant: gh.plant,
+            group: group
+        };
+        scene.add(hit);
+        window.sfZoneA3D.greenhouses.push(hit);
+
+        scene.add(group);
+    });
+
+    // 4. Solar Panels Array (Top-Left corner)
+    var solarMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.8, roughness: 0.2 });
+    var solarFrameMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9 });
+    for (var s = 0; s < 4; s++) {
+        var panel = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.1, 2.5), solarMat);
+        panel.position.set(-34 + s * 5.2, 1.2, -34);
+        panel.rotation.x = -0.45;
+        scene.add(panel);
+
+        var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.2), solarFrameMat);
+        leg.position.set(-34 + s * 5.2, 0.6, -34.8);
+        scene.add(leg);
+    }
+
+    // 5. Water Storage Reservoir Tanks (Right side - Interactive with Capacity Gauge)
+    var tankMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.5, roughness: 0.3 });
+    var tankData = [
+        { id: 'WT-01', name: '💧 Bồn Chứa Nước Lọc RO #01 (Bể Bắc)', current: 42500, max: 50000, percent: 85, pump: 'Bơm tăng áp: 3.2 bar (Sẵn sàng)', use: 'Cấp nước tưới sạch cho GH-01 đến GH-08' },
+        { id: 'WT-02', name: '💧 Bồn Nước Dinh Dưỡng NPK #02', current: 38200, max: 50000, percent: 76, pump: 'Bơm châm Venturi (Đang tưới nhỏ giọt)', use: 'Hòa tan phân vi lượng tự động' },
+        { id: 'WT-03', name: '💧 Bồn Thu Gom Nước Mưa Tuần Hoàn #03', current: 48000, max: 50000, percent: 96, pump: 'Lọc vi sinh đa tầng (Đầy)', use: 'Tái sử dụng nước mưa tiết kiệm 40%' },
+        { id: 'WT-04', name: '💧 Bồn Nước Hạ Nhiệt Phun Sương #04 (Bể Nam)', current: 35600, max: 50000, percent: 71, pump: 'Bơm cao áp 4.5 bar (Đang phun)', use: 'Cấp cho 12 trạm béc phun sương trần' }
+    ];
+
+    for (var t = 0; t < 4; t++) {
+        var tInfo = tankData[t];
+        var tankGroup = new THREE.Group();
+        tankGroup.position.set(38, 2.0, -18 + t * 9);
+
+        var tank = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 4.0, 20), tankMat);
+        tank.castShadow = true;
+        tankGroup.add(tank);
+
+        // Water level gauge ring
+        var gaugeRing = new THREE.Mesh(new THREE.TorusGeometry(2.42, 0.06, 8, 20), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+        gaugeRing.rotation.x = Math.PI / 2;
+        gaugeRing.position.y = 2.0 * (tInfo.percent / 100) - 1.0;
+        tankGroup.add(gaugeRing);
+
+        scene.add(tankGroup);
+
+        // Raycasting Hitbox for each water tank
+        var tHit = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 2.8, 4.4, 12), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+        tHit.position.set(38, 2.0, -18 + t * 9);
+        tHit.userData = {
+            type: 'tank',
+            id: tInfo.id,
+            name: tInfo.name,
+            group: tankGroup,
+            current: tInfo.current,
+            max: tInfo.max,
+            percent: tInfo.percent,
+            hoverTitle: tInfo.name,
+            hoverDesc: 'Lượng nước còn lại: ' + tInfo.current.toLocaleString() + ' / ' + tInfo.max.toLocaleString() + ' Lít (' + tInfo.percent + '%) • ' + tInfo.pump
+        };
+        scene.add(tHit);
+        window.sfZoneA3D.greenhouses.push(tHit);
+    }
+
+    // 6. Raycasting on 3D Campus
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    window.sfZoneA3D.raycaster = raycaster;
+    window.sfZoneA3D.mouse = mouse;
+
+    var hoverCard = document.getElementById('sf-zone-a-hover-card');
+    var hoverTitle = document.getElementById('sf-za-hud-title');
+    var hoverSub = document.getElementById('sf-za-hud-sub');
+    var lastHovered = null;
+
+    function onCampusMouseMove(event) {
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(window.sfZoneA3D.greenhouses);
+
+        if (intersects.length > 0) {
+            renderer.domElement.style.cursor = 'pointer';
+            var obj = intersects[0].object;
+
+            if (lastHovered && lastHovered !== obj) {
+                lastHovered.userData.group.position.y = (lastHovered.userData.type === 'tank' ? 2.0 : 0);
+            }
+            lastHovered = obj;
+            obj.userData.group.position.y = (obj.userData.type === 'tank' ? 2.3 : 0.5); // Lift up slightly
+
+            if (hoverCard && hoverTitle && hoverSub) {
+                if (obj.userData.type === 'tank') {
+                    hoverTitle.textContent = obj.userData.hoverTitle;
+                    hoverSub.textContent = obj.userData.hoverDesc;
+                } else {
+                    hoverTitle.textContent = '🏛️ ' + obj.userData.name;
+                    hoverSub.textContent = obj.userData.plant + ' • Nhấp để vào tham quan 3D';
+                }
+                hoverCard.style.left = (event.clientX - rect.left) + 'px';
+                hoverCard.style.top = (event.clientY - rect.top) + 'px';
+                hoverCard.style.display = 'block';
+            }
+        } else {
+            renderer.domElement.style.cursor = 'grab';
+            if (lastHovered) {
+                lastHovered.userData.group.position.y = (lastHovered.userData.type === 'tank' ? 2.0 : 0);
+                lastHovered = null;
+            }
+            if (hoverCard) hoverCard.style.display = 'none';
+        }
+    }
+
+    var lastCampusClick = 0;
+    var isDraggingCampus = false;
+    var cpDownX = 0, cpDownY = 0, cpDownTime = 0, cpDownTarget = null;
+
+    function onCampusClick(clickedObj) {
+        if (!clickedObj || !clickedObj.userData) return;
+        var now = Date.now();
+        if (now - lastCampusClick < 300) return;
+        lastCampusClick = now;
+
+        if (clickedObj.userData.type === 'tank') {
+            window.sfShowToast('💧 ' + clickedObj.userData.name + ' • Dung tích hiện tại: ' + clickedObj.userData.percent + '% (' + clickedObj.userData.current.toLocaleString() + ' Lít)', 'info');
+        } else {
+            window.sfNavigateMapLevel('greenhouse-3d', {
+                id: clickedObj.userData.id,
+                name: clickedObj.userData.name
+            });
+        }
+    }
+
+    renderer.domElement.addEventListener('pointerdown', function(e) {
+        cpDownX = e.clientX;
+        cpDownY = e.clientY;
+        cpDownTime = Date.now();
+        isDraggingCampus = false;
+
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(window.sfZoneA3D.greenhouses);
+        cpDownTarget = (intersects.length > 0) ? intersects[0].object : null;
+    });
+
+    renderer.domElement.addEventListener('pointermove', function(e) {
+        if (Math.hypot(e.clientX - cpDownX, e.clientY - cpDownY) > 4) {
+            isDraggingCampus = true;
+        }
+    });
+
+    renderer.domElement.addEventListener('pointerup', function(e) {
+        var dist = Math.hypot(e.clientX - cpDownX, e.clientY - cpDownY);
+        var elapsed = Date.now() - cpDownTime;
+
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(window.sfZoneA3D.greenhouses);
+        var cpUpTarget = (intersects.length > 0) ? intersects[0].object : null;
+
+        // BẮT BUỘC: Không xoay 3D, không drag, dist < 4px, click dứt khoát < 350ms,
+        // VÀ điểm nhấn chuột xuống & nhả chuột lên PHẢI CÙNG 1 NGÔI NHÀ!
+        if (!isOrbitingCampus && !isDraggingCampus && dist < 4 && elapsed < 350 && cpDownTarget && cpUpTarget && cpDownTarget === cpUpTarget) {
+            onCampusClick(cpUpTarget);
+        }
+        cpDownTarget = null;
+        setTimeout(function() { isDraggingCampus = false; }, 80);
+    });
+
+    renderer.domElement.addEventListener('mousemove', onCampusMouseMove);
+
+    function onCampusResize() {
+        if (!container) return;
+        var newW = container.clientWidth || 900;
+        var newH = container.clientHeight || 600;
+        camera.aspect = newW / newH;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newW, newH);
+    }
+    window.addEventListener('resize', onCampusResize);
+
+    function animateCampus() {
+        window.sfZoneA3D.animId = requestAnimationFrame(animateCampus);
+        if (controls) controls.update();
+        renderer.render(scene, camera);
+    }
+    animateCampus();
+};
+
+/* ==========================================================================
+   INTERIOR 3D DIGITAL TWIN GREENHOUSE (THAM QUAN NỘI THẤT NHÀ MÀNG 3D)
+   ========================================================================== */
+
+window.sf3D = {
+    scene: null,
+    camera: null,
+    renderer: null,
+    controls: null,
+    animId: null,
+    container: null,
+    autoRotate: false,
+    fans: [],
+    mistingSystem: null,
+    mistingSpeeds: null,
+    dripDrops: null,
+    sprinklerSystem: null,
+    sprinklerVels: null,
+    nozzleOrigins: [],
+    fertSystem: null,
+    sensorLeds: [],
+    interactiveObjects: [],
+    raycaster: null,
+    mouse: null,
+    state: {
+        fan: true,
+        misting: true,
+        shade: false,
+        drip: true,
+        sprinkler: false,
+        fert: true
+    }
+};
+
+window.sfStop3DLoop = function() {
+    if (window.sf3D && window.sf3D.animId) {
+        cancelAnimationFrame(window.sf3D.animId);
+        window.sf3D.animId = null;
+    }
+};
+
+window.sfInitGreenhouse3D = function(data) {
+    if (typeof THREE === 'undefined') return;
+
+    var container = document.getElementById('sf-greenhouse-3d-viewport');
+    if (!container) return;
+
+    window.sfStop3DLoop();
+
+    // Read real persistent states from store
+    window.sf3D.state = {
+        fan: window.sfDeviceStore ? window.sfDeviceStore.get('A', 'fan') : true,
+        misting: window.sfDeviceStore ? window.sfDeviceStore.get('A', 'mist') : true,
+        shade: window.sfDeviceStore ? window.sfDeviceStore.get('A', 'shade') : false,
+        drip: window.sfDeviceStore ? window.sfDeviceStore.get('A', 'drip') : true,
+        sprinkler: window.sfDeviceStore ? window.sfDeviceStore.get('A', 'sprinkler') : false,
+        fert: window.sfDeviceStore ? window.sfDeviceStore.get('A', 'fert') : true
+    };
+
+    var stMist = document.getElementById('sf-3d-status-misting');
+    if (stMist) {
+        stMist.textContent = window.sf3D.state.misting ? 'ĐANG PHUN' : 'ĐANG TẮT';
+        stMist.style.color = window.sf3D.state.misting ? '#16a34a' : '#64748b';
+    }
+    var stFan = document.getElementById('sf-3d-status-fan');
+    if (stFan) {
+        stFan.textContent = window.sf3D.state.fan ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+        stFan.style.color = window.sf3D.state.fan ? '#16a34a' : '#64748b';
+    }
+
+    var width = container.clientWidth || 900;
+    var height = container.clientHeight || 580;
+
+    container.innerHTML = '';
+
+    // 1. Daylight Atmosphere Scene
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xdbeafe); // Soft sky blue
+    scene.fog = new THREE.FogExp2(0xdbeafe, 0.012);
+    window.sf3D.scene = scene;
+
+    // 2. Camera & Perspective
+    var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 500);
+    camera.position.set(0, 14, 25);
+    window.sf3D.camera = camera;
+
+    // 3. WebGL Renderer
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+    window.sf3D.renderer = renderer;
+
+    // 4. Controls
+    var isOrbiting3D = false;
+    var controls = null;
+    if (typeof THREE.OrbitControls !== 'undefined') {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.maxPolarAngle = Math.PI / 2 - 0.03;
+        controls.minDistance = 5;
+        controls.maxDistance = 55;
+        controls.target.set(0, 3.2, 0);
+        controls.autoRotate = window.sf3D.autoRotate;
+        controls.autoRotateSpeed = 1.2;
+
+        controls.addEventListener('start', function() {
+            isOrbiting3D = true;
+        });
+        controls.addEventListener('end', function() {
+            setTimeout(function() {
+                isOrbiting3D = false;
+            }, 120);
+        });
+    }
+    window.sf3D.controls = controls;
+
+    // 5. Lighting
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambientLight);
+
+    var sunLight = new THREE.DirectionalLight(0xfffaed, 1.3);
+    sunLight.position.set(22, 38, 20);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 1024;
+    sunLight.shadow.mapSize.height = 1024;
+    scene.add(sunLight);
+
+    var fillLight = new THREE.DirectionalLight(0xbae6fd, 0.5);
+    fillLight.position.set(-20, 20, -15);
+    scene.add(fillLight);
+
+    // Reset collections
+    window.sf3D.fans = [];
+    window.sf3D.sensorLeds = [];
+    window.sf3D.interactiveObjects = [];
+
+    // Dimensions
+    var ghW = 20;      // Greenhouse Width
+    var ghL = 32;      // Greenhouse Length
+    var curbH = 0.7;   // Solid Concrete Perimeter Curb Base
+    var wallH = 5.2;   // Eave Height
+    var peakH = 8.2;   // Ridge Peak Height
+
+    // 6. Outdoor Grounds & Interior Concrete Floor
+    var outdoorLawn = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 }));
+    outdoorLawn.rotation.x = -Math.PI / 2;
+    outdoorLawn.position.y = -0.05;
+    scene.add(outdoorLawn);
+
+    var floorMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.7, metalness: 0.1 });
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(ghW, ghL), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Central Clean Walkway
+    var walkway = new THREE.Mesh(new THREE.PlaneGeometry(3.6, ghL), new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.5 }));
+    walkway.rotation.x = -Math.PI / 2;
+    walkway.position.y = 0.02;
+    scene.add(walkway);
+
+    // 7. SOLID CONCRETE FOUNDATION BASE WALLS (Chân tường móng)
+    var concreteBaseMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.85 });
+    // Left & Right Base Wall
+    var wallBaseL = new THREE.Mesh(new THREE.BoxGeometry(0.3, curbH, ghL), concreteBaseMat);
+    wallBaseL.position.set(-ghW / 2, curbH / 2, 0);
+    scene.add(wallBaseL);
+
+    var wallBaseR = new THREE.Mesh(new THREE.BoxGeometry(0.3, curbH, ghL), concreteBaseMat);
+    wallBaseR.position.set(ghW / 2, curbH / 2, 0);
+    scene.add(wallBaseR);
+
+    // Front & Back Base Wall
+    var wallBaseF = new THREE.Mesh(new THREE.BoxGeometry(ghW, curbH, 0.3), concreteBaseMat);
+    wallBaseF.position.set(0, curbH / 2, ghL / 2);
+    scene.add(wallBaseF);
+
+    var wallBaseB = new THREE.Mesh(new THREE.BoxGeometry(ghW, curbH, 0.3), concreteBaseMat);
+    wallBaseB.position.set(0, curbH / 2, -ghL / 2);
+    scene.add(wallBaseB);
+
+    // 8. STRUCTURAL STEEL TRUSS FRAMES (Hệ khung dầm vòm thép kết nối chuẩn xác)
+    var steelMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.75 });
+    var glassMat = new THREE.MeshStandardMaterial({
+        color: 0x93c5fd,
+        transparent: true,
+        opacity: 0.40,
+        roughness: 0.05,
+        metalness: 0.2
+    });
+
+    // Rafter angle math:
+    // Left rafter starts at (-ghW/2, wallH) = (-10, 5.2) and ends at (0, peakH) = (0, 8.2)
+    // dx = 10, dy = 3.0 => length = sqrt(100 + 9) = 10.44 => angle = atan2(3.0, 10) = 0.291 rad
+    var rafterLen = Math.sqrt(Math.pow(ghW / 2, 2) + Math.pow(peakH - wallH, 2));
+    var rafterAngle = Math.atan2(peakH - wallH, ghW / 2);
+
+    for (var z = -ghL / 2; z <= ghL / 2; z += 4) {
+        var trussGroup = new THREE.Group();
+        trussGroup.position.z = z;
+
+        // Left Vertical Post
+        var postL = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, wallH - curbH, 8), steelMat);
+        postL.position.set(-ghW / 2, curbH + (wallH - curbH) / 2, 0);
+        trussGroup.add(postL);
+
+        // Right Vertical Post
+        var postR = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, wallH - curbH, 8), steelMat);
+        postR.position.set(ghW / 2, curbH + (wallH - curbH) / 2, 0);
+        trussGroup.add(postR);
+
+        // Horizontal Tie Beam (Xà ngang đỡ trần)
+        var tieBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, ghW, 8), steelMat);
+        tieBeam.position.set(0, wallH, 0);
+        tieBeam.rotation.z = Math.PI / 2;
+        trussGroup.add(tieBeam);
+
+        // Left Rafter (Kèo thép mái trái)
+        var rafL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, rafterLen, 8), steelMat);
+        rafL.position.set(-ghW / 4, wallH + (peakH - wallH) / 2, 0);
+        rafL.rotation.z = -rafterAngle;
+        trussGroup.add(rafL);
+
+        // Right Rafter (Kèo thép mái phải)
+        var rafR = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, rafterLen, 8), steelMat);
+        rafR.position.set(ghW / 4, wallH + (peakH - wallH) / 2, 0);
+        rafR.rotation.z = rafterAngle;
+        trussGroup.add(rafR);
+
+        // Vertical King Post (Thanh chống đứng đỉnh nóc)
+        var king = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, peakH - wallH, 8), steelMat);
+        king.position.set(0, wallH + (peakH - wallH) / 2, 0);
+        trussGroup.add(king);
+
+        // Diagonal Struts (Thanh giằng chéo kỹ thuật)
+        var strutL = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.4, 6), steelMat);
+        strutL.position.set(-ghW / 4, wallH + (peakH - wallH) / 4, 0);
+        strutL.rotation.z = rafterAngle;
+        trussGroup.add(strutL);
+
+        var strutR = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.4, 6), steelMat);
+        strutR.position.set(ghW / 4, wallH + (peakH - wallH) / 4, 0);
+        strutR.rotation.z = -rafterAngle;
+        trussGroup.add(strutR);
+
+        scene.add(trussGroup);
+    }
+
+    // Longitudinal Roof Purlins & Ridge (Xà gồ mái dọc & Máng xối)
+    var ridgeBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, ghL, 8), steelMat);
+    ridgeBeam.position.set(0, peakH, 0);
+    ridgeBeam.rotation.x = Math.PI / 2;
+    scene.add(ridgeBeam);
+
+    var eaveL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.25, ghL), steelMat);
+    eaveL.position.set(-ghW / 2, wallH, 0);
+    scene.add(eaveL);
+
+    var eaveR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.25, ghL), steelMat);
+    eaveR.position.set(ghW / 2, wallH, 0);
+    scene.add(eaveR);
+
+    // 9. GLASS PANELS WITH TINT & VISIBLE FRAME (Tấm kính cường lực vách & mái)
+    // Side Walls Glass
+    var glassWallL = new THREE.Mesh(new THREE.PlaneGeometry(ghL, wallH - curbH), glassMat);
+    glassWallL.position.set(-ghW / 2, curbH + (wallH - curbH) / 2, 0);
+    glassWallL.rotation.y = Math.PI / 2;
+    scene.add(glassWallL);
+
+    var glassWallR = new THREE.Mesh(new THREE.PlaneGeometry(ghL, wallH - curbH), glassMat);
+    glassWallR.position.set(ghW / 2, curbH + (wallH - curbH) / 2, 0);
+    glassWallR.rotation.y = -Math.PI / 2;
+    scene.add(glassWallR);
+
+    // Pitched Roof Glass (Áp đúng độ nghiêng của kèo mái)
+    var roofMeshL = new THREE.Mesh(new THREE.PlaneGeometry(rafterLen, ghL), glassMat);
+    roofMeshL.position.set(-ghW / 4, wallH + (peakH - wallH) / 2, 0);
+    roofMeshL.rotation.x = Math.PI / 2;
+    roofMeshL.rotation.y = rafterAngle;
+    scene.add(roofMeshL);
+
+    var roofMeshR = new THREE.Mesh(new THREE.PlaneGeometry(rafterLen, ghL), glassMat);
+    roofMeshR.position.set(ghW / 4, wallH + (peakH - wallH) / 2, 0);
+    roofMeshR.rotation.x = Math.PI / 2;
+    roofMeshR.rotation.y = -rafterAngle;
+    scene.add(roofMeshR);
+
+    // 10. THERMAL SHADE SCREEN (Mái che tự động dạng lưới dệt Aluminet)
+    var shadeClothMat = new THREE.MeshStandardMaterial({
+        color: 0x475569,
+        transparent: true,
+        opacity: 0.65,
+        roughness: 0.9
+    });
+    var shadeScreen = new THREE.Mesh(new THREE.PlaneGeometry(ghW - 0.6, ghL - 1), shadeClothMat);
+    shadeScreen.rotation.x = -Math.PI / 2;
+    shadeScreen.position.set(0, wallH - 0.1, 0);
+    scene.add(shadeScreen);
+
+    // 11. LED GROW LIGHT BARS (Đèn quang hợp LED dải dài)
+    var ledFixtureMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 });
+    var ledEmitterMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e }); // Photosynthetic Pink Spectrum
+
+    var bedXCoords = [-6.8, -3.2, 3.2, 6.8];
+    bedXCoords.forEach(function(bx) {
+        var fixture = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, ghL - 4), ledFixtureMat);
+        fixture.position.set(bx, wallH - 0.35, 0);
+        scene.add(fixture);
+
+        var strip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.02, ghL - 4.2), ledEmitterMat);
+        strip.position.set(bx, wallH - 0.41, 0);
+        scene.add(strip);
+    });
+
+    // 12. CULTIVATION BEDS & 40 INDIVIDUAL INTERACTIVE PLANTS (4 luống x 10 cây riêng lẻ)
+    var troughMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
+    var soilMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.95 });
+    var leafMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.5 });
+    var fruitMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.35 });
+
+    var bedConfigs = [
+        { name: 'Luống 01 (Dãy Tây Bắc)', plant: 'Dưa Lưới Nhật Bản CNC', variety: 'Muskmelon Snow White F1', baseAge: 45, harvestDays: 20 },
+        { name: 'Luống 02 (Dãy Tây Nam)', plant: 'Dưa Lưới Taki CNC', variety: 'Taki Melon Golden Star', baseAge: 42, harvestDays: 23 },
+        { name: 'Luống 03 (Dãy Đông Bắc)', plant: 'Cà Chua Bi Cherry Hà Lan', variety: 'Cherry Dutch Red Ruby', baseAge: 52, harvestDays: 13 },
+        { name: 'Luống 04 (Dãy Đông Nam)', plant: 'Dưa Lưới Hoàng Kim', variety: 'Golden Queen Honey', baseAge: 50, harvestDays: 15 }
+    ];
+
+    // Drip Water Drops (Particle system for active drip irrigation)
+    var dripDropCount = 80;
+    var dripDropGeo = new THREE.BufferGeometry();
+    var dripDropPos = new Float32Array(dripDropCount * 3);
+    for (var d = 0; d < dripDropCount; d++) {
+        dripDropPos[d * 3] = bedXCoords[d % 4] + (Math.random() - 0.5) * 0.3;
+        dripDropPos[d * 3 + 1] = 0.55 + Math.random() * 0.2;
+        dripDropPos[d * 3 + 2] = -11.5 + Math.floor(d / 4) * 2.5;
+    }
+    dripDropGeo.setAttribute('position', new THREE.BufferAttribute(dripDropPos, 3));
+    var dripDropPoints = new THREE.Points(dripDropGeo, new THREE.PointsMaterial({
+        color: 0x38bdf8,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.8
+    }));
+    dripDropPoints.visible = window.sfDeviceStore.get('A', 'drip');
+    scene.add(dripDropPoints);
+    window.sf3D.dripDrops = dripDropPoints;
+
+    var plantIndex = 1;
+
+    bedXCoords.forEach(function(bx, bIdx) {
+        var cfg = bedConfigs[bIdx];
+
+        // Raised Trough
+        var bedMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.5, 26), troughMat);
+        bedMesh.position.set(bx, 0.25, 0);
+        bedMesh.castShadow = true;
+        bedMesh.receiveShadow = true;
+        scene.add(bedMesh);
+
+        // Substrate Medium
+        var soilMesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.1, 25.6), soilMat);
+        soilMesh.position.set(bx, 0.5, 0);
+        scene.add(soilMesh);
+
+        // Drip Irrigation Line
+        var dripPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 26, 8), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+        dripPipe.position.set(bx, 0.56, 0);
+        dripPipe.rotation.x = Math.PI / 2;
+        scene.add(dripPipe);
+
+        // 10 Individual Plants per Bed (Total 40 Plants across greenhouse)
+        for (var p = 0; p < 10; p++) {
+            var pz = -11.5 + p * 2.55;
+            var currentPIdx = plantIndex++;
+            var pId = (currentPIdx < 10 ? '0' + currentPIdx : '' + currentPIdx);
+
+            // Trellis Cable
+            var cable = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 4.4, 4), new THREE.MeshBasicMaterial({ color: 0x94a3b8 }));
+            cable.position.set(bx, 2.7, pz);
+            scene.add(cable);
+
+            // Foliage Vine Clusters for this individual plant
+            var foliageList = [];
+            for (var y = 0.8; y <= 3.2; y += 0.7) {
+                var foliage = new THREE.Mesh(new THREE.DodecahedronGeometry(0.38 + ((p * 7) % 10) * 0.012), leafMat);
+                foliage.position.set(bx + (((p + y) * 3) % 5 - 2) * 0.08, y, pz + (((p * 2 + y) % 5) - 2) * 0.06);
+                foliage.rotation.set((p + y) * 0.4, p * 0.7, y * 0.3);
+                foliage.castShadow = true;
+                scene.add(foliage);
+                foliageList.push(foliage);
+            }
+
+            // Fruit hanging on vine
+            var melon = new THREE.Mesh(new THREE.SphereGeometry(0.28, 14, 14), fruitMat);
+            melon.position.set(bx + (bIdx % 2 === 0 ? 0.38 : -0.38), 1.35 + (p % 3) * 0.15, pz);
+            melon.scale.set(1, 1.2, 1);
+            melon.castShadow = true;
+            scene.add(melon);
+
+            // Plant Data (Uniform across all 40 plants)
+            var pMoisture = 70 + ((p * 3) % 6);
+            var pTemp = (26.2 + ((p * 2) % 8) * 0.1).toFixed(1);
+            var pAge = cfg.baseAge + (p % 3) - 1;
+            var pHarvest = cfg.harvestDays - (p % 3) + 1;
+            var pBrix = (14.0 + ((p * 4) % 8) * 0.1).toFixed(1);
+            var pWeight = (1.38 + ((p * 3) % 7) * 0.03).toFixed(2);
+
+            // Raycasting Hitbox for THIS SPECIFIC INDIVIDUAL PLANT (Cylinder 1.15m x 3.8m covering the entire plant)
+            var invisibleHitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+            var plantHit = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 3.8, 10), invisibleHitMat);
+            plantHit.position.set(bx, 2.0, pz);
+            plantHit.userData = {
+                type: 'plant',
+                id: 'GH01-P' + pId,
+                plantName: cfg.plant,
+                bedName: cfg.name + ' • Gốc #' + pId,
+                variety: cfg.variety,
+                moisture: pMoisture,
+                temp: pTemp,
+                age: pAge,
+                harvestDays: pHarvest,
+                ph: 6.2,
+                ec: 1.8,
+                lux: 8400,
+                brix: pBrix,
+                weight: pWeight,
+                health: '🟢 Rất khỏe mạnh (Tối ưu)',
+                posX: bx,
+                posZ: pz,
+                // UNIFORM HOVER DESCRIPTION 100% AS REQUIRED BY USER:
+                hoverTitle: '🌱 ' + cfg.plant + ' #GH01-P' + pId,
+                hoverDesc: 'Độ ẩm: ' + pMoisture + '% • Nhiệt độ quanh gốc: ' + pTemp + '°C • Độ tuổi: ' + pAge + ' ngày • Dự kiến thu hoạch: ' + pHarvest + ' ngày nữa'
+            };
+            scene.add(plantHit);
+            window.sf3D.interactiveObjects.push(plantHit);
+
+            // Also attach userData to melon, trellis wire & foliage so clicking ANY plant element activates inspection
+            melon.userData = plantHit.userData;
+            window.sf3D.interactiveObjects.push(melon);
+
+            cable.userData = plantHit.userData;
+            window.sf3D.interactiveObjects.push(cable);
+
+            foliageList.forEach(function(f) {
+                f.userData = plantHit.userData;
+                window.sf3D.interactiveObjects.push(f);
+            });
+        }
+    });
+
+    // 13. INTERACTIVE EQUIPMENT: CIRCULATION FANS (Quạt đối lưu)
+    var fanHousingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6 });
+    var fanBladeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.4 });
+
+    var fanPositions = [
+        { x: 0, y: 5.4, z: -ghL / 2 + 0.4, rotY: 0 },
+        { x: 0, y: 5.4, z: ghL / 2 - 0.4, rotY: Math.PI }
+    ];
+
+    fanPositions.forEach(function(fc) {
+        var fanGroup = new THREE.Group();
+        fanGroup.position.set(fc.x, fc.y, fc.z);
+        fanGroup.rotation.y = fc.rotY;
+
+        var housing = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.4, 18, 1, true), fanHousingMat);
+        housing.rotation.x = Math.PI / 2;
+        fanGroup.add(housing);
+
+        var hub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.42, 12), fanHousingMat);
+        hub.rotation.x = Math.PI / 2;
+        fanGroup.add(hub);
+
+        var bladesGroup = new THREE.Group();
+        for (var b = 0; b < 4; b++) {
+            var blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.78, 0.03), fanBladeMat);
+            blade.position.y = 0.44;
+            blade.rotation.x = 0.35;
+            var bladeWrap = new THREE.Group();
+            bladeWrap.rotation.z = (b * Math.PI) / 2;
+            bladeWrap.add(blade);
+            bladesGroup.add(bladeWrap);
+        }
+        fanGroup.add(bladesGroup);
+        scene.add(fanGroup);
+        window.sf3D.fans.push(bladesGroup);
+
+        var hitBox = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 1.2), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+        hitBox.position.set(fc.x, fc.y, fc.z);
+        hitBox.userData = {
+            type: 'fan',
+            name: 'Quạt thông gió đối lưu',
+            deviceKey: 'quat',
+            desc: 'Điều hòa luồng không khí & giảm nhiệt độ cục bộ'
+        };
+        scene.add(hitBox);
+        window.sf3D.interactiveObjects.push(hitBox);
+    });
+
+    // 14. INTERACTIVE EQUIPMENT: OVERHEAD MISTING SYSTEM (Phun sương trần)
+    var mistPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, ghL - 2, 8), new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 }));
+    mistPipe.position.set(0, 6.2, 0);
+    mistPipe.rotation.x = Math.PI / 2;
+    scene.add(mistPipe);
+
+    var particleCount = 750;
+    var particlesGeo = new THREE.BufferGeometry();
+    var positions = new Float32Array(particleCount * 3);
+    var speeds = new Float32Array(particleCount);
+
+    for (var i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * (ghW - 4);
+        positions[i * 3 + 1] = 6.0 - Math.random() * 4.5;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * (ghL - 4);
+        speeds[i] = 0.04 + Math.random() * 0.05;
+    }
+
+    particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    var particleMat = new THREE.PointsMaterial({
+        color: 0xbae6fd,
+        size: 0.18,
+        transparent: true,
+        opacity: 0.65,
+        blending: THREE.AdditiveBlending
+    });
+
+    var mistPoints = new THREE.Points(particlesGeo, particleMat);
+    scene.add(mistPoints);
+    window.sf3D.mistingSystem = mistPoints;
+    window.sf3D.mistingSpeeds = speeds;
+
+    var mistHit = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, ghL - 2), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+    mistHit.position.set(0, 6.2, 0);
+    mistHit.userData = {
+        type: 'misting',
+        name: 'Hệ thống phun sương làm mát',
+        deviceKey: 'phun_suong',
+        desc: 'Hạ nhiệt độ & bổ sung độ ẩm vi khí hậu'
+    };
+    scene.add(mistHit);
+    window.sf3D.interactiveObjects.push(mistHit);
+
+    // 14B. ROTARY SPRINKLER IRRIGATION SYSTEM (Hệ thống tưới phun mưa tự động 3D)
+    var sprinklerNozzles = [];
+    var sprinklerPositions = [
+        { x: -5.0, z: -10 }, { x: -5.0, z: -3 }, { x: -5.0, z: 4 }, { x: -5.0, z: 11 },
+        { x: 5.0, z: -10 }, { x: 5.0, z: -3 }, { x: 5.0, z: 4 }, { x: 5.0, z: 11 }
+    ];
+    var nozzleMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8, roughness: 0.2 });
+    var bracketMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+
+    sprinklerPositions.forEach(function(sp) {
+        var dropPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.0, 6), bracketMat);
+        dropPipe.position.set(sp.x, 4.7, sp.z);
+        scene.add(dropPipe);
+
+        var nozzleHead = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.16, 8), nozzleMat);
+        nozzleHead.position.set(sp.x, 4.2, sp.z);
+        scene.add(nozzleHead);
+        sprinklerNozzles.push(nozzleHead);
+    });
+    window.sf3D.sprinklerNozzles = sprinklerNozzles;
+
+    var spkCount = 480;
+    var spkGeo = new THREE.BufferGeometry();
+    var spkPos = new Float32Array(spkCount * 3);
+    var spkMeta = [];
+
+    for (var s = 0; s < spkCount; s++) {
+        var nIdx = s % sprinklerPositions.length;
+        var initRad = 0.2 + Math.random() * 3.8;
+        var initAng = Math.random() * Math.PI * 2;
+        var initY = 4.15 - (initRad / 4.0) * 3.2 - Math.random() * 0.4;
+        spkPos[s * 3] = sprinklerPositions[nIdx].x + Math.cos(initAng) * initRad;
+        spkPos[s * 3 + 1] = Math.max(0.6, initY);
+        spkPos[s * 3 + 2] = sprinklerPositions[nIdx].z + Math.sin(initAng) * initRad;
+        spkMeta.push({
+            nIdx: nIdx,
+            radius: initRad,
+            angle: initAng,
+            speed: 0.06 + Math.random() * 0.05
+        });
+    }
+    spkGeo.setAttribute('position', new THREE.BufferAttribute(spkPos, 3));
+    var spkMat = new THREE.PointsMaterial({
+        color: 0x7dd3fc,
+        size: 0.18,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+    });
+    var sprinklerPoints = new THREE.Points(spkGeo, spkMat);
+    sprinklerPoints.visible = window.sf3D.state.sprinkler;
+    scene.add(sprinklerPoints);
+    window.sf3D.sprinklerSystem = sprinklerPoints;
+    window.sf3D.sprinklerMeta = spkMeta;
+    window.sf3D.sprinklerPositions = sprinklerPositions;
+
+    // 14C. NPK FERTIGATION NUTRIENT DOSING SYSTEM (Hệ thống châm dinh dưỡng NPK vi lượng)
+    var fertTubeMat = new THREE.MeshStandardMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.55,
+        roughness: 0.3
+    });
+    bedXCoords.forEach(function(bx) {
+        var tube = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 26, 8), fertTubeMat);
+        tube.position.set(bx, 0.62, 0);
+        tube.rotation.x = Math.PI / 2;
+        scene.add(tube);
+    });
+
+    var fertCount = 160;
+    var fertGeo = new THREE.BufferGeometry();
+    var fertPos = new Float32Array(fertCount * 3);
+    for (var f = 0; f < fertCount; f++) {
+        var b = f % 4;
+        fertPos[f * 3] = bedXCoords[b] + (Math.random() - 0.5) * 0.12;
+        fertPos[f * 3 + 1] = 0.60 + Math.random() * 0.15;
+        fertPos[f * 3 + 2] = -12.5 + (f / 160) * 25.0;
+    }
+    fertGeo.setAttribute('position', new THREE.BufferAttribute(fertPos, 3));
+    var fertMat = new THREE.PointsMaterial({
+        color: 0x22c55e,
+        size: 0.22,
+        transparent: true,
+        opacity: 0.95,
+        blending: THREE.AdditiveBlending
+    });
+    var fertPoints = new THREE.Points(fertGeo, fertMat);
+    fertPoints.visible = window.sf3D.state.fert;
+    scene.add(fertPoints);
+    window.sf3D.fertSystem = fertPoints;
+
+    // 15. INTERACTIVE EQUIPMENT: SOIL & CLIMATE SENSORS (Cọc cảm biến)
+    var probeMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.85 });
+    var sensorPositions = [
+        { x: -3.2, z: 0, label: 'Cảm biến vi khí hậu & Đất #1' },
+        { x: 3.2, z: -6, label: 'Cảm biến vi khí hậu & Đất #2' },
+        { x: -6.8, z: 6, label: 'Cảm biến độ ẩm giá thể #3' }
+    ];
+
+    sensorPositions.forEach(function(sp) {
+        var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.8, 8), probeMat);
+        pole.position.set(sp.x, 1.2, sp.z);
+        scene.add(pole);
+
+        var box = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.3, 0.2), probeMat);
+        box.position.set(sp.x, 1.9, sp.z);
+        scene.add(box);
+
+        var led = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+        led.position.set(sp.x, 2.12, sp.z);
+        scene.add(led);
+        window.sf3D.sensorLeds.push(led);
+
+        var sHit = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.2, 1.2), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+        sHit.position.set(sp.x, 1.5, sp.z);
+        sHit.userData = {
+            type: 'sensor',
+            name: sp.label,
+            deviceKey: 'sensor',
+            desc: 'Đang theo dõi: Nhiệt độ 26.5°C • Độ ẩm 72% • EC 1.8 mS/cm'
+        };
+        scene.add(sHit);
+        window.sf3D.interactiveObjects.push(sHit);
+    });
+
+    // 16. RAYCASTING HOVER & CLICK FOR ALL OBJECTS (Ưu tiên tuyệt đối Cây trồng)
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    window.sf3D.raycaster = raycaster;
+    window.sf3D.mouse = mouse;
+
+    var hoverCard = document.getElementById('sf-3d-hover-card');
+    var hoverTitle = document.getElementById('sf-3d-hud-title');
+    var hoverSub = document.getElementById('sf-3d-hud-sub');
+
+    function onMouseMove(event) {
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(window.sf3D.interactiveObjects, true);
+
+        var plantMatch = null;
+        var deviceMatch = null;
+
+        for (var i = 0; i < intersects.length; i++) {
+            var currObj = intersects[i].object;
+            var d = currObj.userData;
+            while ((!d || (!d.hoverTitle && !d.name)) && currObj.parent) {
+                currObj = currObj.parent;
+                d = currObj.userData;
+            }
+            if (d) {
+                if (!plantMatch && (d.type === 'plant' || d.type === 'crop' || d.type === 'fruit')) {
+                    plantMatch = d;
+                } else if (!deviceMatch && (d.deviceKey || d.type === 'fan' || d.type === 'misting' || d.type === 'sensor')) {
+                    deviceMatch = d;
+                }
+            }
+        }
+
+        var uData = plantMatch || deviceMatch;
+
+        if (uData) {
+            renderer.domElement.style.cursor = 'pointer';
+            if (hoverCard && hoverTitle && hoverSub) {
+                hoverTitle.textContent = uData.hoverTitle || uData.name || 'Cây trồng';
+                hoverSub.textContent = uData.hoverDesc || uData.desc || 'Nhấp để xem chi tiết & cài đặt tưới';
+                hoverCard.style.left = (event.clientX - rect.left) + 'px';
+                hoverCard.style.top = (event.clientY - rect.top) + 'px';
+                hoverCard.style.display = 'block';
+            }
+        } else {
+            renderer.domElement.style.cursor = 'grab';
+            if (hoverCard) hoverCard.style.display = 'none';
+        }
+    }
+
+    var lastInteractionTime = 0;
+    function handle3DClick(event) {
+        var now = Date.now();
+        if (now - lastInteractionTime < 200) return; // Debounce
+        lastInteractionTime = now;
+
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(window.sf3D.interactiveObjects, true);
+
+        var plantMatch = null;
+        var deviceMatch = null;
+
+        for (var i = 0; i < intersects.length; i++) {
+            var currObj = intersects[i].object;
+            var d = currObj.userData;
+            while ((!d || !d.type) && currObj.parent) {
+                currObj = currObj.parent;
+                d = currObj.userData;
+            }
+            if (d) {
+                if (!plantMatch && (d.type === 'plant' || d.type === 'crop' || d.type === 'fruit')) {
+                    plantMatch = { object: currObj, data: d, point: intersects[i].point };
+                } else if (!deviceMatch && (d.deviceKey || d.type === 'fan' || d.type === 'misting' || d.type === 'sensor')) {
+                    deviceMatch = { object: currObj, data: d, point: intersects[i].point };
+                }
+            }
+        }
+
+        var match = plantMatch || deviceMatch;
+
+        if (match) {
+            var uData = match.data;
+            if (uData.type === 'plant' || uData.type === 'crop' || uData.type === 'fruit') {
+                window.sfShowToast('🌱 ' + (uData.plantName || uData.name) + ' #' + (uData.id || '') + ' • Mở bảng chi tiết & cài đặt tưới', 'success');
+                // Smoothly focus camera onto this plant
+                if (controls) {
+                    var targetX = uData.posX || 0;
+                    var targetZ = uData.posZ || 0;
+                    controls.target.set(targetX, 1.8, targetZ);
+                    camera.position.set(targetX + (targetX > 0 ? -2.2 : 2.2), 2.5, targetZ + 3.2);
+                    controls.update();
+                }
+                window.sfOpenPlantDrawer(uData);
+            } else if (uData.deviceKey) {
+                window.sfHighlightDeviceInDrawer(uData.deviceKey, uData.name);
+            }
+        }
+    }
+
+    var ghDownX = 0, ghDownY = 0, ghDownTime = 0;
+    renderer.domElement.addEventListener('pointerdown', function(e) {
+        ghDownX = e.clientX;
+        ghDownY = e.clientY;
+        ghDownTime = Date.now();
+    });
+
+    renderer.domElement.addEventListener('pointerup', function(e) {
+        var dist = Math.hypot(e.clientX - ghDownX, e.clientY - ghDownY);
+        var elapsed = Date.now() - ghDownTime;
+        // Bấm dứt khoát không drag xoay camera
+        if (!isOrbiting3D && dist < 5 && elapsed < 400) {
+            handle3DClick(e);
+        }
+    });
+
+    // Double-click on floor / crops to smoothly glide camera forward to that spot
+    function onDoubleClick(event) {
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(window.sf3D.interactiveObjects, true);
+        if (intersects.length > 0) {
+            for (var i = 0; i < intersects.length; i++) {
+                var d = intersects[i].object.userData;
+                if (d && (d.type === 'plant' || d.type === 'crop' || d.type === 'fruit')) {
+                    handle3DClick(event);
+                    return;
+                }
+            }
+        }
+
+        var groundHits = raycaster.intersectObjects([floor, walkway]);
+        if (groundHits.length > 0) {
+            var hitPt = groundHits[0].point;
+            var fwd = new THREE.Vector3().subVectors(hitPt, camera.position).normalize();
+            fwd.y = 0;
+            camera.position.addScaledVector(fwd, 4.0);
+            controls.target.set(hitPt.x, 2.0, hitPt.z);
+            controls.update();
+            window.sfShowToast('🚶 Đã di chuyển đến vị trí đã chọn', 'info');
+        }
+    }
+
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('dblclick', onDoubleClick);
+
+    function onWindowResize() {
+        if (!container) return;
+        var newW = container.clientWidth || 900;
+        var newH = container.clientHeight || 580;
+        camera.aspect = newW / newH;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newW, newH);
+    }
+    window.addEventListener('resize', onWindowResize);
+
+    // 17. Render Animation Loop
+    var clock = new THREE.Clock();
+
+    function animate() {
+        window.sf3D.animId = requestAnimationFrame(animate);
+
+        var elapsed = clock.getElapsedTime();
+
+        // Rotate Fans if enabled
+        if (window.sf3D.state.fan && window.sf3D.fans.length > 0) {
+            window.sf3D.fans.forEach(function(fan) {
+                fan.rotation.z += 0.28;
+            });
+        }
+
+        // Animate Misting Particles if enabled
+        if (window.sf3D.mistingSystem) {
+            if (window.sf3D.state.misting) {
+                window.sf3D.mistingSystem.visible = true;
+                var posAttr = window.sf3D.mistingSystem.geometry.attributes.position;
+                var posArr = posAttr.array;
+                var spds = window.sf3D.mistingSpeeds;
+
+                for (var i = 0; i < particleCount; i++) {
+                    posArr[i * 3 + 1] -= spds[i];
+                    posArr[i * 3] += Math.sin(elapsed * 2 + i) * 0.008;
+
+                    if (posArr[i * 3 + 1] < 0.6) {
+                        posArr[i * 3 + 1] = 6.0;
+                        posArr[i * 3] = (Math.random() - 0.5) * (ghW - 4);
+                    }
+                }
+                posAttr.needsUpdate = true;
+            } else {
+                window.sf3D.mistingSystem.visible = false;
+            }
+        }
+
+        // Animate Sprinkler Irrigation (Tưới phun mưa dạng béc xoay nón)
+        if (window.sf3D.sprinklerSystem) {
+            if (window.sf3D.state.sprinkler) {
+                window.sf3D.sprinklerSystem.visible = true;
+                if (window.sf3D.sprinklerNozzles) {
+                    window.sf3D.sprinklerNozzles.forEach(function(n) {
+                        n.rotation.y += 0.08;
+                    });
+                }
+                var sAttr = window.sf3D.sprinklerSystem.geometry.attributes.position;
+                var sArr = sAttr.array;
+                var sMeta = window.sf3D.sprinklerMeta;
+                var sOrigins = window.sf3D.sprinklerPositions;
+
+                for (var s = 0; s < spkCount; s++) {
+                    var m = sMeta[s];
+                    m.radius += m.speed;
+                    m.angle += 0.04;
+                    var orig = sOrigins[m.nIdx];
+                    var px = orig.x + Math.cos(m.angle) * m.radius;
+                    var pz = orig.z + Math.sin(m.angle) * m.radius;
+                    var py = 4.15 - (m.radius / 4.2) * 3.4;
+
+                    sArr[s * 3] = px;
+                    sArr[s * 3 + 1] = py;
+                    sArr[s * 3 + 2] = pz;
+
+                    if (py <= 0.6 || m.radius > 4.5) {
+                        m.radius = 0.2;
+                        m.angle = Math.random() * Math.PI * 2;
+                        sArr[s * 3] = orig.x;
+                        sArr[s * 3 + 1] = 4.15;
+                        sArr[s * 3 + 2] = orig.z;
+                    }
+                }
+                sAttr.needsUpdate = true;
+            } else {
+                window.sf3D.sprinklerSystem.visible = false;
+            }
+        }
+
+        // Animate NPK Fertigation (Châm dinh dưỡng NPK vi lượng xanh ngọc huỳnh quang)
+        if (window.sf3D.fertSystem) {
+            if (window.sf3D.state.fert) {
+                window.sf3D.fertSystem.visible = true;
+                var fAttr = window.sf3D.fertSystem.geometry.attributes.position;
+                var fArr = fAttr.array;
+                for (var f = 0; f < fertCount; f++) {
+                    fArr[f * 3 + 2] += 0.12; // Dòng chảy dọc đường ống
+                    fArr[f * 3 + 1] = 0.60 + Math.sin(elapsed * 5.0 + f) * 0.06; // Nhịp xung
+                    if (fArr[f * 3 + 2] > 12.8) {
+                        fArr[f * 3 + 2] = -12.8;
+                    }
+                }
+                fAttr.needsUpdate = true;
+            } else {
+                window.sf3D.fertSystem.visible = false;
+            }
+        }
+
+        // Animate Drip Water Drops if enabled
+        if (window.sf3D.dripDrops) {
+            if (window.sf3D.state.drip) {
+                window.sf3D.dripDrops.visible = true;
+                var dPosArr = window.sf3D.dripDrops.geometry.attributes.position.array;
+                for (var d = 0; d < dripDropCount; d++) {
+                    dPosArr[d * 3 + 1] -= 0.015;
+                    if (dPosArr[d * 3 + 1] < 0.52) {
+                        dPosArr[d * 3 + 1] = 0.72;
+                    }
+                }
+                window.sf3D.dripDrops.geometry.attributes.position.needsUpdate = true;
+            } else {
+                window.sf3D.dripDrops.visible = false;
+            }
+        }
+
+        // Pulsing Sensor LEDs
+        if (window.sf3D.sensorLeds.length > 0) {
+            var pulseScale = 1.0 + Math.sin(elapsed * 4.5) * 0.2;
+            window.sf3D.sensorLeds.forEach(function(led) {
+                led.scale.set(pulseScale, pulseScale, pulseScale);
+            });
+        }
+
+        if (controls) controls.update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+};
+
+/* ==========================================================================
+   CAMERA WALK & D-PAD NAVIGATION FUNCTIONS
+   ========================================================================== */
+
+window.sfWalkCamera = function(dir) {
+    if (!window.sf3D || !window.sf3D.camera || !window.sf3D.controls) return;
+    var camera = window.sf3D.camera;
+    var controls = window.sf3D.controls;
+
+    var forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0;
+    forward.normalize();
+
+    var side = new THREE.Vector3().crossVectors(camera.up, forward).normalize();
+
+    var step = 3.2;
+    if (dir === 'forward') {
+        camera.position.addScaledVector(forward, step);
+        controls.target.addScaledVector(forward, step);
+    } else if (dir === 'backward') {
+        camera.position.addScaledVector(forward, -step);
+        controls.target.addScaledVector(forward, -step);
+    } else if (dir === 'left') {
+        camera.position.addScaledVector(side, step);
+        controls.target.addScaledVector(side, step);
+    } else if (dir === 'right') {
+        camera.position.addScaledVector(side, -step);
+        controls.target.addScaledVector(side, -step);
+    }
+    controls.update();
+};
+
+window.sfZoomCamera = function(delta) {
+    if (!window.sf3D || !window.sf3D.camera || !window.sf3D.controls) return;
+    var camera = window.sf3D.camera;
+    var controls = window.sf3D.controls;
+    var dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    camera.position.addScaledVector(dir, -delta);
+    controls.update();
+};
+
+window.sfResetCamera = function() {
+    if (!window.sf3D || !window.sf3D.camera || !window.sf3D.controls) return;
+    window.sf3D.camera.position.set(0, 14, 25);
+    window.sf3D.controls.target.set(0, 3.2, 0);
+    window.sf3D.controls.update();
+    window.sfShowToast('🔄 Đã đặt lại góc nhìn mặc định', 'info');
+};
+
+// Keyboard listener for Walking into / around Greenhouse 3D
+document.addEventListener('keydown', function(e) {
+    var lvl3D = document.getElementById('sf-map-level-greenhouse-3d');
+    if (!lvl3D || lvl3D.style.display === 'none') return;
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+    var key = e.key.toLowerCase();
+    if (key === 'w' || key === 'arrowup') {
+        e.preventDefault();
+        window.sfWalkCamera('forward');
+    } else if (key === 's' || key === 'arrowdown') {
+        e.preventDefault();
+        window.sfWalkCamera('backward');
+    } else if (key === 'a' || key === 'arrowleft') {
+        e.preventDefault();
+        window.sfWalkCamera('left');
+    } else if (key === 'd' || key === 'arrowright') {
+        e.preventDefault();
+        window.sfWalkCamera('right');
+    } else if (key === 'r') {
+        e.preventDefault();
+        window.sfResetCamera();
+    }
+});
+
+// Camera Views Preset
+window.sfSet3DCamera = function(viewName) {
+    if (!window.sf3D || !window.sf3D.camera || !window.sf3D.controls) return;
+
+    var cam = window.sf3D.camera;
+    var ctrl = window.sf3D.controls;
+
+    var btnOverview = document.getElementById('sf-cam-overview');
+    var btnCrops = document.getElementById('sf-cam-crops');
+    var btnCeiling = document.getElementById('sf-cam-ceiling');
+    if (btnOverview) btnOverview.classList.remove('active');
+    if (btnCrops) btnCrops.classList.remove('active');
+    if (btnCeiling) btnCeiling.classList.remove('active');
+
+    if (viewName === 'overview') {
+        if (btnOverview) btnOverview.classList.add('active');
+        cam.position.set(0, 14, 25);
+        ctrl.target.set(0, 3.2, 0);
+    } else if (viewName === 'crops') {
+        if (btnCrops) btnCrops.classList.add('active');
+        cam.position.set(-4.5, 3.2, 6.0);
+        ctrl.target.set(-3.2, 1.8, -2.0);
+    } else if (viewName === 'ceiling') {
+        if (btnCeiling) btnCeiling.classList.add('active');
+        cam.position.set(0, 2.8, 7.5);
+        ctrl.target.set(0, 5.8, -4.0);
+    }
+    ctrl.update();
+};
+
+window.sfToggle3DRotate = function() {
+    if (!window.sf3D || !window.sf3D.controls) return;
+    window.sf3D.autoRotate = !window.sf3D.autoRotate;
+    window.sf3D.controls.autoRotate = window.sf3D.autoRotate;
+    var btn = document.getElementById('sf-cam-rotate');
+    if (btn) {
+        if (window.sf3D.autoRotate) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    }
+};
+
+window.sfHighlightDeviceInDrawer = function(deviceKey, deviceName) {
+    window.sfOpenZoneDrawer('A');
+    window.sfShowToast('👉 Đang chọn thiết bị: ' + deviceName, 'info');
+
+    setTimeout(function() {
+        var card = null;
+        if (deviceKey === 'quat') {
+            card = document.getElementById('dev-badge-fan') ? document.getElementById('dev-badge-fan').closest('.sf-device-card') : null;
+        } else if (deviceKey === 'phun_suong') {
+            card = document.getElementById('dev-badge-mist') ? document.getElementById('dev-badge-mist').closest('.sf-device-card') : null;
+        }
+
+        if (card) {
+            card.classList.add('sf-highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function() {
+                card.classList.remove('sf-highlighted');
+            }, 3000);
+        }
+    }, 250);
+};
+
+window.sfFocusFirstPlant = function(plantId) {
+    if (!window.sf3D || !window.sf3D.interactiveObjects) {
+        window.sfOpenPlantDrawer({
+            id: 'GH01-P05',
+            plantName: 'Dưa Lưới Hoàng Kim',
+            bedName: 'Luống 01 (Dãy Tây Bắc) • Gốc #05',
+            variety: 'Muskmelon Snow White F1',
+            moisture: 72,
+            temp: 26.5,
+            age: 45,
+            harvestDays: 20,
+            ph: 6.2,
+            ec: 1.8,
+            lux: 8400,
+            brix: 14.2,
+            health: '🟢 Rất khỏe mạnh (Tối ưu)'
+        });
+        return;
+    }
+
+    var targetPlant = null;
+    for (var i = 0; i < window.sf3D.interactiveObjects.length; i++) {
+        var obj = window.sf3D.interactiveObjects[i];
+        if (obj.userData && obj.userData.type === 'plant') {
+            if (!plantId || obj.userData.id === plantId || obj.userData.id === ('GH01-P' + plantId)) {
+                targetPlant = obj.userData;
+                break;
+            }
+        }
+    }
+
+    if (targetPlant) {
+        window.sfShowToast('🌱 Đang kiểm tra ' + (targetPlant.plantName || 'Cây') + ' #' + targetPlant.id, 'success');
+        if (window.sf3D.controls && window.sf3D.camera) {
+            var tx = targetPlant.posX || 0;
+            var tz = targetPlant.posZ || 0;
+            window.sf3D.controls.target.set(tx, 1.8, tz);
+            window.sf3D.camera.position.set(tx + (tx > 0 ? -2.2 : 2.2), 2.5, tz + 3.2);
+            window.sf3D.controls.update();
+        }
+        window.sfOpenPlantDrawer(targetPlant);
+    } else {
+        window.sfOpenPlantDrawer({
+            id: 'GH01-P05',
+            plantName: 'Dưa Lưới Hoàng Kim',
+            bedName: 'Luống 01 (Dãy Tây Bắc) • Gốc #05',
+            variety: 'Muskmelon Snow White F1',
+            moisture: 72,
+            temp: 26.5,
+            age: 45,
+            harvestDays: 20,
+            ph: 6.2,
+            ec: 1.8,
+            lux: 8400,
+            brix: 14.2,
+            health: '🟢 Rất khỏe mạnh (Tối ưu)'
+        });
+    }
+};

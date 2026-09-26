@@ -27,8 +27,10 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=106"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=117"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
+                <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
                 <style><![CDATA[
                     /* Critical Inlined Map & Drawer CSS */
                     .sf-map-card-pro {
@@ -283,6 +285,11 @@
                     }
                     .sf-drawer-backdrop.show {
                         opacity: 1;
+                    }
+                    .sf-drawer-backdrop.sf-3d-clean {
+                        pointer-events: none !important;
+                        background: transparent !important;
+                        backdrop-filter: none !important;
                     }
                     .sf-zone-drawer {
                         position: fixed;
@@ -1038,8 +1045,8 @@
                             </div>
                         </div>
 
-                        <!-- Card Bản đồ Chính -->
-                        <div class="sf-card sf-map-card-pro">
+                        <!-- TẦNG 1: Bản đồ Vĩ mô toàn trang trại (Macro View) -->
+                        <div class="sf-card sf-map-card-pro" id="sf-map-level-macro">
                             <!-- Top Control Bar: Layer Switcher & GIS status -->
                             <div class="sf-map-topbar">
                                 <div class="sf-map-topbar-left">
@@ -1075,8 +1082,8 @@
                                 <img src="/smart_farm/static/src/img/farm_map.jpg?v=3" class="sf-map-img" alt="Bản đồ quy hoạch nông trại"/>
 
                                 <!-- Pinned Zone HUD Badges (Always visible, interactive) -->
-                                <!-- Zone A: Nhà màng (Left) -->
-                                <div class="sf-map-zone zone-a" onclick="sfOpenZoneDrawer('A')" title="Khu A - Nhà màng công nghệ cao (Nhấp để mở bảng điều khiển)">
+                                <!-- Zone A: Nhà màng (Left) -> Click để chuyển vào Sơ đồ Zone A & 3D -->
+                                <div class="sf-map-zone zone-a" onclick="sfNavigateMapLevel('zone-a')" title="Khu A - Nhà màng công nghệ cao (Nhấp để vào sơ đồ chi tiết &amp; 3D)">
                                     <div class="sf-zone-chip chip-a">
                                         <div class="sf-zc-header">
                                             <span class="sf-zc-dot"></span>
@@ -1084,7 +1091,7 @@
                                         </div>
                                         <div class="sf-zc-body">
                                             <span class="sf-zc-metric">💧 <t t-esc="soil['moisture_a']"/>% ẩm</span>
-                                            <span class="sf-zc-action">Bảng IoT ➔</span>
+                                            <span class="sf-zc-action">Sơ đồ 3D ➔</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1212,7 +1219,252 @@
                             <!-- Bottom Tip -->
                             <div class="sf-map-bottom-guide">
                                 <span class="sf-guide-icon">💡</span>
-                                <span><strong>Mẹo nhanh:</strong> Nhấp vào bất kỳ khu vực nào trên bản đồ để mở <strong>Bảng điều khiển thiết bị IoT</strong> (van tưới, máy bơm, phun sương) và giám sát vi khí hậu.</span>
+                                <span><strong>Mẹo nhanh:</strong> Nhấp vào <strong>Khu A (Nhà màng)</strong> để vào Sơ đồ chi tiết 12 nhà kính &amp; mô hình 3D, hoặc nhấp Khu B, Khu C để mở Bảng điều khiển IoT.</span>
+                            </div>
+                        </div>
+
+                        <!-- TẦNG 2: Sơ đồ Mặt bằng Chi tiết Khu A (Zone A Layout) -->
+                        <div class="sf-card sf-map-card-pro" id="sf-map-level-zone-a" style="display:none;">
+                            <div class="sf-map-topbar">
+                                <div class="sf-map-topbar-left" style="display:flex; align-items:center; gap:12px;">
+                                    <button type="button" class="sf-layer-btn-pro" onclick="sfNavigateMapLevel('macro')" title="Quay lại bản đồ toàn farm" style="padding:6px 14px; font-weight:700;">
+                                        <span>← Quay lại Bản đồ Tổng thể</span>
+                                    </button>
+                                    <div class="sf-gis-badge">
+                                        <span class="sf-gis-dot"></span>
+                                        <span>Khu A: High-Tech Glass Greenhouses • 12 Nhà màng CNC</span>
+                                    </div>
+                                </div>
+                                <div class="sf-map-topbar-right" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <div class="sf-layer-group">
+                                        <button type="button" class="sf-layer-btn-pro active" id="sf-za-mode-3d-btn" onclick="sfSwitchZoneAMode('3d')" title="Chế độ 3D không gian toàn phân khu">
+                                            <span>🎮 3D Phân khu</span>
+                                        </button>
+                                        <button type="button" class="sf-layer-btn-pro" id="sf-za-mode-2d-btn" onclick="sfSwitchZoneAMode('2d')" title="Chế độ sơ đồ mặt bằng 2D">
+                                            <span>🗺️ Sơ đồ 2D</span>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="sf-layer-btn-pro" onclick="sfOpenZoneDrawer('A')" title="Mở bảng điều khiển IoT">
+                                        <span class="sf-layer-icon">⚙️</span>
+                                        <span>Bảng IoT Khu A</span>
+                                    </button>
+                                    <span class="sf-badge-pro" style="background:#ecfdf5; color:#059669; font-weight:700; font-size:12px; padding:6px 12px; border-radius:12px; border:1px solid #bbf7d0;">
+                                        🟢 12/12 Nhà kính ổn định
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Zone A 3D Campus Viewport (Mô hình 3D Tổng thể Phân khu A) -->
+                            <div class="sf-3d-viewport-container" id="sf-zone-a-3d-container" style="height: 600px; position:relative; overflow:hidden;">
+                                <div id="sf-zone-a-3d-viewport" style="width:100%; height:100%;"></div>
+
+                                <!-- Floating Hover Card for Campus Greenhouses -->
+                                <div id="sf-zone-a-hover-card" class="sf-3d-hud-card" style="display:none;">
+                                    <div class="sf-3d-hud-title" id="sf-za-hud-title">Nhà màng 01 (GH-01)</div>
+                                    <div class="sf-3d-hud-sub" id="sf-za-hud-sub">Nhấp chuột để bước vào tham quan 3D bên trong</div>
+                                </div>
+
+                                <!-- Bottom HUD Navigation Tips -->
+                                <div class="sf-3d-hud-guide">
+                                    <span class="sf-3d-hud-item">🖱️ <strong>Chuột trái:</strong> Xoay 360° tổng quan Khu A</span>
+                                    <span class="sf-3d-hud-item">🔍 <strong>Cuộn chuột:</strong> Zoom gần / xa</span>
+                                    <span class="sf-3d-hud-item">🏛️ <strong>Click Nhà màng:</strong> Vào tham quan 3D chi tiết</span>
+                                </div>
+                            </div>
+
+                            <!-- Zone A Interactive Map Container (Chế độ 2D sơ đồ) -->
+                            <div class="sf-map-container sf-zone-a-canvas-wrap" id="sf-zone-a-wrapper" style="position:relative; width:100%; overflow:hidden; display:none;">
+                                <img src="/smart_farm/static/src/img/zone_a_map.png" class="sf-map-img" alt="Sơ đồ chi tiết Khu A - Nhà màng công nghệ cao" style="width:100%; height:auto; display:block;"/>
+
+                                <!-- Interactive Greenhouse Hotspots (Lưới nhà màng tương tác) -->
+                                <!-- Hàng 1 (Top) -->
+                                <div class="sf-gh-hotspot" style="left:22.5%; top:17.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-01', name: 'Nhà màng 01 (GH-01) - Dưa lưới Nhật Bản CNC', type: 'melon' })" title="Nhà màng 01: Dưa lưới Nhật Bản (Nhấp để vào mô hình 3D)">
+                                    <div class="sf-gh-badge">
+                                        <span class="sf-gh-num">GH-01</span>
+                                        <span class="sf-gh-desc">Dưa lưới • 26.5°C</span>
+                                        <span class="sf-gh-action">Vào 3D ➔</span>
+                                    </div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:39%; top:17.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-02', name: 'Nhà màng 02 (GH-02) - Cà chua bi Cherry', type: 'tomato' })" title="Nhà màng 02: Cà chua bi Cherry (Nhấp để vào mô hình 3D)">
+                                    <div class="sf-gh-badge">
+                                        <span class="sf-gh-num">GH-02</span>
+                                        <span class="sf-gh-desc">Cà chua • 27.0°C</span>
+                                        <span class="sf-gh-action">Vào 3D ➔</span>
+                                    </div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:59.5%; top:17.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-03', name: 'Nhà màng 03 (GH-03) - Dâu tây Hàn Quốc', type: 'strawberry' })" title="Nhà màng 03: Dâu tây Hàn Quốc (Nhấp để vào mô hình 3D)">
+                                    <div class="sf-gh-badge">
+                                        <span class="sf-gh-num">GH-03</span>
+                                        <span class="sf-gh-desc">Dâu tây • 24.2°C</span>
+                                        <span class="sf-gh-action">Vào 3D ➔</span>
+                                    </div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:76%; top:17.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-04', name: 'Nhà màng 04 (GH-04) - Dưa lưới Hoàng Kim', type: 'melon' })" title="Nhà màng 04: Dưa lưới Hoàng Kim (Nhấp để vào mô hình 3D)">
+                                    <div class="sf-gh-badge">
+                                        <span class="sf-gh-num">GH-04</span>
+                                        <span class="sf-gh-desc">Dưa lưới • 26.8°C</span>
+                                        <span class="sf-gh-action">Vào 3D ➔</span>
+                                    </div>
+                                </div>
+
+                                <!-- Hàng 2 -->
+                                <div class="sf-gh-hotspot" style="left:22.5%; top:36.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-05', name: 'Nhà màng 05 (GH-05) - Ớt chuông Sweet Pepper', type: 'pepper' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-05</span><span class="sf-gh-desc">Ớt chuông • 26.2°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:39%; top:36.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-06', name: 'Nhà màng 06 (GH-06) - Rau thủy canh xà lách', type: 'lettuce' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-06</span><span class="sf-gh-desc">Thủy canh • 25.0°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:59.5%; top:36.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-07', name: 'Nhà màng 07 (GH-07) - Cà chua Beef Hà Lan', type: 'tomato' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-07</span><span class="sf-gh-desc">Cà chua Beef • 26.7°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:76%; top:36.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-08', name: 'Nhà màng 08 (GH-08) - Dưa leo Baby', type: 'cucumber' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-08</span><span class="sf-gh-desc">Dưa leo • 26.4°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+
+                                <!-- Hàng 3 -->
+                                <div class="sf-gh-hotspot" style="left:22.5%; top:57.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-09', name: 'Nhà màng 09 (GH-09) - Dưa lưới Taki', type: 'melon' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-09</span><span class="sf-gh-desc">Dưa lưới • 26.1°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:39%; top:57.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-10', name: 'Nhà màng 10 (GH-10) - Nho móng tay', type: 'grape' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-10</span><span class="sf-gh-desc">Nho móng tay • 25.8°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:59.5%; top:57.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-11', name: 'Nhà màng 11 (GH-11) - Dâu tây Bạch Tuyết', type: 'strawberry' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-11</span><span class="sf-gh-desc">Dâu Bạch Tuyết • 23.9°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:76%; top:57.5%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-12', name: 'Nhà màng 12 (GH-12) - Khu ươm giống CNC', type: 'nursery' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-12</span><span class="sf-gh-desc">Ươm giống • 27.2°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+
+                                <!-- Hàng 4 -->
+                                <div class="sf-gh-hotspot" style="left:22.5%; top:77%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-13', name: 'Nhà màng 13 (GH-13) - Dưa lưới Honey Globe', type: 'melon' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-13</span><span class="sf-gh-desc">Dưa lưới • 26.3°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:39%; top:77%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-14', name: 'Nhà màng 14 (GH-14) - Cà chua Socola', type: 'tomato' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-14</span><span class="sf-gh-desc">Cà chua • 26.6°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:59.5%; top:77%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-15', name: 'Nhà màng 15 (GH-15) - Dưa lưới Vân Lưới', type: 'melon' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-15</span><span class="sf-gh-desc">Dưa lưới • 26.9°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                                <div class="sf-gh-hotspot" style="left:76%; top:77%; width:15%; height:17.5%;" onclick="sfNavigateMapLevel('greenhouse-3d', { id: 'GH-16', name: 'Nhà màng 16 (GH-16) - Dưa lưới Kim Cô Nương', type: 'melon' })">
+                                    <div class="sf-gh-badge"><span class="sf-gh-num">GH-16</span><span class="sf-gh-desc">Dưa lưới • 27.1°C</span><span class="sf-gh-action">Vào 3D ➔</span></div>
+                                </div>
+                            </div>
+
+                            <div class="sf-map-bottom-guide">
+                                <span class="sf-guide-icon">💡</span>
+                                <span><strong>Mẹo:</strong> Nhấp vào bất kỳ Nhà màng nào (đặc biệt <strong>Nhà màng 01 (GH-01)</strong> ở góc trên bên trái) để bước vào <strong>Mô hình 3D Digital Twin</strong> tham quan bên trong và điều khiển IoT!</span>
+                            </div>
+                        </div>
+
+                        <!-- TẦNG 3: Không gian 3D Digital Twin Nhà màng -->
+                        <div class="sf-card sf-map-card-pro" id="sf-map-level-greenhouse-3d" style="display:none;">
+                            <!-- Top Control Bar -->
+                            <div class="sf-map-topbar">
+                                <div class="sf-map-topbar-left" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                    <button type="button" class="sf-layer-btn-pro" onclick="sfNavigateMapLevel('zone-a')" title="Quay lại sơ đồ 12 nhà màng" style="font-weight:700;">
+                                        <span>← Sơ đồ Khu A</span>
+                                    </button>
+                                    <div class="sf-gis-badge">
+                                        <span class="sf-gis-dot"></span>
+                                        <span id="sf-3d-title-badge">Nhà màng 01 (GH-01) • 3D Digital Twin</span>
+                                    </div>
+                                </div>
+
+                                <div class="sf-map-topbar-right" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <span class="sf-layer-label">Góc nhìn 3D:</span>
+                                    <div class="sf-layer-group">
+                                        <button type="button" class="sf-layer-btn-pro active" id="sf-cam-overview" onclick="sfSet3DCamera('overview')" title="Góc nhìn toàn cảnh nhà kính">
+                                            <span>🎥 Toàn cảnh</span>
+                                        </button>
+                                        <button type="button" class="sf-layer-btn-pro" id="sf-cam-crops" onclick="sfSet3DCamera('crops')" title="Góc nhìn sát luống dưa lưới &amp; ống tưới">
+                                            <span>🌱 Luống dưa</span>
+                                        </button>
+                                        <button type="button" class="sf-layer-btn-pro" id="sf-cam-ceiling" onclick="sfSet3DCamera('ceiling')" title="Góc nhìn thiết bị trần: quạt &amp; phun sương">
+                                            <span>⚙️ Thiết bị trần</span>
+                                        </button>
+                                        <button type="button" class="sf-layer-btn-pro" id="sf-cam-rotate" onclick="sfToggle3DRotate()" title="Bật/Tắt xoay tự động 360 độ">
+                                            <span>🔄 Xoay 360°</span>
+                                        </button>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <button type="button" class="sf-btn sf-btn-emerald" style="padding:6px 14px; font-size:12px; background:#15803d; border-color:#166534;" onclick="sfFocusFirstPlant()" title="Kiểm tra &amp; Cài đặt từng cây trồng">
+                                            <span>🌱 Cây trồng</span>
+                                        </button>
+                                        <button type="button" class="sf-btn sf-btn-emerald" style="padding:6px 14px; font-size:12px;" onclick="sfOpenZoneDrawer('A')">
+                                            <span>⚙️ Bảng IoT</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3D Canvas Viewport -->
+                            <div class="sf-3d-viewport-container" style="position:relative; width:100%; height:580px; background:#f0fdf4; overflow:hidden;">
+                                <div id="sf-greenhouse-3d-viewport" style="width:100%; height:100%;"></div>
+
+                                <!-- 3D Navigation D-Pad & Glide Controls Overlay -->
+                                <div class="sf-3d-nav-overlay" id="sf-3d-nav-overlay">
+                                    <div class="sf-nav-dpad-title">🧭 Điều hướng 3D</div>
+                                    <div class="sf-nav-dpad-grid">
+                                        <button type="button" class="sf-nav-btn sf-nav-up" onclick="sfWalkCamera('forward')" title="Tiến vào trong nhà kính (Phím W hoặc ↑)">
+                                            ▲<span class="sf-nav-tooltip">Tiến vào trong (W)</span>
+                                        </button>
+                                        <div class="sf-nav-mid-row">
+                                            <button type="button" class="sf-nav-btn sf-nav-left" onclick="sfWalkCamera('left')" title="Trượt sang trái (Phím A hoặc ←)">
+                                                ◀<span class="sf-nav-tooltip">Sang trái (A)</span>
+                                            </button>
+                                            <button type="button" class="sf-nav-btn sf-nav-center" onclick="sfResetCamera()" title="Vị trí mặc định">
+                                                ●
+                                            </button>
+                                            <button type="button" class="sf-nav-btn sf-nav-right" onclick="sfWalkCamera('right')" title="Trượt sang phải (Phím D hoặc →)">
+                                                ▶<span class="sf-nav-tooltip">Sang phải (D)</span>
+                                            </button>
+                                        </div>
+                                        <button type="button" class="sf-nav-btn sf-nav-down" onclick="sfWalkCamera('backward')" title="Lùi ra ngoài (Phím S hoặc ↓)">
+                                            ▼<span class="sf-nav-tooltip">Lùi ra ngoài (S)</span>
+                                        </button>
+                                    </div>
+                                    <div class="sf-nav-zoom-group">
+                                        <button type="button" class="sf-nav-pill-btn" onclick="sfZoomCamera(-4)" title="Phóng to (Zoom In)">
+                                            🔍+
+                                        </button>
+                                        <button type="button" class="sf-nav-pill-btn" onclick="sfZoomCamera(4)" title="Thu nhỏ (Zoom Out)">
+                                            🔍-
+                                        </button>
+                                        <button type="button" class="sf-nav-pill-btn" onclick="sfFocusFirstPlant()" title="Kiểm tra &amp; Cài đặt từng cây trồng" style="background:#15803d; color:#fff;">
+                                            🌱 Cây
+                                        </button>
+                                        <button type="button" class="sf-nav-pill-btn" onclick="sfOpenZoneDrawer('A')" title="Cài đặt tưới &amp; IoT" style="background:#10b981; color:#fff;">
+                                            💧 Tưới
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Floating 3D Hover Tooltip -->
+                                <div id="sf-3d-hover-card" class="sf-3d-hud-card" style="display:none;">
+                                    <div class="sf-3d-hud-title" id="sf-3d-hud-title">Thiết bị</div>
+                                    <div class="sf-3d-hud-sub" id="sf-3d-hud-sub">Nhấp chuột để xem &amp; điều khiển</div>
+                                </div>
+
+                                <!-- Bottom HUD Navigation Tips -->
+                                <div class="sf-3d-hud-guide">
+                                    <span class="sf-3d-hud-item">⌨️ <strong>W / S hoặc ↑ / ↓:</strong> Tiến vào trong / Lùi ra</span>
+                                    <span class="sf-3d-hud-item">🖱️ <strong>Giữ chuột kéo:</strong> Xoay 360°</span>
+                                    <span class="sf-3d-hud-item">🔍 <strong>Cuộn chuột:</strong> Zoom</span>
+                                    <span class="sf-3d-hud-item">🌱 <strong>Click từng cây:</strong> Xem chi tiết &amp; Cài đặt tưới</span>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Sensor bar in 3D -->
+                            <div class="sf-map-bottom-guide" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:13px;">
+                                    <span>🌡️ Nhiệt độ: <strong>26.5°C</strong></span>
+                                    <span>💧 Ẩm đất: <strong>72%</strong></span>
+                                    <span>💨 Quạt đối lưu: <strong id="sf-3d-status-fan" style="color:#16a34a;">ĐANG CHẠY</strong></span>
+                                    <span>🚿 Phun sương: <strong id="sf-3d-status-misting" style="color:#16a34a;">ĐANG PHUN</strong></span>
+                                </div>
+                                <button type="button" class="sf-btn sf-btn-light" style="padding:4px 12px; font-size:12px; font-weight:600;" onclick="sfNavigateMapLevel('zone-a')">
+                                    ✕ Thoát 3D
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1508,7 +1760,176 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=106"></script>
+                <!-- Backdrop & Slide-out Plant Inspection & Individual Irrigation Drawer -->
+                <div class="sf-plant-drawer" id="sf-plant-drawer" style="display:none;">
+                    <div class="sf-drawer-header">
+                        <div class="sf-dh-info">
+                            <button type="button" class="sf-btn-back-link" onclick="sfBackToZoneDrawer()" title="Quay lại bảng điều khiển thiết bị Khu A">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                <span>Quay lại thiết bị Khu A</span>
+                            </button>
+                            <div class="sf-dh-badge" id="sf-pd-badge" style="background:#f0fdf4; color:#16a34a;">
+                                <span class="sf-pulse-dot" style="background:currentColor;"></span>
+                                <span id="sf-pd-badgetext">🌱 Cây Trồng IoT • Giám Sát Gốc 1-1</span>
+                            </div>
+                            <div class="sf-drawer-title" id="sf-pd-title">Cây Dưa Lưới Nhật Bản CNC #GH01-P05</div>
+                            <div class="sf-drawer-sub" id="sf-pd-sub">Luống 01 (Dãy Tây) • Giống: Taki Muskmelon F1</div>
+                        </div>
+                        <button type="button" class="sf-drawer-close" onclick="sfClosePlantDrawer()" title="Đóng bảng">✕</button>
+                    </div>
+
+                    <div class="sf-drawer-body">
+                        <!-- Section: Tóm tắt sinh học & Vòng đời -->
+                        <div class="sf-plant-summary-card">
+                            <div class="sf-psc-row">
+                                <div>
+                                    <div class="sf-psc-label">Tình trạng sinh trưởng</div>
+                                    <div class="sf-psc-val" id="sf-pd-health">🟢 Rất khỏe mạnh (Tối ưu)</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="sf-psc-label">Chu kỳ phát triển</div>
+                                    <div class="sf-psc-val" id="sf-pd-cycle">45 / 65 ngày (Còn 20 ngày)</div>
+                                </div>
+                            </div>
+                            <div class="sf-psc-progress-wrap">
+                                <div class="sf-psc-progress-bar" id="sf-pd-cycle-bar" style="width: 69%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Section 1: 6 Chỉ số đo đạc chuyên sâu chuẩn hóa -->
+                        <div class="sf-drawer-section-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            <span>Chỉ số nông học gốc &amp; Vi khí hậu</span>
+                        </div>
+                        <div class="sf-drawer-metrics-grid">
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#eff6ff; color:#3b82f6;">💧</span>
+                                    <span class="sf-dmc-label">Độ ẩm bầu rễ</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-pd-moisture">72%</div>
+                                <div class="sf-dmc-bar-bg">
+                                    <div class="sf-dmc-bar-fill" id="sf-pd-moisture-bar" style="width: 72%; background: #3b82f6;"></div>
+                                </div>
+                                <div class="sf-dmc-sub">Ngưỡng chuẩn: 65% – 78%</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#fef2f2; color:#ef4444;">🌡️</span>
+                                    <span class="sf-dmc-label">Nhiệt độ quanh gốc</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-pd-temp">26.5°C</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#16a34a;">🟢 Lý tưởng cho rễ</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#fdf4ff; color:#a855f7;">🧪</span>
+                                    <span class="sf-dmc-label">Độ chua rễ (pH)</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-pd-ph">6.2 pH</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#16a34a;">🟢 Hấp thụ NPK tối đa</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#ecfdf5; color:#10b981;">⚡</span>
+                                    <span class="sf-dmc-label">Dinh dưỡng (EC)</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-pd-ec">1.8 mS/cm</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#10b981;">🟢 Nồng độ khoáng chuẩn</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#fffbeb; color:#f59e0b;">☀️</span>
+                                    <span class="sf-dmc-label">Cường độ ánh sáng</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-pd-lux">8,400 lux</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#f59e0b;">🟡 Đủ quang hợp</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#fef3c7; color:#d97706;">🍬</span>
+                                    <span class="sf-dmc-label">Độ ngọt ước tính</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-pd-brix">14.2° Brix</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#16a34a;">⭐ Chuẩn GlobalGAP</div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Điều khiển lịch tưới & mức độ tưới tiêu riêng cho cây này -->
+                        <div class="sf-drawer-section-title" style="margin-top:24px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                            </svg>
+                            <span>Cài đặt &amp; Điều khiển tưới tiêu cho cây này</span>
+                        </div>
+
+                        <div class="sf-plant-ctrl-card">
+                            <div class="sf-pctrl-row" style="margin-bottom:12px;">
+                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:13px; color:#0f172a;">
+                                    <input type="checkbox" id="sf-pd-override-chk" onchange="sfTogglePlantOverride(this)"/>
+                                    <span>Kích hoạt chế độ tưới riêng (Ghi đè cài đặt tổng)</span>
+                                </label>
+                            </div>
+
+                            <div id="sf-pd-custom-settings">
+                                <div class="sf-form-group" style="margin-bottom:12px;">
+                                    <label class="sf-label" style="font-size:12px;">Phương thức tưới cho cây này</label>
+                                    <select id="sf-pd-method-sel" class="sf-input" onchange="sfSaveCurrentPlantSettings()">
+                                        <option value="drip">💧 Tưới nhỏ giọt bù ẩm gốc (Drip)</option>
+                                        <option value="fert">🌱 Tưới châm dinh dưỡng khoáng NPK</option>
+                                        <option value="pause">🛑 Tạm ngưng tưới (Xiết nước chuẩn bị thu hoạch)</option>
+                                    </select>
+                                </div>
+
+                                <div class="sf-form-row" style="margin-bottom:12px;">
+                                    <div class="sf-form-group sf-col">
+                                        <label class="sf-label" style="font-size:12px;">Mức độ nhỏ giọt / Lượng nước</label>
+                                        <select id="sf-pd-rate-sel" class="sf-input" onchange="sfSaveCurrentPlantSettings()">
+                                            <option value="100ml">Ít (100 ml/lần)</option>
+                                            <option value="200ml" selected="selected">Chuẩn (200 ml/lần)</option>
+                                            <option value="350ml">Nhiều (350 ml/lần)</option>
+                                        </select>
+                                    </div>
+                                    <div class="sf-form-group sf-col">
+                                        <label class="sf-label" style="font-size:12px;">Lịch tưới / Tần suất</label>
+                                        <select id="sf-pd-interval-sel" class="sf-input" onchange="sfSaveCurrentPlantSettings()">
+                                            <option value="2h">Mỗi 2 giờ/lần</option>
+                                            <option value="4h" selected="selected">Mỗi 4 giờ/lần</option>
+                                            <option value="auto">Tự động khi ẩm rễ &lt; 65%</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px; color:#475569;">
+                                    <span>🕒 Lịch tưới tiếp theo: <strong id="sf-pd-next-time" style="color:#0284c7;">16:30 Hôm nay (trong 45 phút)</strong></span>
+                                </div>
+
+                                <!-- Nút tưới ngay tức thì -->
+                                <button type="button" class="sf-btn sf-btn-emerald w-100" id="sf-pd-water-now-btn" onclick="sfWaterSinglePlantNow()" style="padding:10px; font-size:13px; font-weight:700;">
+                                    <span>💧 Kích hoạt tưới ngay cho cây này (150ml)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sf-drawer-footer" style="display:flex; gap:10px;">
+                        <button type="button" class="sf-btn sf-btn-primary" style="flex:1;" onclick="sfSavePlantAndClose()">
+                            ✓ Lưu cấu hình cây
+                        </button>
+                        <button type="button" class="sf-btn sf-btn-light" onclick="sfClosePlantDrawer()">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+
+                <script src="/smart_farm/static/src/js/dashboard.js?v=120"></script>
             </body>
         </html>
     </template>
