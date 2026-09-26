@@ -6,9 +6,26 @@
 
 ## [v0.6.0] – 2026-09-26 (Hiện tại)
 
+### 🐛 Sửa lỗi & Hoàn thiện Giao diện (Bug Fixes & UI Polish)
+- **Chuyển liên kết "Hệ thống Odoo" vào Cài đặt (Settings Dropdown)**: Bỏ nút "Hệ thống Odoo" khỏi cụm điều hướng chính giữa Navbar (`.sf-nav-pills`), đưa vào vị trí đầu tiên trong menu dropdown Cài đặt (`#sf-settings-menu`), giúp navbar trung tâm tinh gọn và cân đối.
+- **Tách biệt Header Độc lập theo Tab**: Di chuyển cụm tiêu đề "Tổng quan trang trại" và nhịp tim "Cập nhật..." vào hẳn bên trong `#tab-overview`. Khi chuyển sang các tab khác ("Bản đồ", "Công việc", "Kho vật tư"), tiêu đề tổng quan và badge tự động biến mất, tab Bản đồ sở hữu tiêu đề riêng biệt "Bản đồ số nông trại" kèm badge "🟢 Giám sát trực tuyến".
+- **Khắc phục triệt để vỡ giao diện Bảng điều khiển Phân khu (Zone Drawer)**: Di chuyển `#sf-zone-drawer` và backdrop ra cấp `<body>` với `style="display:none;"` phòng vệ, loại bỏ hoàn toàn hiện tượng text tràn dưới chân bản đồ khi tải trang.
+- **Nâng cấp Thẩm mỹ Bản đồ Nông nghiệp Thông minh**: Thay thế tooltip thô sơ bằng HUD Chips kính mờ (`.sf-zone-chip`) trên từng phân khu (ẩn mặc định để lộ toàn bộ chữ và hình vẽ gốc trên bản đồ, chỉ hiện lên khi rê chuột vào khu vực), ghim máy cày định vị telemetry có chip vận tốc và radar 2 nhịp, thanh lọc lớp bản đồ dạng Pill (`.sf-layer-btn-pro`), và bảng điều khiển IoT Offcanvas cao cấp với công tắc trượt chuẩn iOS.
+- **Sửa lỗi Internal Server Error (500) khi tải Dashboard**:
+  - Khắc phục lỗi biên dịch QWeb template tại `smart_farm/views/dashboard.xml`: Biểu thức `alert.area or \'Toàn trang trại\'` trong `t-attf-onclick` chứa ký tự escape quote `\'` làm engine QWeb báo lỗi `ValueError: Can not compile expression`.
+  * Chuyển các tham số sang thuộc tính HTML5 `data-*` (`t-att-data-id`, `t-att-data-name`, `t-att-data-area`, `t-att-data-content`) và ủy quyền xử lý sự kiện qua `onclick="sfOnAlertClick(event, this)"` trong `dashboard.js`.
+  * Đã nâng cấp module Odoo và khởi động lại dịch vụ thành công, trang Dashboard render hoàn hảo không còn lỗi 500.
+
 ### 🆕 Thêm mới
 
 #### UI & Navigation
+- **Bản đồ Nông trại Tương tác (Interactive Smart Farm Map – Feature 002)**:
+  - Nâng cấp `#tab-map` thành trung tâm điều hành trực quan với thanh lọc lớp bản đồ (Phương tiện, Thủy lợi, Cảnh báo), điểm ghim máy kéo GPS có radar ping, điểm cảnh báo sự cố nhấp nháy hỗ trợ giải quyết nhanh qua API, và thanh trượt Offcanvas (`#sf-zone-drawer`) hiển thị vi khí hậu cùng công tắc điều khiển IoT thực tế cho từng phân khu. Chi tiết tại [UI/UI-Change.md](UI/UI-Change.md).
+- **APIs Điều khiển & Cảnh báo mới**:
+  - `POST /smart_farm/api/alert/resolve`: Xác nhận xử lý cảnh báo sự cố tức thời.
+  - `POST /smart_farm/api/zone/control`: Điều khiển bật/tắt thiết bị IoT (van tưới, máy bơm, phun sương) theo phân khu.
+- **Đồng bộ động tiêu đề trang & Huy hiệu cập nhật**:
+  - Tiêu đề trang và huy hiệu thời gian được đồng bộ động theo từng tab: chỉ hiển thị huy hiệu thời gian và tiêu đề "Tổng quan trang trại" ở tab Tổng quan; khi chuyển sang các tab "Bản đồ nông trại", "Quản lý công việc", "Kho vật tư & Sản phẩm", tiêu đề tự đổi tương ứng và ẩn huy hiệu cập nhật. Chi tiết tại [UI/UI-Change.md](UI/UI-Change.md).
 - **Nút "Công việc" trên Navbar**:
   - Bổ sung nút tab "Công việc" vào cụm điều hướng trung tâm (`.sf-nav-pills`) cạnh "Tổng quan", giúp người dùng truy cập trực tiếp danh sách công việc ở mọi vị trí trên trang web.
 - **Nút điều hướng nhanh từ Dashboard Overview**:

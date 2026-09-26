@@ -27,8 +27,439 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=17"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=106"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <style><![CDATA[
+                    /* Critical Inlined Map & Drawer CSS */
+                    .sf-map-card-pro {
+                        border-radius: 18px;
+                        border: 1px solid #e2e8f0;
+                        box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+                        overflow: hidden;
+                        background: #ffffff;
+                        margin-bottom: 24px;
+                    }
+                    .sf-map-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 18px;
+                    }
+                    .sf-map-subtitle {
+                        font-size: 13px;
+                        color: #64748b;
+                        margin-top: 4px;
+                    }
+                    .sf-map-status-pill {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 6px 14px;
+                        border-radius: 20px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #166534;
+                        background: #f0fdf4;
+                        border: 1px solid #bbf7d0;
+                    }
+                    .sf-map-topbar {
+                        padding: 14px 20px;
+                        background: #f8fafc;
+                        border-bottom: 1px solid #e2e8f0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        flex-wrap: wrap;
+                        gap: 12px;
+                    }
+                    .sf-gis-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #0f172a;
+                    }
+                    .sf-gis-dot {
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        background: #10b981;
+                        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+                    }
+                    .sf-map-topbar-right {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        flex-wrap: wrap;
+                    }
+                    .sf-layer-label {
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #64748b;
+                    }
+                    .sf-layer-group {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .sf-layer-btn-pro {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 6px 12px;
+                        border-radius: 8px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #475569;
+                        background: #ffffff;
+                        border: 1px solid #cbd5e1;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+                    .sf-layer-btn-pro:hover {
+                        background: #f1f5f9;
+                        color: #0f172a;
+                        border-color: #94a3b8;
+                    }
+                    .sf-layer-btn-pro.active {
+                        background: #0f172a;
+                        color: #ffffff;
+                        border-color: #0f172a;
+                        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+                    }
+                    .sf-layer-count {
+                        padding: 1px 6px;
+                        border-radius: 10px;
+                        font-size: 10px;
+                        background: rgba(255, 255, 255, 0.2);
+                        color: #ffffff;
+                    }
+                    .sf-layer-btn-pro:not(.active) .sf-layer-count {
+                        background: #e2e8f0;
+                        color: #475569;
+                    }
+                    .sf-layer-count.count-danger {
+                        background: #ef4444 !important;
+                        color: #ffffff !important;
+                    }
+                    /* Zone Interactive Chips (Hover Only) */
+                    .sf-zone-chip {
+                        position: absolute;
+                        top: 20px;
+                        left: 20px;
+                        background: rgba(255, 255, 255, 0.96);
+                        backdrop-filter: blur(8px);
+                        border: 1px solid rgba(255, 255, 255, 0.9);
+                        border-radius: 12px;
+                        padding: 10px 14px;
+                        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.14);
+                        opacity: 0;
+                        visibility: hidden;
+                        transform: translateY(8px);
+                        transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+                        pointer-events: none;
+                        min-width: 150px;
+                        z-index: 25;
+                    }
+                    .sf-map-zone:hover .sf-zone-chip {
+                        opacity: 1;
+                        visibility: visible;
+                        transform: translateY(0);
+                    }
+                    .sf-map-zone:hover {
+                        background: rgba(16, 185, 129, 0.08);
+                        outline: 2px dashed rgba(16, 185, 129, 0.6);
+                        outline-offset: -3px;
+                    }
+                    .sf-map-zone.zone-b:hover {
+                        background: rgba(245, 158, 11, 0.08);
+                        outline-color: rgba(245, 158, 11, 0.6);
+                    }
+                    .sf-map-zone.zone-c:hover {
+                        background: rgba(14, 165, 233, 0.08);
+                        outline-color: rgba(14, 165, 233, 0.6);
+                    }
+                    .sf-zc-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        margin-bottom: 4px;
+                    }
+                    .sf-zc-dot {
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        background: #10b981;
+                    }
+                    .chip-b .sf-zc-dot { background: #f59e0b; }
+                    .chip-c .sf-zc-dot { background: #0ea5e9; }
+                    .sf-zc-title {
+                        font-size: 12px;
+                        font-weight: 700;
+                        color: #0f172a;
+                    }
+                    .sf-zc-body {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 12px;
+                    }
+                    .sf-zc-metric {
+                        font-size: 14px;
+                        font-weight: 800;
+                        color: #0f172a;
+                    }
+                    .sf-zc-action {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #2563eb;
+                    }
+                    /* Vehicle Marker */
+                    .sf-vehicle-hud-pin {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        background: rgba(15, 23, 42, 0.92);
+                        color: #ffffff;
+                        padding: 4px 10px;
+                        border-radius: 20px;
+                        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+                        border: 1px solid rgba(255,255,255,0.2);
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                    }
+                    .sf-vehicle-marker:hover .sf-vehicle-hud-pin {
+                        transform: scale(1.1);
+                    }
+                    .sf-v-icon-box {
+                        font-size: 16px;
+                    }
+                    .sf-v-hud-info {
+                        text-align: left;
+                        line-height: 1.1;
+                    }
+                    .sf-v-hud-name {
+                        font-size: 11px;
+                        font-weight: 700;
+                    }
+                    .sf-v-hud-speed {
+                        font-size: 9px;
+                        color: #4ade80;
+                        font-weight: 600;
+                    }
+                    /* Beacon Badge */
+                    .sf-beacon-badge-text {
+                        position: absolute;
+                        bottom: -18px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(15, 23, 42, 0.85);
+                        color: #fff;
+                        font-size: 10px;
+                        padding: 1px 6px;
+                        border-radius: 6px;
+                        white-space: nowrap;
+                    }
+                    .sf-map-bottom-guide {
+                        padding: 12px 20px;
+                        background: #f8fafc;
+                        border-top: 1px solid #e2e8f0;
+                        font-size: 12px;
+                        color: #475569;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    /* Drawer Core Styling */
+                    .sf-drawer-backdrop {
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(15, 23, 42, 0.45);
+                        backdrop-filter: blur(4px);
+                        z-index: 1040;
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                    }
+                    .sf-drawer-backdrop.show {
+                        opacity: 1;
+                    }
+                    .sf-zone-drawer {
+                        position: fixed;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        width: 440px;
+                        max-width: 90vw;
+                        background: #ffffff;
+                        box-shadow: -15px 0 40px rgba(15, 23, 42, 0.22);
+                        z-index: 1050;
+                        transform: translateX(100%);
+                        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+                        display: flex;
+                        flex-direction: column;
+                        overflow-y: auto;
+                    }
+                    .sf-zone-drawer.show {
+                        transform: translateX(0);
+                    }
+                    .sf-drawer-header {
+                        padding: 20px 24px;
+                        border-bottom: 1px solid #e2e8f0;
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: space-between;
+                        background: #f8fafc;
+                        position: sticky;
+                        top: 0;
+                        z-index: 10;
+                    }
+                    .sf-dh-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 3px 10px;
+                        border-radius: 20px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        margin-bottom: 6px;
+                    }
+                    .sf-drawer-title {
+                        font-size: 17px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        line-height: 1.25;
+                    }
+                    .sf-drawer-sub {
+                        font-size: 12px;
+                        color: #64748b;
+                        margin-top: 3px;
+                    }
+                    .sf-drawer-close {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 8px;
+                        border: 1px solid #cbd5e1;
+                        background: #ffffff;
+                        color: #64748b;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        font-size: 16px;
+                        transition: all 0.2s;
+                        flex-shrink: 0;
+                    }
+                    .sf-drawer-close:hover {
+                        background: #f1f5f9;
+                        color: #0f172a;
+                    }
+                    .sf-drawer-body {
+                        padding: 22px 24px;
+                        flex: 1;
+                    }
+                    .sf-drawer-section-title {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 12px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        color: #475569;
+                        margin-bottom: 12px;
+                    }
+                    .sf-drawer-metrics-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 10px;
+                    }
+                    .sf-dm-card {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 12px;
+                        padding: 12px 14px;
+                    }
+                    .sf-dmc-top {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        margin-bottom: 6px;
+                    }
+                    .sf-dmc-icon {
+                        width: 22px;
+                        height: 22px;
+                        border-radius: 6px;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                    }
+                    .sf-dmc-label {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #64748b;
+                    }
+                    .sf-dmc-val {
+                        font-size: 20px;
+                        font-weight: 800;
+                        color: #0f172a;
+                    }
+                    .sf-dmc-bar-bg {
+                        width: 100%;
+                        height: 5px;
+                        background: #e2e8f0;
+                        border-radius: 4px;
+                        margin: 8px 0 4px;
+                        overflow: hidden;
+                    }
+                    .sf-dmc-bar-fill {
+                        height: 100%;
+                        border-radius: 4px;
+                        transition: width 0.4s ease;
+                    }
+                    .sf-dmc-sub {
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #64748b;
+                    }
+                    .sf-device-card {
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 12px;
+                        padding: 12px 14px;
+                        margin-bottom: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        transition: all 0.2s;
+                    }
+                    .sf-device-card:hover {
+                        border-color: #cbd5e1;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+                    }
+                    .sf-device-status-badge {
+                        font-size: 9px;
+                        font-weight: 700;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        margin-left: 6px;
+                        text-transform: uppercase;
+                    }
+                    .sf-device-status-badge.active {
+                        background: #dcfce7;
+                        color: #15803d;
+                    }
+                    .sf-device-status-badge.inactive {
+                        background: #f1f5f9;
+                        color: #64748b;
+                    }
+                    .sf-drawer-footer {
+                        padding: 16px 24px;
+                        border-top: 1px solid #e2e8f0;
+                        background: #f8fafc;
+                    }
+                ]]></style>
             </head>
             <body>
                 <div class="sf-wrap">
@@ -59,9 +490,6 @@
                                 <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-inventory')">
                                     Kho &amp; Sản phẩm
                                 </button>
-                                <a href="/web" class="sf-nav-item sf-nav-link" title="Đến hệ thống quản trị Odoo">
-                                    Hệ thống Odoo
-                                </a>
                             </nav>
 
                             <!-- Right: Actions & User Profile -->
@@ -89,6 +517,15 @@
                                         </button>
                                         <div class="sf-dropdown-menu" id="sf-settings-menu">
                                             <div class="sf-dropdown-header">Cài đặt &amp; Quản trị</div>
+                                            <a href="/web" class="sf-dropdown-link" title="Đến hệ thống quản trị Odoo">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect x="3" y="3" width="7" height="7"></rect>
+                                                    <rect x="14" y="3" width="7" height="7"></rect>
+                                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                                </svg>
+                                                Hệ thống Odoo
+                                            </a>
                                             <a href="/web#action=base_setup.action_general_configuration" class="sf-dropdown-link">
                                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                                                 Thiết lập hệ thống
@@ -142,16 +579,16 @@
                         </header>
                     </div>
 
-                    <!-- Page Title & Status Row -->
-                    <div class="sf-header">
-                        <div class="sf-title">Tổng quan trang trại</div>
-                        <div class="sf-sub-badge">
-                            <span class="sf-pulse-dot"></span>
-                            Cập nhật: <t t-esc="now.strftime('%H:%M')"/> — <t t-esc="now.strftime('%d/%m/%Y')"/>
-                        </div>
-                    </div>
-
                     <div id="tab-overview" class="sf-tab-content" style="display:block;">
+                        <!-- Page Title & Status Row (Chỉ hiển thị trên tab Tổng quan) -->
+                        <div class="sf-header">
+                            <div class="sf-title">Tổng quan trang trại</div>
+                            <div class="sf-sub-badge">
+                                <span class="sf-pulse-dot"></span>
+                                Cập nhật: <t t-esc="now.strftime('%H:%M')"/> — <t t-esc="now.strftime('%d/%m/%Y')"/>
+                            </div>
+                        </div>
+
                         <div class="sf-stats">
                         <div class="sf-stat">
                             <div class="sf-stat-label">Diện tích canh tác</div>
@@ -589,42 +1026,193 @@
                     </div>
 
                     <div id="tab-map" class="sf-tab-content" style="display:none;">
-                        <!-- Bản đồ Tương tác -->
-                        <div class="sf-card sf-map-card">
-                            <div class="sf-card-hd">
-                                <div class="sf-card-title">Bản đồ Nông trại (Tương tác trực tiếp)</div>
-                                <span class="badge-live">Live</span>
+                        <!-- Header riêng của Bản đồ Nông trại -->
+                        <div class="sf-header sf-map-header">
+                            <div>
+                                <div class="sf-title">Bản đồ số nông trại</div>
+                                <div class="sf-map-subtitle">Hệ thống giám sát vi khí hậu, định vị phương tiện GPS &amp; điều khiển IoT trực tiếp</div>
                             </div>
-                            <div class="sf-map-container">
-                                <!-- Ảnh nền -->
-                                <img src="/smart_farm/static/src/img/farm_map.jpg?v=2" class="sf-map-img" alt="Farm Map"/>
-                                
-                                <!-- Zone A (Left) -->
-                                <div class="sf-map-zone zone-a" title="Khu A - Nhà màng">
-                                    <div class="sf-map-tooltip">
-                                        <div class="sf-map-tt-title">KHU A (Nhà màng)</div>
-                                        <div class="sf-map-tt-val" style="color:#639922;"><t t-esc="soil['moisture_a']"/>%</div>
-                                        <div class="sf-map-tt-sub">Độ ẩm đất bề mặt</div>
+                            <div class="sf-map-status-pill">
+                                <span class="sf-pulse-dot" style="background:#16a34a;"></span>
+                                <span>Giám sát trực tuyến</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Bản đồ Chính -->
+                        <div class="sf-card sf-map-card-pro">
+                            <!-- Top Control Bar: Layer Switcher & GIS status -->
+                            <div class="sf-map-topbar">
+                                <div class="sf-map-topbar-left">
+                                    <div class="sf-gis-badge">
+                                        <span class="sf-gis-dot"></span>
+                                        <span>3 Phân khu canh tác • 12.4 ha</span>
                                     </div>
                                 </div>
-                                
-                                <!-- Zone B (Center) -->
-                                <div class="sf-map-zone zone-b" title="Khu B - Đất mở">
-                                    <div class="sf-map-tooltip">
-                                        <div class="sf-map-tt-title">KHU B (Đất mở)</div>
-                                        <div class="sf-map-tt-val" style="color:#BA7517;"><t t-esc="soil['moisture_b']"/>%</div>
-                                        <div class="sf-map-tt-sub">Độ ẩm đất trung bình</div>
+                                <div class="sf-map-topbar-right">
+                                    <span class="sf-layer-label">Lớp bản đồ:</span>
+                                    <div class="sf-layer-group">
+                                        <button type="button" class="sf-layer-btn-pro active" id="layer-vehicles-btn" onclick="sfToggleMapLayer('vehicles', this)" title="Bật/Tắt định vị máy móc">
+                                            <span class="sf-layer-icon">🚜</span>
+                                            <span>Máy cày GPS</span>
+                                            <span class="sf-layer-count">1</span>
+                                        </button>
+                                        <button type="button" class="sf-layer-btn-pro active" id="layer-irrigation-btn" onclick="sfToggleMapLayer('irrigation', this)" title="Bật/Tắt trạm thủy lợi">
+                                            <span class="sf-layer-icon">💧</span>
+                                            <span>Thủy lợi &amp; Cảm biến</span>
+                                            <span class="sf-layer-count">3</span>
+                                        </button>
+                                        <button type="button" class="sf-layer-btn-pro active" id="layer-alerts-btn" onclick="sfToggleMapLayer('alerts', this)" title="Bật/Tắt cảnh báo">
+                                            <span class="sf-layer-icon">⚠️</span>
+                                            <span>Cảnh báo sự cố</span>
+                                            <span class="sf-layer-count count-danger"><t t-esc="len(active_alerts)"/></span>
+                                        </button>
                                     </div>
                                 </div>
-                                
-                                <!-- Zone C (Right) -->
-                                <div class="sf-map-zone zone-c" title="Khu C - Hồ &amp; Vườn">
-                                    <div class="sf-map-tooltip">
-                                        <div class="sf-map-tt-title">KHU C (Hồ chứa)</div>
-                                        <div class="sf-map-tt-val" style="color:#185FA5;"><t t-esc="soil['moisture_c']"/>%</div>
-                                        <div class="sf-map-tt-sub">Độ ẩm ngậm nước</div>
+                            </div>
+
+                            <!-- Map Canvas Container -->
+                            <div class="sf-map-container" id="sf-map-wrapper">
+                                <img src="/smart_farm/static/src/img/farm_map.jpg?v=3" class="sf-map-img" alt="Bản đồ quy hoạch nông trại"/>
+
+                                <!-- Pinned Zone HUD Badges (Always visible, interactive) -->
+                                <!-- Zone A: Nhà màng (Left) -->
+                                <div class="sf-map-zone zone-a" onclick="sfOpenZoneDrawer('A')" title="Khu A - Nhà màng công nghệ cao (Nhấp để mở bảng điều khiển)">
+                                    <div class="sf-zone-chip chip-a">
+                                        <div class="sf-zc-header">
+                                            <span class="sf-zc-dot"></span>
+                                            <span class="sf-zc-title">Khu A • Nhà màng</span>
+                                        </div>
+                                        <div class="sf-zc-body">
+                                            <span class="sf-zc-metric">💧 <t t-esc="soil['moisture_a']"/>% ẩm</span>
+                                            <span class="sf-zc-action">Bảng IoT ➔</span>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <!-- Zone B: Cánh đồng mở (Center) -->
+                                <div class="sf-map-zone zone-b" onclick="sfOpenZoneDrawer('B')" title="Khu B - Cánh đồng mở (Nhấp để mở bảng điều khiển)">
+                                    <div class="sf-zone-chip chip-b">
+                                        <div class="sf-zc-header">
+                                            <span class="sf-zc-dot"></span>
+                                            <span class="sf-zc-title">Khu B • Cánh đồng</span>
+                                        </div>
+                                        <div class="sf-zc-body">
+                                            <span class="sf-zc-metric">💧 <t t-esc="soil['moisture_b']"/>% ẩm</span>
+                                            <span class="sf-zc-action">Bảng IoT ➔</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Zone C: Hồ chứa & Cây ăn trái (Right) -->
+                                <div class="sf-map-zone zone-c" onclick="sfOpenZoneDrawer('C')" title="Khu C - Hồ chứa &amp; Cây ăn trái (Nhấp để mở bảng điều khiển)">
+                                    <div class="sf-zone-chip chip-c">
+                                        <div class="sf-zc-header">
+                                            <span class="sf-zc-dot"></span>
+                                            <span class="sf-zc-title">Khu C • Hồ &amp; Vườn</span>
+                                        </div>
+                                        <div class="sf-zc-body">
+                                            <span class="sf-zc-metric">💧 <t t-esc="soil['moisture_c']"/>% ẩm</span>
+                                            <span class="sf-zc-action">Bảng IoT ➔</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Live Tractor Pin on Zone B -->
+                                <div class="sf-map-layer-item sf-layer-vehicles sf-vehicle-marker"
+                                     style="left: 54.5%; top: 74.5%;"
+                                     onclick="sfShowVehicleInfo(event, 'kubota_01')"
+                                     title="Máy cày Kubota L4018 (Nhấp xem chi tiết telemetry)">
+                                    <div class="sf-radar-ring"></div>
+                                    <div class="sf-radar-ring ring-2"></div>
+                                    <div class="sf-vehicle-hud-pin">
+                                        <div class="sf-v-icon-box">🚜</div>
+                                        <div class="sf-v-hud-info">
+                                            <div class="sf-v-hud-name">Kubota L4018</div>
+                                            <div class="sf-v-hud-speed">🟢 7.2 km/h</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Live Alert Pins on Map -->
+                                <t t-if="active_alerts">
+                                    <t t-foreach="active_alerts" t-as="alert">
+                                        <t t-set="pos_style" t-value="'left: 22%; top: 34%;' if ('A' in (alert.area or '') or 'màng' in (alert.area or '').lower()) else ('left: 82%; top: 58%;' if ('C' in (alert.area or '') or 'hồ' in (alert.area or '').lower() or 'vườn' in (alert.area or '').lower()) else 'left: 48%; top: 38%;')"/>
+                                        <div t-attf-class="sf-map-layer-item sf-layer-alerts sf-alert-beacon #{alert.alert_type == 'danger' and 'beacon-danger' or 'beacon-warning'}"
+                                             t-att-style="pos_style"
+                                             t-att-data-id="alert.id"
+                                             t-att-data-name="alert.name"
+                                             t-att-data-area="alert.area or 'Toàn trang trại'"
+                                             t-att-data-content="alert.content or 'Cần kiểm tra sự cố'"
+                                             onclick="sfOnAlertClick(event, this)"
+                                             t-attf-title="⚠️ Sự cố: #{alert.name} (Nhấp xử lý)">
+                                            <div class="sf-beacon-pulse"></div>
+                                            <span class="sf-beacon-icon">⚠️</span>
+                                            <span class="sf-beacon-badge-text"><t t-esc="alert.name[:16]"/>...</span>
+                                        </div>
+                                    </t>
+                                </t>
+
+                                <!-- Floating Vehicle Popover -->
+                                <div class="sf-vehicle-popover" id="sf-vehicle-popover">
+                                    <div class="sf-popover-hd">
+                                        <div class="sf-popover-title">🚜 Máy cày Kubota L4018</div>
+                                        <button type="button" class="btn-close" style="font-size:11px;" onclick="sfHideVehicleInfo()"></button>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Trạng thái:</span>
+                                        <span class="sf-popover-val" style="color:#16a34a;">🟢 Đang canh tác</span>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Vị trí:</span>
+                                        <span class="sf-popover-val">Khu B (Cánh đồng)</span>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Tốc độ:</span>
+                                        <span class="sf-popover-val">7.2 km/h</span>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Tài xế:</span>
+                                        <span class="sf-popover-val">Nguyễn Văn An</span>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Tọa độ GPS:</span>
+                                        <span class="sf-popover-val">
+                                            <t t-if="tractor_gps"><t t-esc="tractor_gps.latitude"/>, <t t-esc="tractor_gps.longitude"/></t>
+                                            <t t-else="">10.823120, 106.630510</t>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Floating Alert Popover -->
+                                <div class="sf-vehicle-popover" id="sf-alert-popover">
+                                    <div class="sf-popover-hd">
+                                        <div class="sf-popover-title" style="color:#dc2626;">⚠️ Cảnh báo sự cố</div>
+                                        <button type="button" class="btn-close" style="font-size:11px;" onclick="sfHideAlertDetails()"></button>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Tiêu đề:</span>
+                                        <span class="sf-popover-val" id="sf-alert-pop-name">-</span>
+                                    </div>
+                                    <div class="sf-popover-row">
+                                        <span>Khu vực:</span>
+                                        <span class="sf-popover-val" id="sf-alert-pop-area">-</span>
+                                    </div>
+                                    <div class="sf-popover-row" style="flex-direction:column; gap:4px; margin-top:6px;">
+                                        <span>Chi tiết:</span>
+                                        <span class="text-muted" style="font-size:11px;" id="sf-alert-pop-content">-</span>
+                                    </div>
+                                    <div style="margin-top:12px; text-align:right;">
+                                        <button type="button" class="sf-btn sf-btn-emerald" id="sf-alert-resolve-btn" style="padding:6px 14px; font-size:12px;" onclick="sfResolveAlertFromPopover()">
+                                            ✓ Xác nhận đã xử lý
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Tip -->
+                            <div class="sf-map-bottom-guide">
+                                <span class="sf-guide-icon">💡</span>
+                                <span><strong>Mẹo nhanh:</strong> Nhấp vào bất kỳ khu vực nào trên bản đồ để mở <strong>Bảng điều khiển thiết bị IoT</strong> (van tưới, máy bơm, phun sương) và giám sát vi khí hậu.</span>
                             </div>
                         </div>
                     </div>
@@ -836,7 +1424,91 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=7"></script>
+                <!-- Backdrop & Slide-out Zone Drawer (Đặt độc lập ở cấp body) -->
+                <div class="sf-drawer-backdrop" id="sf-drawer-backdrop" style="display:none;" onclick="sfCloseZoneDrawer()"></div>
+                <div class="sf-zone-drawer" id="sf-zone-drawer" style="display:none;">
+                    <div class="sf-drawer-header">
+                        <div class="sf-dh-info">
+                            <div class="sf-dh-badge" id="sf-zd-badge" style="background:#f0fdf4; color:#16a34a;">
+                                <span class="sf-pulse-dot" style="background:currentColor;"></span>
+                                <span id="sf-zd-badgetext">Khu vực canh tác</span>
+                            </div>
+                            <div class="sf-drawer-title" id="sf-zd-title">Khu A - Nhà màng công nghệ cao</div>
+                            <div class="sf-drawer-sub" id="sf-zd-sub">Mô hình canh tác dưa lưới &amp; cà chua thủy canh</div>
+                        </div>
+                        <button type="button" class="sf-drawer-close" onclick="sfCloseZoneDrawer()" title="Đóng bảng">✕</button>
+                    </div>
+
+                    <div class="sf-drawer-body">
+                        <!-- Section 1: Vi khí hậu thời gian thực -->
+                        <div class="sf-drawer-section-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            <span>Chỉ số môi trường thời gian thực</span>
+                        </div>
+                        <div class="sf-drawer-metrics-grid">
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#ecfdf5; color:#10b981;">🌱</span>
+                                    <span class="sf-dmc-label">Độ ẩm đất</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-zd-moisture"><t t-esc="soil['moisture_a']"/>%</div>
+                                <div class="sf-dmc-bar-bg">
+                                    <div class="sf-dmc-bar-fill" id="sf-zd-moisture-bar" style="width: 72%; background: #10b981;"></div>
+                                </div>
+                                <div class="sf-dmc-sub" id="sf-zd-moisture-sub">Mức tối ưu: 60% – 80%</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#fef2f2; color:#ef4444;">🌡️</span>
+                                    <span class="sf-dmc-label">Nhiệt độ không khí</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-zd-temp"><t t-esc="weather['temperature']"/>°C</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#16a34a;">🟢 Trạng thái ổn định</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#eff6ff; color:#3b82f6;">💧</span>
+                                    <span class="sf-dmc-label">Độ ẩm không khí</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-zd-hum"><t t-esc="weather['humidity']"/>%</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#3b82f6;">🔵 Mức độ lý tưởng</div>
+                            </div>
+
+                            <div class="sf-dm-card">
+                                <div class="sf-dmc-top">
+                                    <span class="sf-dmc-icon" style="background:#fffbeb; color:#f59e0b;">☀️</span>
+                                    <span class="sf-dmc-label">Cường độ ánh sáng</span>
+                                </div>
+                                <div class="sf-dmc-val" id="sf-zd-lux"><t t-esc="soil['lux']"/> lux</div>
+                                <div class="sf-dmc-sub" style="margin-top:14px; color:#f59e0b;">🟡 Đủ điều kiện quang hợp</div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Điều khiển thiết bị tự động -->
+                        <div class="sf-drawer-section-title" style="margin-top:24px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span>Bảng điều khiển thiết bị IoT (Thủy lợi &amp; Vi khí hậu)</span>
+                        </div>
+                        <div id="sf-zd-controls" class="sf-device-list">
+                            <!-- Populated dynamically in JS -->
+                        </div>
+                    </div>
+
+                    <div class="sf-drawer-footer">
+                        <button type="button" class="sf-btn sf-btn-light w-100" onclick="sfCloseZoneDrawer()">
+                            ✕ Đóng bảng điều khiển
+                        </button>
+                    </div>
+                </div>
+
+                <script src="/smart_farm/static/src/js/dashboard.js?v=106"></script>
             </body>
         </html>
     </template>

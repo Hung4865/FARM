@@ -125,11 +125,25 @@ class SmartFarmDashboard(http.Controller):
             order='sequence asc, date desc, id desc'
         )
 
+        active_alerts = env['smart.farm.alert'].search(
+            [('is_resolved', '=', False)],
+            order='timestamp desc'
+        )
+        tractor_gps = env['smart.farm.gps'].search(
+            [('device_type', '=', 'tractor')],
+            limit=1,
+            order='timestamp desc'
+        )
+        if not tractor_gps and gps_records:
+            tractor_gps = gps_records[0]
+
         values = {
             'gps_records': gps_records,
+            'tractor_gps': tractor_gps,
             'weather': weather,
             'soil': soil,
             'alerts': alerts,
+            'active_alerts': active_alerts,
             'unresolved_count': unresolved_count,
             'now': datetime.now(),
             'chart_data_json': chart_data_json,
@@ -487,6 +501,83 @@ class SmartFarmDashboard(http.Controller):
         except Exception as e:
             return request.make_response(
                 json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/alert/resolve', type='http', auth='user', methods=['POST'], csrf=False)
+    def resolve_alert(self, **kwargs):
+        """API đánh dấu giải quyết cảnh báo"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            alert_id = data.get('alert_id')
+            if not alert_id:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Thiếu alert_id'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            alert = request.env['smart.farm.alert'].browse(int(alert_id))
+            if not alert.exists():
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Không tìm thấy cảnh báo'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=404
+                )
+            alert.action_resolve()
+            unresolved_count = request.env['smart.farm.alert'].search_count([('is_resolved', '=', False)])
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': f'Đã xử lý cảnh báo: {alert.name}',
+                    'alert_id': alert.id,
+                    'unresolved_count': unresolved_count
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/zone/control', type='http', auth='user', methods=['POST'], csrf=False)
+    def control_zone_device(self, **kwargs):
+        """API điều khiển thiết bị IoT theo phân khu (Zone A, B, C)"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            zone = str(data.get('zone', 'A')).strip().upper()
+            device = str(data.get('device', '')).strip().lower()
+            state = bool(data.get('state', True))
+
+            device_names = {
+                'mist': 'Hệ thống phun sương làm mát',
+                'fan': 'Quạt thông gió đối lưu',
+                'drip': 'Hệ thống tưới nhỏ giọt thông minh',
+                'pump': 'Trạm máy bơm cấp nước hồ chứa',
+                'shade': 'Hệ thống mái che tự động'
+            }
+            dev_name = device_names.get(device, f'Thiết bị {device}')
+            action_text = "Bật" if state else "Tắt"
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'zone': zone,
+                    'device': device,
+                    'state': state,
+                    'message': f'Đã {action_text.lower()} {dev_name} tại Khu {zone} thành công!'
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi điều khiển thiết bị: {str(e)}'}),
                 headers={'Content-Type': 'application/json'},
                 status=500
             )

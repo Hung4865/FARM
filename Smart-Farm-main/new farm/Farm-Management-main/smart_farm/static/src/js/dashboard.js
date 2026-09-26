@@ -21,6 +21,23 @@ window.sfOpenTab = function(evt, tabName) {
             matchingBtn.classList.add("active");
         }
     }
+    // Update Header Title & Status Badge based on active tab
+    var pageTitleEl = document.getElementById("sf-page-title");
+    var pageBadgeEl = document.getElementById("sf-page-badge");
+    var tabInfo = {
+        'tab-overview': { title: 'Tổng quan trang trại', showBadge: true },
+        'tab-tasks': { title: 'Quản lý công việc', showBadge: false },
+        'tab-map': { title: 'Bản đồ nông trại', showBadge: false },
+        'tab-inventory': { title: 'Kho vật tư & Sản phẩm', showBadge: false }
+    };
+    var currentInfo = tabInfo[tabName] || { title: 'Tổng quan trang trại', showBadge: false };
+    if (pageTitleEl) {
+        pageTitleEl.textContent = currentInfo.title;
+    }
+    if (pageBadgeEl) {
+        pageBadgeEl.style.display = currentInfo.showBadge ? 'inline-flex' : 'none';
+    }
+
     try {
         localStorage.setItem('sf_active_tab', tabName);
     } catch(e) {}
@@ -160,6 +177,8 @@ document.addEventListener("DOMContentLoaded", function() {
         var savedTab = localStorage.getItem('sf_active_tab');
         if (savedTab && document.getElementById(savedTab)) {
             window.sfOpenTab(null, savedTab);
+        } else {
+            window.sfOpenTab(null, 'tab-overview');
         }
     } catch(e) {}
 
@@ -756,3 +775,311 @@ function sfGetDragAfterElement(container, y) {
         }
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
+
+// ========================================================
+// Interactive Smart Farm Map JS (Feature 002)
+// ========================================================
+
+// 1. Map Layer Toggle (T006)
+window.sfToggleMapLayer = function(layerName, btn) {
+    if (!btn) return;
+    var isActive = btn.classList.toggle('active');
+    var targetElements = document.querySelectorAll('.sf-layer-' + layerName);
+    targetElements.forEach(function(el) {
+        el.style.display = isActive ? '' : 'none';
+    });
+};
+
+// 2. Vehicle Marker & Popover (T008)
+window.sfShowVehicleInfo = function(event, vehicleId) {
+    if (event) event.stopPropagation();
+    var popover = document.getElementById('sf-vehicle-popover');
+    if (!popover) return;
+
+    var marker = event.currentTarget || event.target.closest('.sf-vehicle-marker');
+    if (marker) {
+        var rect = marker.getBoundingClientRect();
+        var mapWrapper = document.getElementById('sf-map-wrapper');
+        var mapRect = mapWrapper.getBoundingClientRect();
+
+        var leftPos = rect.left - mapRect.left - 100;
+        var topPos = rect.top - mapRect.top - 180;
+
+        if (leftPos < 10) leftPos = 10;
+        if (topPos < 10) topPos = 10;
+
+        popover.style.left = leftPos + 'px';
+        popover.style.top = topPos + 'px';
+    }
+    popover.style.display = 'block';
+    window.sfHideAlertDetails();
+};
+
+window.sfHideVehicleInfo = function() {
+    var popover = document.getElementById('sf-vehicle-popover');
+    if (popover) popover.style.display = 'none';
+};
+
+// 3. Alert Beacon & Resolution (T010)
+var currentAlertBeaconEl = null;
+var currentAlertId = null;
+
+window.sfOnAlertClick = function(event, el) {
+    if (!el && event) {
+        el = event.currentTarget || event.target.closest('.sf-alert-beacon');
+    }
+    if (!el) return;
+    var alertId = el.getAttribute('data-id');
+    var name = el.getAttribute('data-name');
+    var area = el.getAttribute('data-area');
+    var content = el.getAttribute('data-content');
+    window.sfShowAlertDetails(event, alertId, name, area, content);
+};
+
+window.sfShowAlertDetails = function(event, alertId, name, area, content) {
+    if (event) event.stopPropagation();
+    currentAlertId = alertId;
+    currentAlertBeaconEl = event.currentTarget || event.target.closest('.sf-alert-beacon');
+
+    var popover = document.getElementById('sf-alert-popover');
+    if (!popover) return;
+
+    document.getElementById('sf-alert-pop-name').textContent = name || 'Cảnh báo nông trại';
+    document.getElementById('sf-alert-pop-area').textContent = area || 'Toàn trang trại';
+    document.getElementById('sf-alert-pop-content').textContent = content || 'Cần kiểm tra sự cố.';
+
+    if (currentAlertBeaconEl) {
+        var rect = currentAlertBeaconEl.getBoundingClientRect();
+        var mapWrapper = document.getElementById('sf-map-wrapper');
+        var mapRect = mapWrapper.getBoundingClientRect();
+
+        var leftPos = rect.left - mapRect.left - 100;
+        var topPos = rect.top - mapRect.top - 160;
+        if (leftPos < 10) leftPos = 10;
+        if (topPos < 10) topPos = 10;
+
+        popover.style.left = leftPos + 'px';
+        popover.style.top = topPos + 'px';
+    }
+    popover.style.display = 'block';
+    window.sfHideVehicleInfo();
+};
+
+window.sfHideAlertDetails = function() {
+    var popover = document.getElementById('sf-alert-popover');
+    if (popover) popover.style.display = 'none';
+    currentAlertId = null;
+    currentAlertBeaconEl = null;
+};
+
+window.sfResolveAlertFromPopover = function() {
+    if (!currentAlertId) return;
+    var btn = document.getElementById('sf-alert-resolve-btn');
+    if (btn) btn.disabled = true;
+
+    fetch('/smart_farm/api/alert/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alert_id: currentAlertId })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            window.sfShowToast(data.message || 'Đã xử lý cảnh báo!', 'success');
+            if (currentAlertBeaconEl) {
+                currentAlertBeaconEl.remove();
+            }
+            window.sfHideAlertDetails();
+            var dots = document.querySelectorAll('.sf-badge-dot');
+            if (data.unresolved_count === 0) {
+                dots.forEach(function(dot) { dot.classList.add('sf-dot-idle'); });
+            }
+        } else {
+            window.sfShowToast(data.message || 'Không thể xử lý cảnh báo', 'error');
+        }
+    })
+    .catch(function(err) {
+        console.error(err);
+        window.sfShowToast('Lỗi kết nối khi xử lý cảnh báo!', 'error');
+    })
+    .finally(function() {
+        if (btn) btn.disabled = false;
+    });
+};
+
+// 4. Zone Drawer & Device Controls (T013)
+window.sfOpenZoneDrawer = function(zoneId) {
+    var drawer = document.getElementById('sf-zone-drawer');
+    var backdrop = document.getElementById('sf-drawer-backdrop');
+    if (!drawer) return;
+
+    var zones = {
+        'A': {
+            title: 'Khu A - Nhà màng công nghệ cao',
+            sub: 'Mô hình canh tác dưa lưới & cà chua thủy canh',
+            badgetext: '🌱 Nhà màng CNC (Tự động)',
+            badgeBg: '#f0fdf4',
+            badgeColor: '#16a34a',
+            moisture: '72%',
+            moisturePct: 72,
+            temp: '27.5°C',
+            hum: '68%',
+            lux: '8,400',
+            devices: [
+                { id: 'mist', name: 'Hệ thống phun sương làm mát', sub: 'Tự động kích hoạt khi nhiệt độ > 32°C', icon: '💨', defaultState: true },
+                { id: 'fan', name: 'Quạt thông gió đối lưu', sub: 'Lưu thông không khí nhà kính', icon: '🌀', defaultState: true },
+                { id: 'shade', name: 'Hệ thống mái che tự động', sub: 'Giảm bức xạ nhiệt buổi trưa', icon: '⛺', defaultState: false }
+            ]
+        },
+        'B': {
+            title: 'Khu B - Cánh đồng mở (Canh tác rộng)',
+            sub: 'Khu vực trồng ngô sinh khối & rau màu hữu cơ',
+            badgetext: '🌾 Cánh đồng mở (Cần tưới)',
+            badgeBg: '#fffbeb',
+            badgeColor: '#b45309',
+            moisture: '38%',
+            moisturePct: 38,
+            temp: '31.2°C',
+            hum: '74%',
+            lux: '11,200',
+            devices: [
+                { id: 'drip', name: 'Hệ thống tưới nhỏ giọt ngầm', sub: 'Van tưới điện từ thông minh Zone B', icon: '💧', defaultState: false },
+                { id: 'fert', name: 'Hệ thống châm phân bón tự động', sub: 'Bơm định lượng Venturi hòa tan', icon: '🌱', defaultState: false }
+            ]
+        },
+        'C': {
+            title: 'Khu C - Hồ chứa & Vườn cây ăn trái',
+            sub: 'Hồ tích trữ nước mưa & vườn bưởi da xanh',
+            badgetext: '🌊 Hồ chứa & Thủy lợi (Đầy)',
+            badgeBg: '#f0f9ff',
+            badgeColor: '#0284c7',
+            moisture: '81%',
+            moisturePct: 81,
+            temp: '29.0°C',
+            hum: '82%',
+            lux: '7,800',
+            devices: [
+                { id: 'pump', name: 'Trạm máy bơm cấp nước hồ chứa', sub: 'Công suất 15kW bơm nước lên kênh dẫn', icon: '🌊', defaultState: true },
+                { id: 'aerator', name: 'Máy sục khí đáy hồ sinh học', sub: 'Tăng lượng oxy hòa tan trong nước', icon: '🫧', defaultState: true }
+            ]
+        }
+    };
+
+    var z = zones[zoneId] || zones['A'];
+    var titleEl = document.getElementById('sf-zd-title');
+    var subEl = document.getElementById('sf-zd-sub');
+    var badgeEl = document.getElementById('sf-zd-badge');
+    var badgeTextEl = document.getElementById('sf-zd-badgetext');
+    var moistureEl = document.getElementById('sf-zd-moisture');
+    var moistureBarEl = document.getElementById('sf-zd-moisture-bar');
+    var tempEl = document.getElementById('sf-zd-temp');
+    var humEl = document.getElementById('sf-zd-hum');
+    var luxEl = document.getElementById('sf-zd-lux');
+
+    if (titleEl) titleEl.textContent = z.title;
+    if (subEl) subEl.textContent = z.sub;
+    if (badgeEl) {
+        badgeEl.style.background = z.badgeBg;
+        badgeEl.style.color = z.badgeColor;
+    }
+    if (badgeTextEl) badgeTextEl.textContent = z.badgetext;
+    if (moistureEl) moistureEl.textContent = z.moisture;
+    if (moistureBarEl) {
+        moistureBarEl.style.width = z.moisturePct + '%';
+        moistureBarEl.style.background = z.badgeColor;
+    }
+    if (tempEl) tempEl.textContent = z.temp;
+    if (humEl) humEl.textContent = z.hum;
+    if (luxEl) luxEl.textContent = z.lux + ' lux';
+
+    var controlsContainer = document.getElementById('sf-zd-controls');
+    if (controlsContainer) {
+        controlsContainer.innerHTML = '';
+        z.devices.forEach(function(dev) {
+            var card = document.createElement('div');
+            card.className = 'sf-device-card';
+            var stateText = dev.defaultState ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+            var stateClass = dev.defaultState ? 'active' : 'inactive';
+            card.innerHTML =
+                '<div class="sf-device-info">' +
+                    '<div class="sf-device-icon">' + dev.icon + '</div>' +
+                    '<div>' +
+                        '<div class="sf-device-name">' +
+                            dev.name +
+                            '<span class="sf-device-status-badge ' + stateClass + '" id="dev-badge-' + dev.id + '">' + stateText + '</span>' +
+                        '</div>' +
+                        '<div class="sf-device-sub">' + dev.sub + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<label class="sf-switch">' +
+                    '<input type="checkbox" ' + (dev.defaultState ? 'checked' : '') + ' onchange="sfToggleDevice(\'' + zoneId + '\', \'' + dev.id + '\', this)"/>' +
+                    '<span class="sf-slider"></span>' +
+                '</label>';
+            controlsContainer.appendChild(card);
+        });
+    }
+
+    drawer.style.display = 'flex';
+    if (backdrop) backdrop.style.display = 'block';
+    setTimeout(function() {
+        drawer.classList.add('show');
+        if (backdrop) backdrop.classList.add('show');
+    }, 10);
+};
+
+window.sfCloseZoneDrawer = function() {
+    var drawer = document.getElementById('sf-zone-drawer');
+    var backdrop = document.getElementById('sf-drawer-backdrop');
+    if (drawer) drawer.classList.remove('show');
+    if (backdrop) backdrop.classList.remove('show');
+    setTimeout(function() {
+        if (drawer && !drawer.classList.contains('show')) drawer.style.display = 'none';
+        if (backdrop && !backdrop.classList.contains('show')) backdrop.style.display = 'none';
+    }, 350);
+};
+
+window.sfToggleDevice = function(zone, device, checkboxEl) {
+    var isChecked = checkboxEl.checked;
+    var badge = document.getElementById('dev-badge-' + device);
+    if (badge) {
+        badge.textContent = isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+        badge.className = 'sf-device-status-badge ' + (isChecked ? 'active' : 'inactive');
+    }
+    fetch('/smart_farm/api/zone/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zone: zone, device: device, state: isChecked })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            window.sfShowToast(data.message, 'success');
+        } else {
+            window.sfShowToast(data.message || 'Lỗi khi điều khiển thiết bị', 'error');
+            checkboxEl.checked = !isChecked;
+            if (badge) {
+                badge.textContent = !isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+                badge.className = 'sf-device-status-badge ' + (!isChecked ? 'active' : 'inactive');
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error(err);
+        window.sfShowToast('Lỗi kết nối khi gửi lệnh điều khiển!', 'error');
+        checkboxEl.checked = !isChecked;
+        if (badge) {
+            badge.textContent = !isChecked ? 'ĐANG CHẠY' : 'ĐANG TẮT';
+            badge.className = 'sf-device-status-badge ' + (!isChecked ? 'active' : 'inactive');
+        }
+    });
+};
+
+// Dismiss popovers when clicking elsewhere on map
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.sf-vehicle-marker') && !e.target.closest('#sf-vehicle-popover')) {
+        window.sfHideVehicleInfo();
+    }
+    if (!e.target.closest('.sf-alert-beacon') && !e.target.closest('#sf-alert-popover')) {
+        window.sfHideAlertDetails();
+    }
+});
