@@ -503,17 +503,91 @@
                             <div class="sf-nav-right">
                                 <!-- Quick action buttons (Bell & Gear) -->
                                 <div class="sf-nav-actions">
-                                    <div class="sf-icon-btn" title="Cảnh báo">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                                        </svg>
-                                        <t t-if="unresolved_count > 0">
-                                            <span class="sf-badge-dot"></span>
-                                        </t>
-                                        <t t-else="">
-                                            <span class="sf-badge-dot sf-dot-idle"></span>
-                                        </t>
+                                    <div class="sf-dropdown-wrapper">
+                                        <button type="button" class="sf-icon-btn" id="sf-notif-btn" title="Thông báo &amp; Cảnh báo" onclick="sfToggleDropdown(event, 'sf-notif-menu')">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                            </svg>
+                                            <span id="sf-notif-badge" t-attf-class="sf-badge-count #{'sf-badge-hidden' if unresolved_count == 0 else ''}">
+                                                <t t-esc="unresolved_count"/>
+                                            </span>
+                                        </button>
+                                        <div class="sf-dropdown-menu sf-notif-dropdown" id="sf-notif-menu">
+                                            <div class="sf-notif-header">
+                                                <div class="sf-notif-header-title">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#ef4444;">
+                                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                                    </svg>
+                                                    <span>Thông báo &amp; Cảnh báo</span>
+                                                    <span class="sf-notif-pill" id="sf-notif-pill-count"><t t-esc="unresolved_count"/> chưa xử lý</span>
+                                                </div>
+                                                <button type="button" class="sf-btn-resolve-all" id="sf-btn-resolve-all" onclick="sfResolveAllAlerts()" title="Đánh dấu tất cả là đã xử lý" t-attf-style="#{'display:none;' if unresolved_count == 0 else ''}">
+                                                    Xử lý tất cả
+                                                </button>
+                                            </div>
+                                            <div class="sf-notif-list" id="sf-notif-items">
+                                                <t t-if="alerts">
+                                                    <t t-foreach="alerts" t-as="al">
+                                                        <div t-attf-class="sf-notif-item #{'resolved' if al.is_resolved else 'unresolved'}" t-att-id="'sf-notif-alert-' + str(al.id)">
+                                                            <div t-attf-class="sf-notif-icon-box #{'icon-danger' if al.alert_type == 'danger' else ('icon-warning' if al.alert_type == 'warning' else 'icon-info')}">
+                                                                <t t-if="al.alert_type == 'danger'">
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                                    </svg>
+                                                                </t>
+                                                                <t t-elif="al.alert_type == 'warning'">
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                                    </svg>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                                                    </svg>
+                                                                </t>
+                                                            </div>
+                                                            <div class="sf-notif-content">
+                                                                <div class="sf-notif-msg"><t t-esc="al.name"/></div>
+                                                                <div class="sf-notif-meta">
+                                                                    <span class="sf-notif-time"><t t-esc="al.timestamp.strftime('%H:%M - %d/%m') if al.timestamp else ''"/></span>
+                                                                    <t t-if="al.area">
+                                                                        <span class="sf-notif-area">· <t t-esc="al.area"/></span>
+                                                                    </t>
+                                                                </div>
+                                                            </div>
+                                                            <div class="sf-notif-action">
+                                                                <t t-if="not al.is_resolved">
+                                                                    <button type="button" class="sf-btn-resolve-single" t-att-onclick="'sfResolveAlert(' + str(al.id) + ')'" title="Đánh dấu đã xử lý">
+                                                                        Xử lý
+                                                                    </button>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <span class="sf-badge-resolved">Đã xong</span>
+                                                                </t>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="sf-notif-empty" id="sf-notif-empty-state">
+                                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#16a34a;margin-bottom:8px;">
+                                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                                        </svg>
+                                                        <div style="font-weight:600;color:#1e293b;font-size:13px;">Hệ thống an toàn</div>
+                                                        <div style="color:#64748b;font-size:11px;margin-top:2px;">Không có cảnh báo mới cần xử lý</div>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="sf-dropdown-wrapper">
                                         <button type="button" class="sf-icon-btn" title="Cài đặt hệ thống" onclick="sfToggleDropdown(event, 'sf-settings-menu')">
@@ -617,8 +691,8 @@
                         </div>
                         <div class="sf-stat">
                             <div class="sf-stat-label">Cảnh báo chưa xử lý</div>
-                            <div class="sf-stat-val"><t t-esc="unresolved_count"/></div>
-                            <div t-attf-class="sf-stat-sub #{unresolved_count > 0 and 'warn' or 'ok'}">
+                            <div class="sf-stat-val" id="sf-top-stat-alert-count"><t t-esc="unresolved_count"/></div>
+                            <div t-attf-class="sf-stat-sub #{unresolved_count > 0 and 'warn' or 'ok'}" id="sf-top-stat-alert-sub">
                                 <t t-if="unresolved_count > 0">Cần xử lý</t>
                                 <t t-else="">Tất cả đã xử lý</t>
                             </div>
@@ -660,9 +734,9 @@
                             </div>
                             <t t-if="alerts">
                                 <t t-foreach="alerts" t-as="alert">
-                                    <div class="sf-alert-item">
+                                    <div class="sf-alert-item" t-att-id="'sf-dash-alert-' + str(alert.id)">
                                         <div t-attf-class="sf-alert-dot dot-#{alert.alert_type}"></div>
-                                        <div>
+                                        <div style="flex:1;">
                                             <div t-attf-class="sf-alert-text #{alert.is_resolved and 'sf-resolved' or ''}">
                                                 <t t-esc="alert.name"/>
                                             </div>
@@ -671,6 +745,14 @@
                                                 <t t-if="alert.area"> · <t t-esc="alert.area"/></t>
                                             </div>
                                         </div>
+                                        <t t-if="not alert.is_resolved">
+                                            <button type="button" class="sf-btn-resolve-dash" t-att-onclick="'sfResolveAlert(' + str(alert.id) + ')'" title="Giải quyết cảnh báo">
+                                                Xử lý
+                                            </button>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="sf-dash-resolved-tag">Đã xong</span>
+                                        </t>
                                     </div>
                                 </t>
                             </t>
@@ -748,15 +830,15 @@
 
                         <div class="sf-card">
                             <div class="sf-card-hd">
-                                <div class="sf-card-title">Công việc hôm nay</div>
+                                <div class="sf-card-title">Công việc nông trại</div>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <button type="button" class="sf-link-btn" onclick="sfOpenTab(null, 'tab-tasks')" title="Quản lý và xem toàn bộ danh sách công việc">
                                         Quản lý danh sách →
                                     </button>
-                                    <span class="badge-live">Hôm nay</span>
+                                    <span class="badge-live">Cần làm</span>
                                 </div>
                             </div>
-                            <div id="sf-task-list">
+                            <div id="sf-task-list" style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
                                 <t t-if="tasks">
                                     <t t-foreach="tasks" t-as="task">
                                         <div class="sf-task" t-att-id="'sf-task-' + str(task.id)">
@@ -767,7 +849,10 @@
                                             </div>
                                             <div t-attf-class="sf-task-text #{'done' if task.is_done else ''}"
                                                  t-att-onclick="'sfToggleTask(' + str(task.id) + ', this)'">
-                                                <t t-esc="task.name"/>
+                                                <div><t t-esc="task.name"/></div>
+                                                <t t-if="task.notes">
+                                                    <div style="font-size:11px;color:#94a3b8;font-weight:400;margin-top:2px;"><t t-esc="task.notes"/></div>
+                                                </t>
                                             </div>
                                             <t t-if="task.task_type == 'irrigation'">
                                                 <span class="sf-tag tag-blue">Tưới tiêu</span>
@@ -791,12 +876,12 @@
                                     </t>
                                 </t>
                                 <t t-else="">
-                                    <div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:12px;">
+                                    <div id="sf-task-empty-ov" style="text-align:center;padding:24px 0;color:#94a3b8;font-size:12px;">
                                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;display:inline-block;color:#cbd5e1;">
                                             <path d="M9 11l3 3L22 4"></path>
                                             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                                         </svg>
-                                        <div>Chưa có công việc nào được lên lịch hôm nay</div>
+                                        <div>Chưa có công việc nào</div>
                                     </div>
                                 </t>
                             </div>

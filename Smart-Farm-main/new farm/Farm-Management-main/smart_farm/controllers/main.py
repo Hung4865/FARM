@@ -7,7 +7,7 @@ import requests as req_lib
 
 class SmartFarmDashboard(http.Controller):
 
-    @http.route('/smart_farm/dashboard', type='http', auth='user')
+    @http.route(['/smart_farm', '/smart_farm/', '/smart_farm/dashboard'], type='http', auth='user')
     def dashboard(self, **kwargs):
         env = request.env
 
@@ -105,25 +105,21 @@ class SmartFarmDashboard(http.Controller):
             }
 
         alerts = env['smart.farm.alert'].search(
-            [], limit=6, order='timestamp desc'
+            [], limit=15, order='timestamp desc'
         )
         unresolved_count = env['smart.farm.alert'].search_count(
             [('is_resolved', '=', False)]
         )
 
         today = fields.Date.today()
-        tasks = env['smart.farm.task'].search(
-            [('date', '=', today)],
-            order='sequence asc, is_done asc, id asc'
-        )
-        task_total = len(tasks)
-        task_done = len(tasks.filtered(lambda t: t.is_done))
-        task_remaining = task_total - task_done
-
         all_tasks = env['smart.farm.task'].search(
             [],
-            order='sequence asc, date desc, id desc'
+            order='sequence asc, is_done asc, date desc, id desc'
         )
+        tasks = all_tasks
+        task_total = len(all_tasks)
+        task_done = len(all_tasks.filtered(lambda t: t.is_done))
+        task_remaining = task_total - task_done
 
         active_alerts = env['smart.farm.alert'].search(
             [('is_resolved', '=', False)],
@@ -273,10 +269,9 @@ class SmartFarmDashboard(http.Controller):
             new_state = not task.is_done
             task.write({'is_done': new_state})
 
-            today = fields.Date.today()
-            today_tasks = request.env['smart.farm.task'].search([('date', '=', today)])
-            total = len(today_tasks)
-            done = len(today_tasks.filtered(lambda t: t.is_done))
+            all_farm_tasks = request.env['smart.farm.task'].search([])
+            total = len(all_farm_tasks)
+            done = len(all_farm_tasks.filtered(lambda t: t.is_done))
             remaining = total - done
 
             return request.make_response(
@@ -533,6 +528,29 @@ class SmartFarmDashboard(http.Controller):
                     'message': f'Đã xử lý cảnh báo: {alert.name}',
                     'alert_id': alert.id,
                     'unresolved_count': unresolved_count
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/alert/resolve_all', type='http', auth='user', methods=['POST'], csrf=False)
+    def resolve_all_alerts(self, **kwargs):
+        """API đánh dấu giải quyết tất cả cảnh báo"""
+        try:
+            unresolved = request.env['smart.farm.alert'].search([('is_resolved', '=', False)])
+            for alert in unresolved:
+                alert.action_resolve()
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Đã xử lý tất cả cảnh báo!',
+                    'unresolved_count': 0
                 }),
                 headers={'Content-Type': 'application/json'},
                 status=200
