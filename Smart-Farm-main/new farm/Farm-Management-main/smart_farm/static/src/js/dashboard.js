@@ -372,15 +372,21 @@ function sfSyncTaskUI(taskId, isDone, counts) {
     }
 
     // 3. Overview counters
-    if (counts) {
-        var doneStat = document.getElementById('sf-task-stat-done');
-        var remainingStat = document.getElementById('sf-task-stat-remaining');
-        if (doneStat && counts.task_done !== undefined) {
-            doneStat.innerText = '✓ ' + counts.task_done + ' hoàn thành';
+    var doneStat = document.getElementById('sf-task-stat-done');
+    var remainingStat = document.getElementById('sf-task-stat-remaining');
+    if (counts && counts.task_done !== undefined && counts.task_remaining !== undefined) {
+        if (doneStat) doneStat.innerText = '✓ ' + counts.task_done + ' hoàn thành';
+        if (remainingStat) remainingStat.innerText = counts.task_remaining + ' còn lại';
+    } else {
+        var allDone = document.querySelectorAll('#sf-task-mgmt-list .sf-task-card[data-status="done"]').length;
+        var allTotal = document.querySelectorAll('#sf-task-mgmt-list .sf-task-card').length;
+        if (!allTotal) {
+            allTotal = document.querySelectorAll('#sf-task-list .sf-task').length;
+            allDone = document.querySelectorAll('#sf-task-list .sf-check.done').length;
         }
-        if (remainingStat && counts.task_remaining !== undefined) {
-            remainingStat.innerText = counts.task_remaining + ' còn lại';
-        }
+        var remaining = Math.max(0, allTotal - allDone);
+        if (doneStat) doneStat.innerText = '✓ ' + allDone + ' hoàn thành';
+        if (remainingStat) remainingStat.innerText = remaining + ' còn lại';
     }
 
     // 4. Management view done counter
@@ -688,6 +694,22 @@ window.sfDeleteTask = function(taskId) {
             }
             var overviewTask = document.getElementById('sf-task-' + taskId);
             if (overviewTask) overviewTask.remove();
+
+            setTimeout(function() {
+                var allCards = document.querySelectorAll('#sf-task-mgmt-list .sf-task-card');
+                var allDone = document.querySelectorAll('#sf-task-mgmt-list .sf-task-card[data-status="done"]').length;
+                var total = allCards.length;
+                var remaining = Math.max(0, total - allDone);
+                var doneStat = document.getElementById('sf-task-stat-done');
+                var remainingStat = document.getElementById('sf-task-stat-remaining');
+                if (doneStat) doneStat.innerText = '✓ ' + allDone + ' hoàn thành';
+                if (remainingStat) remainingStat.innerText = remaining + ' còn lại';
+
+                var ovList = document.getElementById('sf-task-list');
+                if (ovList && ovList.querySelectorAll('.sf-task').length === 0) {
+                    ovList.innerHTML = '<div id="sf-task-empty-ov" style="text-align:center;padding:24px 0;color:#94a3b8;font-size:12px;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;display:inline-block;color:#cbd5e1;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><div>Chưa có công việc nào</div></div>';
+                }
+            }, 200);
         } else {
             alert(data.message || 'Không thể xóa công việc.');
         }
@@ -872,39 +894,166 @@ window.sfHideAlertDetails = function() {
     currentAlertBeaconEl = null;
 };
 
-window.sfResolveAlertFromPopover = function() {
-    if (!currentAlertId) return;
-    var btn = document.getElementById('sf-alert-resolve-btn');
-    if (btn) btn.disabled = true;
+// Centralized Alert UI updater
+window.sfUpdateAlertsUI = function(unresolvedCount, resolvedId) {
+    // 1. Update Header Notification Badge
+    var badge = document.getElementById('sf-notif-badge');
+    if (badge) {
+        badge.innerText = unresolvedCount;
+        if (unresolvedCount > 0) {
+            badge.classList.remove('sf-badge-hidden');
+        } else {
+            badge.classList.add('sf-badge-hidden');
+        }
+    }
+
+    // 2. Update Header Pill Count in Dropdown
+    var pill = document.getElementById('sf-notif-pill-count');
+    if (pill) {
+        pill.innerText = unresolvedCount + ' chưa xử lý';
+    }
+
+    // 3. Update Resolve All Button
+    var btnResolveAll = document.getElementById('sf-btn-resolve-all');
+    if (btnResolveAll) {
+        btnResolveAll.style.display = unresolvedCount > 0 ? '' : 'none';
+    }
+
+    // 4. Update Top Dashboard Stat Card
+    var statCount = document.getElementById('sf-top-stat-alert-count');
+    var statSub = document.getElementById('sf-top-stat-alert-sub');
+    if (statCount) {
+        statCount.innerText = unresolvedCount;
+    }
+    if (statSub) {
+        if (unresolvedCount > 0) {
+            statSub.className = 'sf-stat-sub warn';
+            statSub.innerText = 'Cần xử lý';
+        } else {
+            statSub.className = 'sf-stat-sub ok';
+            statSub.innerText = 'Tất cả đã xử lý';
+        }
+    }
+
+    // 5. Update Specific Alert Item or All Items
+    if (resolvedId) {
+        // Notification dropdown item
+        var notifItem = document.getElementById('sf-notif-alert-' + resolvedId);
+        if (notifItem) {
+            notifItem.classList.remove('unresolved');
+            notifItem.classList.add('resolved');
+            var actBox = notifItem.querySelector('.sf-notif-action');
+            if (actBox) {
+                actBox.innerHTML = '<span class="sf-badge-resolved">Đã xong</span>';
+            }
+        }
+
+        // Dashboard alert card item
+        var dashItem = document.getElementById('sf-dash-alert-' + resolvedId);
+        if (dashItem) {
+            var text = dashItem.querySelector('.sf-alert-text');
+            if (text) text.classList.add('sf-resolved');
+            var btn = dashItem.querySelector('.sf-btn-resolve-dash');
+            if (btn) {
+                btn.outerHTML = '<span class="sf-dash-resolved-tag">Đã xong</span>';
+            }
+        }
+    } else if (unresolvedCount === 0) {
+        // All alerts resolved
+        var notifItems = document.querySelectorAll('.sf-notif-item');
+        notifItems.forEach(function(item) {
+            item.classList.remove('unresolved');
+            item.classList.add('resolved');
+            var actBox = item.querySelector('.sf-notif-action');
+            if (actBox) {
+                actBox.innerHTML = '<span class="sf-badge-resolved">Đã xong</span>';
+            }
+        });
+
+        var dashItems = document.querySelectorAll('.sf-alert-item');
+        dashItems.forEach(function(item) {
+            var text = item.querySelector('.sf-alert-text');
+            if (text) text.classList.add('sf-resolved');
+            var btn = item.querySelector('.sf-btn-resolve-dash');
+            if (btn) {
+                btn.outerHTML = '<span class="sf-dash-resolved-tag">Đã xong</span>';
+            }
+        });
+    }
+
+    // 6. Map beacons & count
+    var mapAlertCount = document.querySelector('.sf-layer-count.count-danger');
+    if (mapAlertCount) {
+        mapAlertCount.innerText = unresolvedCount;
+    }
+};
+
+window.sfResolveAlert = function(alertId) {
+    if (!alertId) return;
 
     fetch('/smart_farm/api/alert/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alert_id: currentAlertId })
+        body: JSON.stringify({ alert_id: alertId })
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.success) {
-            window.sfShowToast(data.message || 'Đã xử lý cảnh báo!', 'success');
-            if (currentAlertBeaconEl) {
-                currentAlertBeaconEl.remove();
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Đã xử lý cảnh báo thành công!', 'success');
             }
-            window.sfHideAlertDetails();
-            var dots = document.querySelectorAll('.sf-badge-dot');
-            if (data.unresolved_count === 0) {
-                dots.forEach(function(dot) { dot.classList.add('sf-dot-idle'); });
-            }
+            window.sfUpdateAlertsUI(data.unresolved_count, alertId);
+            var beacon = document.querySelector('.sf-alert-beacon[data-id="' + alertId + '"]');
+            if (beacon) beacon.remove();
         } else {
-            window.sfShowToast(data.message || 'Không thể xử lý cảnh báo', 'error');
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Không thể xử lý cảnh báo', 'error');
+            } else {
+                alert(data.message || 'Không thể xử lý cảnh báo');
+            }
         }
     })
     .catch(function(err) {
-        console.error(err);
-        window.sfShowToast('Lỗi kết nối khi xử lý cảnh báo!', 'error');
-    })
-    .finally(function() {
-        if (btn) btn.disabled = false;
+        console.error('Error resolving alert:', err);
+        if (window.sfShowToast) {
+            window.sfShowToast('Lỗi kết nối máy chủ!', 'error');
+        }
     });
+};
+
+window.sfResolveAllAlerts = function() {
+    if (!confirm('Bạn có chắc chắn muốn đánh dấu đã xử lý tất cả cảnh báo?')) return;
+
+    fetch('/smart_farm/api/alert/resolve_all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Đã xử lý tất cả cảnh báo!', 'success');
+            }
+            window.sfUpdateAlertsUI(0);
+            var beacons = document.querySelectorAll('.sf-alert-beacon');
+            beacons.forEach(function(b) { b.remove(); });
+        } else {
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Không thể xử lý cảnh báo', 'error');
+            } else {
+                alert(data.message || 'Không thể xử lý tất cả cảnh báo');
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Error resolving all alerts:', err);
+    });
+};
+
+window.sfResolveAlertFromPopover = function() {
+    if (!currentAlertId) return;
+    window.sfResolveAlert(currentAlertId);
+    window.sfHideAlertDetails();
 };
 
 // 4. Centralized Device Store & Persistent State Management (T013)
