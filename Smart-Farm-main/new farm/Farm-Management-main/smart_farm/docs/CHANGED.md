@@ -4,7 +4,44 @@
 
 ---
 
-## [v0.6.1] – 2026-09-26 (Hiện tại)
+## [v0.8.0] – 2026-10-10 (Hiện tại)
+
+### ⛅ Giám Sát & Dự Báo Thời Tiết Nông Nghiệp Thông Minh Hà Nội (Feature 005)
+1. **Dữ Liệu Thực Tế Hà Nội & Chuẩn Mã Thời Tiết WMO**:
+   - Tích hợp tọa độ địa lý chuẩn của Thủ đô Hà Nội (`lat = 21.0285`, `lon = 105.8542`) trong model `smart.farm.weather` và bộ điều khiển trung tâm `smart_farm/controllers/main.py`.
+   - Kết nối trực tiếp dịch vụ khí tượng Open-Meteo, chuẩn hóa mã thời tiết WMO Weather Interpretation Codes (0-99) sang biểu tượng thời tiết sinh động (☀️, 🌤️, ⛅, ☁️, 🌧️, ⛈️, ❄️,...) và chú thích trạng thái khí hậu.
+2. **Dự Báo 4 Ngày Động & Phân Tích Lời Khuyên Nông Nghiệp Tức Thời**:
+   - Thay thế toàn bộ số liệu mẫu fix cứng (29°, 28°, 30°) bằng chuỗi dự báo khí tượng 4 ngày thực tế (Hôm nay, Ngày mai, Ngày kia, Sau đó) kèm icon và nhiệt độ cao nhất theo ngày.
+   - Bổ sung thuật toán `analyze_agri_advice` tự động đưa ra khuyến nghị canh tác chuyên sâu (ví dụ: cảnh báo sương muối khi nhiệt độ thấp, khuyến nghị tưới mát khi nắng nóng, lưu ý thoát nước khi độ ẩm cao,...).
+3. **Nút Làm Mới 1-Chạm & Thông Báo Toast Feedback 4s**:
+   - Thêm nút làm mới 🔄 trên header thẻ Thời tiết, tích hợp cơ chế khóa nút chống click đúp (anti-spam) và animation xoay icon `@keyframes sf-spin`.
+   - Xây dựng API `POST /smart_farm/api/weather/refresh` cập nhật CSDL và trả về JSON chuẩn hóa.
+   - Tự động kích hoạt Toast notification thông báo kết quả cập nhật trong 4 giây kèm thanh tiến trình co dần.
+4. **Cơ Chế Ngoại Tuyến (Offline Fallback Resilience)**:
+   - Trong trường hợp mất kết nối mạng hoặc API Open-Meteo quá tải timeout, hệ thống tự động truy xuất bản ghi gần nhất trong cơ sở dữ liệu `smart.farm.weather`.
+   - Tự động chuyển đổi badge nguồn dữ liệu sang nhãn "Từ DB" (màu xanh dương `.badge-demo`) giúp người vận hành nhận biết độ tin cậy của thông tin mà không làm gián đoạn trải nghiệm giao diện.
+
+---
+
+## [v0.7.0] – 2026-10-10
+
+### 🔔 Trung Tâm Thông Báo & Cảnh Báo Sự Kiện Thời Gian Thực (Feature 004)
+1. **Thông Báo Tự Động Theo Tương Tác Thiết Bị & Công Việc**:
+   - Khi bật/tắt thiết bị tại các phân khu (quạt thông gió, phun sương, tưới nhỏ giọt, châm dinh dưỡng, mái che), hệ thống tự động lưu bản ghi `smart.farm.alert` vào database và trả về đối tượng alert thời gian thực.
+   - Khi tạo mới công việc hoặc hoàn thành công việc, tự động sinh cảnh báo/thông báo tương ứng.
+2. **Toast Notification Hiện Đại Kèm Thanh Chạy Đếm Ngược (`sfShowToast`)**:
+   - Thiết kế dạng card nổi bo góc 12px, nền trắng thanh lịch, đổ bóng mờ, icon trạng thái tròn phân loại theo cấp độ (`success`, `info`, `warning`, `danger`).
+   - Thanh tiến trình đếm ngược chạy ở đáy card (`@keyframes sfToastProgress`) co dần từ 100% về 0% trong 4 giây rồi tự đóng mượt mà.
+3. **Giới Hạn Thẻ "Cảnh Báo & Log" Trên Dashboard (Tối đa 3 mục) & Điều Hướng Quả Chuông**:
+   - Thẻ hiển thị trên Dashboard được giới hạn hiển thị tối đa 3 cảnh báo mới nhất (`alerts[:3]`).
+   - Tích hợp nút `Xem tất cả (N) →` ở tiêu đề và nút `Xem thêm N-3 thông báo khác trong Quả Chuông 🔔` ở đáy thẻ, click vào sẽ tự động mở dropdown Quả chuông và cuộn mượt đến vị trí thông báo.
+4. **Tiện Ích Mô Phỏng Cảnh Báo Cảm Biến Demo (`sfSimulateSensorAlert`)**:
+   - Bổ sung nút **`⚡ Mô phỏng sự cố`** trên thanh công cụ lớp bản đồ.
+   - Tự động sinh sự cố cảm biến ngẫu nhiên theo phân khu (nhiệt độ vượt 38°C, độ ẩm đất tụt dưới 28%, nồng độ EC/pH bất thường), đẩy thông báo vào menu chuông, hiển thị Toast và ghim điểm phát sóng radar `.sf-alert-beacon` động lên bản đồ nông trại.
+
+---
+
+## [v0.6.1] – 2026-09-26
 
 ### 🐛 Sửa lỗi & Nâng cấp Trải nghiệm 3D (3D Bug Fixes & Action Enhancements)
 1. **Khắc Phục Triệt Để Lỗi Không Thể Nhấp Vào Cây Để Mở Bảng Cài Đặt Bên Phải (`#sf-plant-drawer`)**:

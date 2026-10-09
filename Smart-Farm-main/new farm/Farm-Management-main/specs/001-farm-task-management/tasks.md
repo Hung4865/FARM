@@ -5,36 +5,42 @@
 
 ---
 
-## Danh sách công việc theo từng giai đoạn (Task Checklist)
+## Danh sách công việc theo chuẩn 4 bước (Task Checklist)
 
-### Giai đoạn 1: Nền tảng dữ liệu (Data & Security)
-- [x] **T001**: Tạo model `smart.farm.task` tại `smart_farm/models/task.py` với đầy đủ các trường: `name`, `task_type`, `date`, `is_done`, `user_id`, `notes`.
-- [x] **T002**: Import `task` vào `smart_farm/models/__init__.py`.
-- [x] **T003**: Cấu hình phân quyền truy cập cho model `smart.farm.task` trong file `smart_farm/security/ir.model.access.csv`.
-
----
-
-### Giai đoạn 2: Giao diện quản trị Odoo Backend
-- [x] **T004**: Tạo file giao diện `smart_farm/views/task_views.xml` bao gồm List view, Form view, Search view và action `action_smart_farm_task`.
-- [x] **T005**: Khai báo menuitem "Công việc" trong `smart_farm/views/menu.xml`.
-- [x] **T006**: Đăng ký file `views/task_views.xml` vào danh sách `'data'` trong `smart_farm/__manifest__.py`.
+### Subtask 1: Nền tảng Dữ liệu & Phân quyền (Data & Security)
+- [x] **T001** `[odoo-backend-developer]` Tạo model `smart.farm.task` tại `smart_farm/models/task.py` với các trường `name`, `task_type`, `date`, `is_done`, `user_id`, `notes`; import vào `__init__.py` và cấp quyền CRUD trong `smart_farm/security/ir.model.access.csv`.
+- [x] **T002** `[odoo-code-reviewer]` Soi diff model và file bảo mật, kiểm tra schema bảng dữ liệu và quyền truy cập người dùng/quản trị viên.
+- [x] **T003** Lập trình viên nghiệm thu (F5 Odoo, upgrade module), xác nhận bảng `smart_farm_task` và các trường đã sinh đúng trong database PostgreSQL.
+- [x] **T004** Commit: `feat(smart_farm): subtask 1 - implement smart.farm.task model and security access`
 
 ---
 
-### Giai đoạn 3: Backend Controller & API
-- [x] **T007**: Cập nhật hàm `dashboard` trong `smart_farm/controllers/main.py`: truy vấn danh sách task có ngày là hôm nay (`date = fields.Date.today()`) và tính toán số task đã hoàn thành / còn lại.
-- [x] **T008**: Tạo route API `POST /smart_farm/api/task/toggle` trong `smart_farm/controllers/main.py` để cập nhật trạng thái `is_done` cho task và trả về JSON kết quả.
+### Subtask 2: Giao diện Quản trị Backend Odoo (Backend Views & Menu)
+- [x] **T005** `[odoo-backend-developer]` Xây dựng `smart_farm/views/task_views.xml` (List view, Form view, Search view, action `action_smart_farm_task`), khai báo menuitem trong `views/menu.xml` và đăng ký vào `'data'` trong `__manifest__.py`.
+- [x] **T006** `[odoo-code-reviewer]` Soi diff file XML, kiểm tra cú pháp QWeb, cấu trúc thẻ view và liên kết action window.
+- [x] **T007** Lập trình viên nghiệm thu (F5 Odoo), xác nhận menu "Công việc" xuất hiện trên thanh điều hướng Odoo và thao tác CRUD tạo/sửa task mượt mà.
+- [x] **T008** Commit: `feat(smart_farm): subtask 2 - backend list, form views and menu configuration`
 
 ---
 
-### Giai đoạn 4: Dashboard Frontend & Tương tác AJAX
-- [x] **T009**: Chỉnh sửa card "Công việc hôm nay" trong `smart_farm/views/dashboard.xml`: xóa bỏ HTML tĩnh demo, thay bằng vòng lặp `<t t-foreach="tasks" t-as="task">` render dữ liệu thật từ Controller.
-- [x] **T010**: Bổ sung hàm Javascript `sfToggleTask(taskId, element)` trong `smart_farm/static/src/js/dashboard.js` để gửi AJAX khi click vào checkbox và cập nhật giao diện mượt mà không cần reload trang.
+### Subtask 3: Backend Controller & API AJAX (Controller & Toggle API)
+- [x] **T009** `[odoo-backend-developer]` Cập nhật controller `dashboard` trong `smart_farm/controllers/main.py`: truy vấn danh sách công việc, tính số lượng đã xong/còn lại; xây dựng API `POST /smart_farm/api/task/toggle` cập nhật `is_done`.
+- [x] **T010** `[odoo-code-reviewer]` Soi diff controller, kiểm tra logic xử lý JSON response, auth='user', và bảo mật API.
+- [x] **T011** Lập trình viên nghiệm thu (gọi API toggle task, F5 Odoo), xác nhận trạng thái task đảo chiều chính xác và trả về bộ đếm chuẩn.
+- [x] **T012** Commit: `feat(smart_farm): subtask 3 - dashboard task controller and toggle api endpoint`
 
 ---
 
-### Giai đoạn 5: Nâng cấp Module & Kiểm thử (Verification & Docs)
-- [x] **T011**: Nâng cấp (Upgrade) module `smart_farm` trong Odoo để áp dụng bảng mới và view mới vào database.
-- [x] **T012**: Tạo dữ liệu mẫu thực tế trong Odoo (3 - 5 công việc hôm nay) và kiểm tra hiển thị trên Dashboard.
-- [x] **T013**: Kiểm tra chức năng click checkbox toggle trạng thái hoàn thành trực tiếp trên Dashboard.
-- [x] **T014**: Ghi chép cập nhật vào `CHANGED.md` và `UI/UI-Change.md`.
+### Subtask 4: Dashboard Frontend & Tương tác Task (QWeb Template & Toggle AJAX)
+- [x] **T013** `[odoo-frontend-styler]` Chỉnh sửa card công việc trong `smart_farm/views/dashboard.xml`: render động danh sách task; viết hàm JS `sfToggleTask(taskId, element)` trong `dashboard.js` xử lý click checkbox không reload trang.
+- [x] **T014** `[odoo-code-reviewer]` Soi diff QWeb và JavaScript, kiểm tra class styling gạch ngang chữ khi done và cập nhật icon checkbox.
+- [x] **T015** Lập trình viên nghiệm thu (mở Dashboard, click checkbox hoàn thành việc), xác nhận giao diện chuyển trạng thái tức thì không reload.
+- [x] **T016** Commit: `feat(smart_farm): subtask 4 - dynamic task card render and ajax toggle interaction`
+
+---
+
+### Subtask 5: Nâng cấp Hiển thị Toàn bộ Việc & Tối ưu Đồng bộ (Task Bug Fixes & UX Optimization)
+- [x] **T017** `[odoo-fullstack-dev]` Mở rộng query `all_tasks` không giới hạn theo ngày, thêm thanh cuộn `max-height: 240px` và render ghi chú `notes` trong `dashboard.xml`; bổ sung cơ chế fallback tự đếm DOM trong `sfSyncTaskUI` và empty state trong `sfDeleteTask` tại `dashboard.js`.
+- [x] **T018** `[odoo-code-reviewer]` Soi diff toàn bộ controller, view và JS, kiểm tra không lỗi tràn layout, không âm số đếm khi xóa task.
+- [x] **T019** Lập trình viên nghiệm thu (F5 Odoo, test cuộn danh sách, test xóa task và xem ghi chú), xác nhận 0 visual regression.
+- [x] **T020** Commit: `fix(smart_farm): subtask 5 - optimize all tasks display, notes render and counter sync`

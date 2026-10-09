@@ -81,6 +81,38 @@ window.sfToggleDropdown = function(event, menuId) {
     }
 };
 
+window.sfOpenNotifications = function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    var targetMenu = document.getElementById('sf-notif-menu');
+    var notifBtn = document.getElementById('sf-notif-btn');
+
+    // Close other dropdowns
+    var allDropdowns = document.querySelectorAll('.sf-dropdown-menu');
+    for (var i = 0; i < allDropdowns.length; i++) {
+        if (allDropdowns[i] !== targetMenu) {
+            allDropdowns[i].classList.remove('show');
+        }
+    }
+    var allWrappers = document.querySelectorAll('.sf-dropdown-wrapper');
+    for (var j = 0; j < allWrappers.length; j++) {
+        allWrappers[j].classList.remove('open');
+    }
+
+    if (targetMenu) {
+        targetMenu.classList.add('show');
+        var wrapper = targetMenu.closest('.sf-dropdown-wrapper');
+        if (wrapper) {
+            wrapper.classList.add('open');
+        }
+    }
+
+    if (notifBtn) {
+        notifBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+};
+
 // Close all dropdowns when clicking outside
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.sf-dropdown-wrapper')) {
@@ -423,6 +455,9 @@ window.sfToggleTask = function(taskId, element) {
     .then(function(data) {
         if (data.success) {
             sfSyncTaskUI(taskId, data.is_done, data);
+            if (data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            }
         } else {
             // Revert
             sfSyncTaskUI(taskId, currentlyDone);
@@ -456,6 +491,9 @@ window.sfToggleMgmtTask = function(taskId, element) {
     .then(function(data) {
         if (data.success) {
             sfSyncTaskUI(taskId, data.is_done, data);
+            if (data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            }
         } else {
             // Revert
             sfSyncTaskUI(taskId, isDone);
@@ -892,6 +930,265 @@ window.sfHideAlertDetails = function() {
     if (popover) popover.style.display = 'none';
     currentAlertId = null;
     currentAlertBeaconEl = null;
+};
+
+// Simulate sensor threshold alert for Demo & Testing
+window.sfSimulateSensorAlert = function(zone, sensorType) {
+    var zones = ['A', 'B', 'C'];
+    var types = ['temp', 'moisture', 'ec', 'ph'];
+
+    if (!zone) {
+        zone = zones[Math.floor(Math.random() * zones.length)];
+    }
+    if (!sensorType) {
+        sensorType = types[Math.floor(Math.random() * types.length)];
+    }
+
+    var alertPayload = {
+        name: '',
+        content: '',
+        alert_type: 'danger',
+        area: 'Khu ' + zone
+    };
+
+    if (sensorType === 'temp') {
+        var tempVal = (37.5 + Math.random() * 2.5).toFixed(1);
+        alertPayload.name = 'Cảnh báo nhiệt độ cao Khu ' + zone;
+        alertPayload.content = 'Nhiệt độ môi trường đạt ' + tempVal + '°C vượt ngưỡng an toàn (32°C). Cần bật quạt thông gió làm mát!';
+        alertPayload.alert_type = 'danger';
+    } else if (sensorType === 'moisture') {
+        var moistVal = (25 + Math.random() * 8).toFixed(0);
+        alertPayload.name = 'Độ ẩm đất thấp Khu ' + zone;
+        alertPayload.content = 'Độ ẩm đất tụt xuống ' + moistVal + '% dưới mức tối thiểu (45%). Đất khô hạn, cần kích hoạt tưới tiêu!';
+        alertPayload.alert_type = 'warning';
+    } else if (sensorType === 'ec') {
+        alertPayload.name = 'Nồng độ dinh dưỡng bất thường Khu ' + zone;
+        alertPayload.content = 'Chỉ số EC đạt 2.9 mS/cm vượt ngưỡng cho phép (2.2 mS/cm). Cần kiểm tra bồn pha phân bón NPK.';
+        alertPayload.alert_type = 'warning';
+    } else {
+        alertPayload.name = 'Độ pH dung dịch vượt chuẩn Khu ' + zone;
+        alertPayload.content = 'Độ pH rễ cây đạt 7.4 (chuẩn 5.8 - 6.5). Nguy cơ hạn chế hấp thu vi lượng.';
+        alertPayload.alert_type = 'warning';
+    }
+
+    fetch('/smart_farm/api/alert/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(alertPayload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success && data.alert) {
+            // 1. Push real-time notification to Bell & Dashboard card & Toast
+            if (window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            }
+
+            // 2. Add dynamic Beacon on Map
+            var mapWrapper = document.getElementById('sf-map-wrapper');
+            if (mapWrapper) {
+                var posStyle = 'left: 48%; top: 38%;';
+                if (zone === 'A') posStyle = 'left: 22%; top: 34%;';
+                else if (zone === 'C') posStyle = 'left: 82%; top: 58%;';
+
+                var beaconId = 'sf-map-beacon-' + data.alert.id;
+                var existingBeacon = document.getElementById(beaconId);
+                if (!existingBeacon) {
+                    var isDanger = data.alert.alert_type === 'danger';
+                    var beaconHtml = '<div class="sf-map-layer-item sf-layer-alerts sf-alert-beacon ' + (isDanger ? 'beacon-danger' : 'beacon-warning') + '" ' +
+                        'id="' + beaconId + '" ' +
+                        'style="' + posStyle + '" ' +
+                        'data-id="' + data.alert.id + '" ' +
+                        'data-name="' + (data.alert.name || '') + '" ' +
+                        'data-area="' + (data.alert.area || '') + '" ' +
+                        'data-content="' + (data.alert.content || '') + '" ' +
+                        'onclick="sfOnAlertClick(event, this)" ' +
+                        'title="⚠️ Sự cố: ' + (data.alert.name || '') + ' (Nhấp xử lý)">' +
+                        '<div class="sf-beacon-pulse"></div>' +
+                        '<span class="sf-beacon-icon">⚠️</span>' +
+                        '<span class="sf-beacon-badge-text">' + (data.alert.name.substring(0, 16)) + '...</span>' +
+                    '</div>';
+                    mapWrapper.insertAdjacentHTML('beforeend', beaconHtml);
+                }
+            }
+
+            // 3. Update alert count badge on Map Topbar layer button
+            var alertLayerCount = document.querySelector('#layer-alerts-btn .sf-layer-count');
+            if (alertLayerCount && typeof data.unresolved_count !== 'undefined') {
+                alertLayerCount.textContent = data.unresolved_count;
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Error simulating sensor alert:', err);
+    });
+};
+
+// Floating Toast Notification System with countdown progress bar
+window.sfShowToast = function(options, type) {
+    var title = '';
+    var message = '';
+    var toastType = 'success';
+    var duration = 4000;
+
+    if (typeof options === 'string') {
+        title = options;
+        message = '';
+        toastType = type || 'success';
+    } else if (typeof options === 'object' && options !== null) {
+        title = options.title || options.name || '';
+        message = options.message || options.content || '';
+        toastType = options.type || options.alert_type || type || 'success';
+        if (options.duration) duration = options.duration;
+    }
+
+    if (!title && !message) return;
+
+    var container = document.getElementById('sf-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'sf-toast-container';
+        container.className = 'sf-toast-container';
+        document.body.appendChild(container);
+    }
+
+    var toast = document.createElement('div');
+    toast.className = 'sf-toast sf-toast-' + toastType;
+
+    // SVG icon matching the user sample screenshot
+    var iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+    if (toastType === 'error' || toastType === 'danger') {
+        iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+    } else if (toastType === 'warning') {
+        iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    } else if (toastType === 'info') {
+        iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+    }
+
+    var descHtml = message ? '<div class="sf-toast-desc">' + message + '</div>' : '';
+
+    toast.innerHTML =
+        '<div class="sf-toast-icon">' + iconSvg + '</div>' +
+        '<div class="sf-toast-body">' +
+            '<div class="sf-toast-title">' + title + '</div>' +
+            descHtml +
+        '</div>' +
+        '<button type="button" class="sf-toast-close" title="Đóng">&times;</button>' +
+        '<div class="sf-toast-progress-track">' +
+            '<div class="sf-toast-progress-bar" style="animation-duration: ' + duration + 'ms;"></div>' +
+        '</div>';
+
+    var closeBtn = toast.querySelector('.sf-toast-close');
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            toast.classList.add('sf-toast-hiding');
+            setTimeout(function() {
+                if (toast && toast.parentNode) toast.remove();
+            }, 250);
+        };
+    }
+
+    container.appendChild(toast);
+
+    setTimeout(function() {
+        if (toast && toast.parentNode) {
+            toast.classList.add('sf-toast-hiding');
+            setTimeout(function() {
+                if (toast && toast.parentNode) toast.remove();
+            }, 300);
+        }
+    }, duration);
+};
+
+// Push real-time notification to UI
+window.sfPushNotification = function(alertData, unresolvedCount) {
+    if (!alertData) return;
+
+    // 1. Update dropdown list
+    var notifList = document.getElementById('sf-notif-items');
+    if (notifList) {
+        // Remove empty state if present
+        var emptyState = document.getElementById('sf-notif-empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        // Determine icon box styling and svg
+        var iconBoxClass = 'icon-info';
+        var iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+
+        if (alertData.alert_type === 'danger') {
+            iconBoxClass = 'icon-danger';
+            iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+        } else if (alertData.alert_type === 'warning') {
+            iconBoxClass = 'icon-warning';
+            iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+        }
+
+        var timeText = alertData.timestamp || 'Vừa xong';
+        var areaHtml = alertData.area ? ' · <span class="sf-notif-area">' + alertData.area + '</span>' : '';
+
+        var itemHtml = '<div class="sf-notif-item unresolved sf-notif-new-highlight" id="sf-notif-alert-' + alertData.id + '">' +
+            '<div class="sf-notif-icon-box ' + iconBoxClass + '">' + iconSvg + '</div>' +
+            '<div class="sf-notif-content">' +
+                '<div class="sf-notif-msg">' + (alertData.name || 'Thông báo mới') + '</div>' +
+                '<div class="sf-notif-meta">' +
+                    '<span class="sf-notif-time">' + timeText + '</span>' + areaHtml +
+                '</div>' +
+            '</div>' +
+            '<div class="sf-notif-action">' +
+                '<button type="button" class="sf-btn-resolve-single" onclick="sfResolveAlert(' + alertData.id + ')" title="Đánh dấu đã xử lý">Xử lý</button>' +
+            '</div>' +
+        '</div>';
+
+        // Prepend to dropdown list
+        notifList.insertAdjacentHTML('afterbegin', itemHtml);
+
+        // Cap at 15 items to keep DOM performant
+        var currentItems = notifList.querySelectorAll('.sf-notif-item');
+        if (currentItems.length > 15) {
+            currentItems[currentItems.length - 1].remove();
+        }
+    }
+
+    // 2. Update dashboard card list ("Cảnh báo & Log")
+    var dashList = document.getElementById('sf-dash-alert-list');
+    if (dashList) {
+        var emptyDash = document.getElementById('sf-dash-alert-empty');
+        if (emptyDash) {
+            emptyDash.remove();
+        }
+        var dotType = alertData.alert_type || 'info';
+        var dashItemHtml = '<div class="sf-alert-item sf-notif-new-highlight" id="sf-dash-alert-' + alertData.id + '">' +
+            '<div class="sf-alert-dot dot-' + dotType + '"></div>' +
+            '<div style="flex:1;">' +
+                '<div class="sf-alert-text">' + (alertData.name || 'Thông báo mới') + '</div>' +
+                '<div class="sf-alert-time">' + (alertData.timestamp || 'Vừa xong') + (alertData.area ? ' · ' + alertData.area : '') + '</div>' +
+            '</div>' +
+            '<button type="button" class="sf-btn-resolve-dash" onclick="sfResolveAlert(' + alertData.id + ')" title="Giải quyết cảnh báo">Xử lý</button>' +
+        '</div>';
+        dashList.insertAdjacentHTML('afterbegin', dashItemHtml);
+        var dashItems = dashList.querySelectorAll('.sf-alert-item');
+        if (dashItems.length > 3) {
+            dashItems[dashItems.length - 1].remove();
+        }
+    }
+
+    // 3. Update badge and top stats
+    var count = typeof unresolvedCount !== 'undefined' ? unresolvedCount : 1;
+    if (window.sfUpdateAlertsUI) {
+        window.sfUpdateAlertsUI(count);
+    }
+
+    // 4. Trigger Toast Notification with bottom progress bar matching reference screenshot
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: alertData.name || 'Thông báo mới',
+            message: alertData.content || (alertData.area ? 'Khu vực: ' + alertData.area : ''),
+            type: alertData.alert_type || 'info'
+        });
+    }
 };
 
 // Centralized Alert UI updater
@@ -1436,14 +1733,30 @@ window.sfToggleDevice = function(zone, device, checkboxEl) {
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.success) {
-            window.sfShowToast(data.message, 'success');
+            if (data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            } else if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Điều khiển thiết bị',
+                    message: data.message,
+                    type: 'success'
+                });
+            }
         } else {
-            window.sfShowToast(data.message || 'Lỗi khi điều khiển thiết bị', 'error');
+            if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Lỗi điều khiển thiết bị',
+                    message: data.message || 'Lỗi khi điều khiển thiết bị',
+                    type: 'error'
+                });
+            }
         }
     })
     .catch(function(err) {
         console.error(err);
-        window.sfShowToast('Lỗi kết nối khi gửi lệnh điều khiển!', 'error');
+        if (typeof window.sfShowToast === 'function') {
+            window.sfShowToast('Lỗi kết nối khi gửi lệnh điều khiển!', 'error');
+        }
     });
 };
 
@@ -1586,7 +1899,33 @@ window.sfWaterSinglePlantNow = function() {
         if (moistureEl) moistureEl.textContent = window.sfCurrentPlant.moisture + '%';
         if (moistureBarEl) moistureBarEl.style.width = window.sfCurrentPlant.moisture + '%';
 
-        window.sfShowToast('💧 Đã tưới thành công 150ml cho ' + window.sfCurrentPlant.plantName + ' #' + window.sfCurrentPlant.id + '! Độ ẩm rễ: ' + window.sfCurrentPlant.moisture + '%', 'success');
+        var pName = window.sfCurrentPlant.plantName || 'Dưa lưới Taki';
+        var pId = window.sfCurrentPlant.id;
+        var pMois = window.sfCurrentPlant.moisture;
+
+        fetch('/smart_farm/api/alert/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: 'Tưới cây thành công: ' + pName + ' #' + pId,
+                content: 'Đã hoàn tất cữ tưới 150ml. Độ ẩm rễ hiện tại đạt ' + pMois + '%.',
+                alert_type: 'info',
+                area: 'Nhà màng GH-01'
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success && data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            } else if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Tưới cây thành công (150ml)',
+                    message: pName + ' #' + pId + ' • Độ ẩm rễ: ' + pMois + '%',
+                    type: 'success'
+                });
+            }
+        })
+        .catch(function(e) { console.error('Alert error:', e); });
 
         if (btn) {
             btn.disabled = false;
@@ -3239,3 +3578,532 @@ window.sfFocusFirstPlant = function(plantId) {
         });
     }
 };
+
+// Weather Refresh Handler (1-Click Instant Refresh & Toast Feedback)
+window.sfRefreshWeather = function(btn) {
+    if (!btn) btn = document.getElementById('sf-btn-refresh-weather');
+    if (!btn || btn.disabled) return;
+
+    var icon = btn.querySelector('.sf-refresh-icon');
+    if (icon) icon.classList.add('spin');
+    btn.disabled = true;
+
+    fetch('/smart_farm/api/weather/refresh', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({})
+    })
+    .then(function(res) {
+        return res.json();
+    })
+    .then(function(result) {
+        if (result && result.success && result.data) {
+            var data = result.data;
+            // Update Temp
+            var tempEl = document.getElementById('sf-weather-temp-val');
+            if (tempEl && data.temperature !== undefined) tempEl.textContent = data.temperature;
+
+            // Update Icon
+            var iconEl = document.getElementById('sf-weather-main-icon');
+            if (iconEl && data.icon) {
+                iconEl.textContent = data.icon;
+                if (data.desc) iconEl.setAttribute('title', data.desc);
+            }
+
+            // Update Wind
+            var windEl = document.getElementById('sf-weather-wind-val');
+            if (windEl && data.windspeed !== undefined) windEl.textContent = data.windspeed;
+
+            // Update Humidity
+            var humEl = document.getElementById('sf-weather-hum-val');
+            if (humEl && data.humidity !== undefined) humEl.textContent = data.humidity;
+
+            // Update Location
+            var locEl = document.getElementById('sf-weather-location-val');
+            if (locEl && data.location) locEl.textContent = data.location;
+
+            // Update Badge
+            var badgeEl = document.getElementById('sf-weather-source-badge');
+            if (badgeEl && data.source) {
+                if (data.source === 'live') {
+                    badgeEl.textContent = 'Trực tiếp';
+                    badgeEl.className = 'badge-live';
+                } else if (data.source === 'db') {
+                    badgeEl.textContent = 'Từ DB';
+                    badgeEl.className = 'badge-demo';
+                } else {
+                    badgeEl.textContent = 'Mẫu';
+                    badgeEl.className = 'badge-demo';
+                }
+            }
+
+            // Update Forecast
+            var fcListEl = document.getElementById('sf-weather-forecast-list');
+            if (fcListEl && Array.isArray(data.forecast) && data.forecast.length > 0) {
+                var html = '';
+                data.forecast.forEach(function(fc) {
+                    html += '<div class="sf-fc-day">' +
+                        '<div class="sf-fc-label">' + (fc.day || '') + '</div>' +
+                        '<div class="sf-fc-icon" title="' + (fc.desc || '') + '">' + (fc.icon || '🌤️') + '</div>' +
+                        '<div class="sf-fc-temp">' + (fc.temp || '') + '</div>' +
+                    '</div>';
+                });
+                fcListEl.innerHTML = html;
+            }
+
+            // Update Agri Advice
+            var adviceEl = document.getElementById('sf-weather-agri-advice');
+            if (data.agri_advice) {
+                if (!adviceEl) {
+                    var card = btn.closest('.sf-card');
+                    if (card) {
+                        adviceEl = document.createElement('div');
+                        adviceEl.className = 'sf-weather-advice';
+                        adviceEl.id = 'sf-weather-agri-advice';
+                        card.appendChild(adviceEl);
+                    }
+                }
+                if (adviceEl) adviceEl.textContent = data.agri_advice;
+            }
+
+            // Trigger Toast (4 seconds)
+            if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Thời tiết Hà Nội',
+                    message: result.message || 'Đã cập nhật dữ liệu thời tiết mới nhất!',
+                    type: 'success',
+                    duration: 4000
+                });
+            }
+        } else {
+            if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Làm mới thời tiết',
+                    message: (result && result.message) || 'Không thể cập nhật dữ liệu thời tiết.',
+                    type: 'warning',
+                    duration: 4000
+                });
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Weather refresh error:', err);
+        if (typeof window.sfShowToast === 'function') {
+            window.sfShowToast({
+                title: 'Lỗi mạng',
+                message: 'Không thể kết nối đến máy chủ để làm mới thời tiết.',
+                type: 'error',
+                duration: 4000
+            });
+        }
+    })
+    .finally(function() {
+        if (icon) icon.classList.remove('spin');
+        btn.disabled = false;
+    });
+};
+
+// ==========================================================================
+// FEATURE 006: THEME MANAGER (DARK SLATE & HIGH CONTRAST MODE)
+// ==========================================================================
+window.sfToggleTheme = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    var html = document.documentElement;
+    var body = document.body;
+    var isDark = html.classList.contains('sf-dark-mode') || (body && body.classList.contains('sf-dark-mode'));
+    var targetDark = !isDark;
+
+    if (targetDark) {
+        html.classList.add('sf-dark-mode');
+        if (body) body.classList.add('sf-dark-mode');
+        try { localStorage.setItem('sf_theme', 'dark'); } catch(e) {}
+    } else {
+        html.classList.remove('sf-dark-mode');
+        if (body) body.classList.remove('sf-dark-mode');
+        try { localStorage.setItem('sf_theme', 'light'); } catch(e) {}
+    }
+
+    var svgMoon = document.getElementById('sf-theme-svg-moon');
+    var svgSun = document.getElementById('sf-theme-svg-sun');
+    var btn = document.getElementById('sf-theme-toggle');
+    if (svgMoon) svgMoon.style.display = targetDark ? 'none' : 'block';
+    if (svgSun) svgSun.style.display = targetDark ? 'block' : 'none';
+    if (btn) btn.setAttribute('title', targetDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: 'Chế độ giao diện',
+            message: targetDark ? 'Đã bật Chế độ Tối (Dark Slate)!' : 'Đã chuyển về Giao diện Sáng!',
+            type: 'info',
+            duration: 2500
+        });
+    }
+};
+
+window.sfInitTheme = function() {
+    var saved = null;
+    try { saved = localStorage.getItem('sf_theme'); } catch(e) {}
+    var isDark = (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+
+    var html = document.documentElement;
+    var body = document.body;
+
+    if (isDark) {
+        html.classList.add('sf-dark-mode');
+        if (body) body.classList.add('sf-dark-mode');
+    } else {
+        html.classList.remove('sf-dark-mode');
+        if (body) body.classList.remove('sf-dark-mode');
+    }
+
+    var svgMoon = document.getElementById('sf-theme-svg-moon');
+    var svgSun = document.getElementById('sf-theme-svg-sun');
+    var btn = document.getElementById('sf-theme-toggle');
+    if (svgMoon) svgMoon.style.display = isDark ? 'none' : 'block';
+    if (svgSun) svgSun.style.display = isDark ? 'block' : 'none';
+    if (btn) btn.setAttribute('title', isDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.sfInitTheme);
+} else {
+    window.sfInitTheme();
+}
+
+// ==========================================================================
+// FEATURE 008: AI AGRI-COPILOT (GOOGLE GEMINI) CHAT CLIENT
+// ==========================================================================
+window.sfAiHistory = [];
+
+window.sfFormatAiMarkdown = function(text) {
+    if (!text) return '';
+    var escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    // Bold: **text**
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic: *text*
+    escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Inline code: `code`
+    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:4px;font-family:monospace;font-size:11.5px;">$1</code>');
+    
+    var lines = escaped.split('\n');
+    var formattedLines = [];
+    var inList = false;
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.indexOf('- ') === 0 || line.indexOf('* ') === 0 || line.indexOf('+ ') === 0) {
+            if (!inList) {
+                formattedLines.push('<ul style="margin:4px 0 4px 16px;padding:0;">');
+                inList = true;
+            }
+            formattedLines.push('<li style="margin-bottom:3px;">' + line.substring(2) + '</li>');
+        } else {
+            if (inList) {
+                formattedLines.push('</ul>');
+                inList = false;
+            }
+            if (line === '') {
+                formattedLines.push('<div style="height:6px;"></div>');
+            } else {
+                formattedLines.push('<p style="margin-bottom:5px;">' + line + '</p>');
+            }
+        }
+    }
+    if (inList) formattedLines.push('</ul>');
+    return formattedLines.join('');
+};
+
+window.sfToggleAiChat = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    var win = document.getElementById('sf-ai-chat-window');
+    var fab = document.getElementById('sf-ai-fab-container');
+    if (!win) return;
+    var isHidden = win.style.display === 'none' || !win.style.display;
+    if (isHidden) {
+        win.style.display = 'flex';
+        if (fab) fab.classList.add('is-active');
+        var msgs = document.getElementById('sf-ai-messages');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        setTimeout(function() {
+            var input = document.getElementById('sf-ai-input');
+            if (input) input.focus();
+        }, 120);
+    } else {
+        win.style.display = 'none';
+        if (fab) fab.classList.remove('is-active');
+    }
+};
+
+window.sfToggleAiConfig = function() {
+    var drawer = document.getElementById('sf-ai-config-drawer');
+    if (!drawer) return;
+    var isHidden = drawer.style.display === 'none' || !drawer.style.display;
+    if (isHidden) {
+        drawer.style.display = 'block';
+        var keyInput = document.getElementById('sf-ai-key-input');
+        if (keyInput) {
+            var savedKey = '';
+            try { savedKey = localStorage.getItem('sf_gemini_api_key') || ''; } catch(e) {}
+            if (savedKey) keyInput.value = savedKey;
+            keyInput.focus();
+        }
+    } else {
+        drawer.style.display = 'none';
+    }
+};
+
+window.sfToggleKeyVisibility = function() {
+    var input = document.getElementById('sf-ai-key-input');
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+};
+
+window.sfSaveGeminiKey = function() {
+    var input = document.getElementById('sf-ai-key-input');
+    if (!input) return;
+    var key = input.value.trim();
+    if (!key) {
+        if (typeof window.sfShowToast === 'function') {
+            window.sfShowToast({
+                title: 'Gemini API Key',
+                message: 'Vui lòng nhập API Key hợp lệ từ Google AI Studio.',
+                type: 'warning',
+                duration: 3500
+            });
+        }
+        return;
+    }
+    try {
+        localStorage.setItem('sf_gemini_api_key', key);
+    } catch(e) {}
+
+    // Call server to persist
+    fetch('/smart_farm/api/ai/save_key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: key })
+    }).catch(function() {});
+
+    var tag = document.getElementById('sf-ai-model-tag');
+    if (tag) tag.textContent = 'Gemini 1.5';
+    var statusText = document.getElementById('sf-ai-status-text');
+    if (statusText) statusText.textContent = 'Đã kết nối Google Gemini • Sẵn sàng';
+
+    var drawer = document.getElementById('sf-ai-config-drawer');
+    if (drawer) drawer.style.display = 'none';
+
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: 'Google Gemini',
+            message: 'Đã lưu API Key thành công! AI đã sẵn sàng phản hồi chuyên sâu.',
+            type: 'success',
+            duration: 3500
+        });
+    }
+};
+
+window.sfClearGeminiKey = function() {
+    try {
+        localStorage.removeItem('sf_gemini_api_key');
+    } catch(e) {}
+    var input = document.getElementById('sf-ai-key-input');
+    if (input) input.value = '';
+
+    fetch('/smart_farm/api/ai/save_key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: '' })
+    }).catch(function() {});
+
+    var tag = document.getElementById('sf-ai-model-tag');
+    if (tag) tag.textContent = 'Farm Engine';
+    var statusText = document.getElementById('sf-ai-status-text');
+    if (statusText) statusText.textContent = 'Chế độ Engine nội bộ';
+
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: 'Google Gemini',
+            message: 'Đã xoá API Key. Hệ thống chuyển về bộ phân tích nội bộ.',
+            type: 'info',
+            duration: 3000
+        });
+    }
+};
+
+window.sfClearAiChat = function() {
+    window.sfAiHistory = [];
+    var msgs = document.getElementById('sf-ai-messages');
+    if (msgs) {
+        msgs.innerHTML = '<div class="sf-ai-msg sf-ai-msg-assistant">' +
+            '<div class="sf-ai-msg-avatar">🌾</div>' +
+            '<div class="sf-ai-msg-bubble">' +
+                '<div class="sf-ai-msg-text">' +
+                    '<p>Xin chào! Tôi là <strong>Agri-Copilot</strong> — Trợ lý AI Nông nghiệp được hỗ trợ bởi <strong>Google Gemini</strong>.</p>' +
+                    '<p style="margin-top:6px;">Tôi đang được kết nối dữ liệu thời gian thực của trang trại (Cảm biến đất, Thời tiết, Cảnh báo, GPS và Công việc).</p>' +
+                    '<p style="margin-top:6px;">Bạn cần tôi phân tích tình trạng trang trại hay tư vấn giải pháp gì hôm nay?</p>' +
+                '</div>' +
+                '<div class="sf-ai-msg-time">Vừa xong</div>' +
+            '</div>' +
+        '</div>';
+    }
+};
+
+window.sfSendQuickPrompt = function(promptText) {
+    var input = document.getElementById('sf-ai-input');
+    if (input) {
+        input.value = promptText;
+        window.sfSubmitAiChat();
+    }
+};
+
+window.sfSubmitAiChat = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    var input = document.getElementById('sf-ai-input');
+    var sendBtn = document.getElementById('sf-ai-send-btn');
+    var msgs = document.getElementById('sf-ai-messages');
+    if (!input || !msgs) return;
+
+    var text = input.value.trim();
+    if (!text) return;
+
+    var now = new Date();
+    var timeStr = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+
+    // 1. Append User Message Bubble
+    var userHtml = '<div class="sf-ai-msg sf-ai-msg-user">' +
+        '<div class="sf-ai-msg-bubble">' +
+            '<div class="sf-ai-msg-text">' + text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+            '<div class="sf-ai-msg-time">' + timeStr + '</div>' +
+        '</div>' +
+    '</div>';
+    msgs.insertAdjacentHTML('beforeend', userHtml);
+
+    // 2. Clear input & disable send
+    input.value = '';
+    input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
+    // 3. Append Typing Indicator
+    var typingId = 'sf-ai-typing-' + Date.now();
+    var typingHtml = '<div class="sf-ai-msg sf-ai-msg-assistant" id="' + typingId + '">' +
+        '<div class="sf-ai-msg-avatar">🌾</div>' +
+        '<div class="sf-ai-msg-bubble">' +
+            '<div class="sf-ai-typing-bubble">' +
+                '<span class="sf-ai-typing-dot"></span>' +
+                '<span class="sf-ai-typing-dot"></span>' +
+                '<span class="sf-ai-typing-dot"></span>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    msgs.insertAdjacentHTML('beforeend', typingHtml);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // 4. Retrieve API Key
+    var savedKey = '';
+    try { savedKey = localStorage.getItem('sf_gemini_api_key') || ''; } catch(e) {}
+
+    // 5. Send POST request
+    fetch('/smart_farm/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: text,
+            api_key: savedKey,
+            history: window.sfAiHistory || []
+        })
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(result) {
+        var typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        var replyText = (result && result.reply) || 'Xin lỗi, tôi chưa nhận được phản hồi phù hợp. Vui lòng thử lại!';
+        var formatted = window.sfFormatAiMarkdown(replyText);
+
+        var aiHtml = '<div class="sf-ai-msg sf-ai-msg-assistant">' +
+            '<div class="sf-ai-msg-avatar">🌾</div>' +
+            '<div class="sf-ai-msg-bubble">' +
+                '<div class="sf-ai-msg-text">' + formatted + '</div>' +
+                '<div class="sf-ai-msg-time">' + timeStr + (result && result.model === 'gemini-1.5-flash' ? ' • Gemini 1.5' : '') + '</div>' +
+            '</div>' +
+        '</div>';
+        msgs.insertAdjacentHTML('beforeend', aiHtml);
+        msgs.scrollTop = msgs.scrollHeight;
+
+        // Push to in-memory history
+        if (!window.sfAiHistory) window.sfAiHistory = [];
+        window.sfAiHistory.push({ role: 'user', text: text });
+        window.sfAiHistory.push({ role: 'model', text: replyText });
+        if (window.sfAiHistory.length > 8) {
+            window.sfAiHistory = window.sfAiHistory.slice(-8);
+        }
+
+        // Update tag if Gemini answered
+        if (result && result.model === 'gemini-1.5-flash') {
+            var tag = document.getElementById('sf-ai-model-tag');
+            if (tag) tag.textContent = 'Gemini 1.5';
+        }
+    })
+    .catch(function(err) {
+        console.error('AI chat error:', err);
+        var typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        var errHtml = '<div class="sf-ai-msg sf-ai-msg-assistant">' +
+            '<div class="sf-ai-msg-avatar">⚠️</div>' +
+            '<div class="sf-ai-msg-bubble">' +
+                '<div class="sf-ai-msg-text" style="color:#b91c1c;background:#fef2f2;border-color:#fca5a5;">' +
+                    'Không thể kết nối đến dịch vụ AI. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.' +
+                '</div>' +
+                '<div class="sf-ai-msg-time">' + timeStr + '</div>' +
+            '</div>' +
+        '</div>';
+        msgs.insertAdjacentHTML('beforeend', errHtml);
+        msgs.scrollTop = msgs.scrollHeight;
+    })
+    .finally(function() {
+        input.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        input.focus();
+    });
+};
+
+// Check Gemini key status on page load
+window.sfInitAiStatus = function() {
+    var savedKey = '';
+    try { savedKey = localStorage.getItem('sf_gemini_api_key') || ''; } catch(e) {}
+    if (savedKey) {
+        var tag = document.getElementById('sf-ai-model-tag');
+        if (tag) tag.textContent = 'Gemini 1.5';
+    } else {
+        fetch('/smart_farm/api/ai/get_key_status')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d && d.has_key) {
+                    var tag = document.getElementById('sf-ai-model-tag');
+                    if (tag) tag.textContent = 'Gemini 1.5';
+                }
+            })
+            .catch(function() {});
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.sfInitAiStatus);
+} else {
+    window.sfInitAiStatus();
+}

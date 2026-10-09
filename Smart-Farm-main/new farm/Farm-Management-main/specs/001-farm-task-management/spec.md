@@ -53,8 +53,22 @@ Là người quản trị, tôi muốn có menu "Công việc" riêng trong Odoo
 
 ---
 
+### User Story 4 - Nâng cấp Hiển thị Toàn bộ Công việc & Tối ưu Trải nghiệm Dashboard (Priority: P2)
+
+Là người quản trị theo dõi trang trại, tôi muốn thẻ công việc trên Dashboard hiển thị tổng quan toàn bộ các công việc đang cần thực hiện (thay vì bị giới hạn cứng chỉ công việc được gán đúng ngày hôm nay), có thanh cuộn tinh gọn nếu danh sách dài, hiển thị ghi chú phụ trợ, và các bộ đếm số lượng hoàn thành/còn lại luôn đồng bộ tức thì ngay cả khi xóa việc.
+
+* **Giá trị**: Tránh việc công việc bị bỏ sót nếu người dùng lên lịch trước hoặc chưa gán đúng ngày hôm nay; đảm bảo bộ đếm luôn chính xác tuyệt đối.
+* **Acceptance Scenarios**:
+  1. **Given** danh sách các task trong hệ thống, **When** mở Dashboard, **Then** hiển thị danh sách toàn bộ công việc theo thứ tự ưu tiên (`sequence asc, is_done asc, date desc`), tiêu đề card đổi thành "Công việc nông trại" với nhãn "Cần làm", danh sách có giới hạn chiều cao `max-height: 240px` và thanh cuộn mượt mà.
+  2. **Given** task có ghi chú chi tiết (`notes`), **When** hiển thị trên card Dashboard, **Then** ghi chú hiển thị bên dưới tiêu đề việc với font chữ nhỏ và màu xám tinh tế.
+  3. **Given** người dùng xóa một task từ tab Quản lý công việc (`sfDeleteTask`), **When** task bị xóa khỏi DOM, **Then** bộ đếm hoàn thành/còn lại tự động cập nhật lại ngay lập tức; nếu không còn task nào, tự động hiển thị trạng thái rỗng thân thiện *"Chưa có công việc nào"*.
+  4. **Given** người dùng bấm toggle task khi response server không kèm bộ đếm mới, **When** hàm `sfSyncTaskUI` thực thi, **Then** tự động quét đếm lại số lượng task từ DOM để cập nhật số việc hoàn thành và còn lại mà không gây sai lệch số liệu.
+
+---
+
 ## 3. Edge Cases & Xử lý lỗi (Requirements)
 
 1. **Mất kết nối mạng khi bấm checkbox:** Hiển thị thông báo lỗi nhỏ (Toast notification) nếu gọi API AJAX thất bại và hoàn tác trạng thái checkbox về ban đầu.
 2. **Quyền truy cập:** API toggle trạng thái chỉ cho phép người dùng đã đăng nhập Odoo thực hiện (auth='user').
 3. **Múi giờ (Timezone):** Ngày công việc phải được so sánh chuẩn theo múi giờ địa phương của người dùng (Việt Nam GMT+7).
+4. **Bộ đếm khi xóa/sửa việc:** Đảm bảo bộ đếm "X hoàn thành / Y còn lại" không bao giờ âm hoặc sai lệch khi người dùng thực hiện xóa việc hàng loạt.
