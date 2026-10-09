@@ -3705,3 +3705,73 @@ window.sfRefreshWeather = function(btn) {
         btn.disabled = false;
     });
 };
+
+// ==========================================================================
+// FEATURE 006: THEME MANAGER (DARK SLATE & HIGH CONTRAST MODE)
+// ==========================================================================
+window.sfToggleTheme = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    var html = document.documentElement;
+    var body = document.body;
+    var isDark = html.classList.contains('sf-dark-mode') || (body && body.classList.contains('sf-dark-mode'));
+    var targetDark = !isDark;
+
+    if (targetDark) {
+        html.classList.add('sf-dark-mode');
+        if (body) body.classList.add('sf-dark-mode');
+        try { localStorage.setItem('sf_theme', 'dark'); } catch(e) {}
+    } else {
+        html.classList.remove('sf-dark-mode');
+        if (body) body.classList.remove('sf-dark-mode');
+        try { localStorage.setItem('sf_theme', 'light'); } catch(e) {}
+    }
+
+    var svgMoon = document.getElementById('sf-theme-svg-moon');
+    var svgSun = document.getElementById('sf-theme-svg-sun');
+    var btn = document.getElementById('sf-theme-toggle');
+    if (svgMoon) svgMoon.style.display = targetDark ? 'none' : 'block';
+    if (svgSun) svgSun.style.display = targetDark ? 'block' : 'none';
+    if (btn) btn.setAttribute('title', targetDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: 'Chế độ giao diện',
+            message: targetDark ? 'Đã bật Chế độ Tối (Dark Slate)!' : 'Đã chuyển về Giao diện Sáng!',
+            type: 'info',
+            duration: 2500
+        });
+    }
+};
+
+window.sfInitTheme = function() {
+    var saved = null;
+    try { saved = localStorage.getItem('sf_theme'); } catch(e) {}
+    var isDark = (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+
+    var html = document.documentElement;
+    var body = document.body;
+
+    if (isDark) {
+        html.classList.add('sf-dark-mode');
+        if (body) body.classList.add('sf-dark-mode');
+    } else {
+        html.classList.remove('sf-dark-mode');
+        if (body) body.classList.remove('sf-dark-mode');
+    }
+
+    var svgMoon = document.getElementById('sf-theme-svg-moon');
+    var svgSun = document.getElementById('sf-theme-svg-sun');
+    var btn = document.getElementById('sf-theme-toggle');
+    if (svgMoon) svgMoon.style.display = isDark ? 'none' : 'block';
+    if (svgSun) svgSun.style.display = isDark ? 'block' : 'none';
+    if (btn) btn.setAttribute('title', isDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.sfInitTheme);
+} else {
+    window.sfInitTheme();
+}

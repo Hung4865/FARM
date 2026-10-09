@@ -2526,3 +2526,424 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     backdrop-filter: none !important;
 }
 
+/* ==========================================================================
+   FEATURE 006: SLEEK SLATE DARK MODE THEME (HIGH CONTRAST & COMPLETE)
+   ========================================================================== */
+
+/* Theme Toggle Button */
+.sf-theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.sf-theme-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Smooth Transitions */
+body, .sf-wrap, .sf-navbar-sticky, .sf-navbar, .sf-card, .sf-stat, .sf-stat-card {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark Mode Global */
+html.sf-dark-mode,
+body.sf-dark-mode {
+    background: #0f172a !important;
+    color: #f8fafc;
+}
+html.sf-dark-mode .sf-navbar-sticky,
+body.sf-dark-mode .sf-navbar-sticky {
+    background: #0f172a !important;
+}
+
+/* Navbar in Dark Mode */
+html.sf-dark-mode .sf-navbar,
+body.sf-dark-mode .sf-navbar {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+}
+html.sf-dark-mode .sf-brand-name,
+body.sf-dark-mode .sf-brand-name {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-nav-link,
+body.sf-dark-mode .sf-nav-link {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-nav-link:hover,
+body.sf-dark-mode .sf-nav-link:hover {
+    background: #334155 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-nav-link.active,
+body.sf-dark-mode .sf-nav-link.active {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: 1px solid #334155 !important;
+}
+html.sf-dark-mode .sf-nav-actions,
+body.sf-dark-mode .sf-nav-actions {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-icon-btn,
+body.sf-dark-mode .sf-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-icon-btn:hover,
+body.sf-dark-mode .sf-icon-btn:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-user-name,
+body.sf-dark-mode .sf-user-name {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-user-role,
+body.sf-dark-mode .sf-user-role {
+    color: #94a3b8 !important;
+}
+
+/* Header & Date Badge */
+html.sf-dark-mode .sf-title,
+body.sf-dark-mode .sf-title,
+html.sf-dark-mode .sf-section-title,
+body.sf-dark-mode .sf-section-title {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-header-date,
+body.sf-dark-mode .sf-header-date {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-sub-badge,
+body.sf-dark-mode .sf-sub-badge {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 4 Top Stat Cards in Dark Mode */
+html.sf-dark-mode .sf-stat,
+body.sf-dark-mode .sf-stat,
+html.sf-dark-mode .sf-stat-card,
+body.sf-dark-mode .sf-stat-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+html.sf-dark-mode .sf-stat:hover,
+body.sf-dark-mode .sf-stat:hover,
+html.sf-dark-mode .sf-stat-card:hover,
+body.sf-dark-mode .sf-stat-card:hover {
+    border-color: #475569 !important;
+    background: #243247 !important;
+}
+html.sf-dark-mode .sf-stat-label,
+body.sf-dark-mode .sf-stat-label {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-stat-val,
+body.sf-dark-mode .sf-stat-val {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-stat-val span,
+body.sf-dark-mode .sf-stat-val span,
+html.sf-dark-mode .sf-stat-val sub,
+body.sf-dark-mode .sf-stat-val sub {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-stat-sub,
+body.sf-dark-mode .sf-stat-sub {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-stat-sub.warn,
+body.sf-dark-mode .sf-stat-sub.warn {
+    color: #fb923c !important;
+}
+html.sf-dark-mode .sf-stat-sub.ok,
+body.sf-dark-mode .sf-stat-sub.ok {
+    color: #4ade80 !important;
+}
+
+/* Common Cards in Dark Mode */
+html.sf-dark-mode .sf-card,
+body.sf-dark-mode .sf-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+html.sf-dark-mode .sf-card-hd,
+body.sf-dark-mode .sf-card-hd {
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-card-title,
+body.sf-dark-mode .sf-card-title {
+    color: #f8fafc !important;
+}
+
+/* Weather Card in Dark Mode */
+html.sf-dark-mode .sf-temp,
+body.sf-dark-mode .sf-temp {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-temp sup,
+body.sf-dark-mode .sf-temp sup {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-weather-info,
+body.sf-dark-mode .sf-weather-info {
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-fc-day,
+body.sf-dark-mode .sf-fc-day {
+    background: #273549 !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-fc-day:hover,
+body.sf-dark-mode .sf-fc-day:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+}
+html.sf-dark-mode .sf-fc-label,
+body.sf-dark-mode .sf-fc-label {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-fc-temp,
+body.sf-dark-mode .sf-fc-temp {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-weather-advice,
+body.sf-dark-mode .sf-weather-advice {
+    background: #064e3b !important;
+    border-color: #059669 !important;
+    color: #6ee7b7 !important;
+}
+html.sf-dark-mode .sf-btn-refresh-weather,
+body.sf-dark-mode .sf-btn-refresh-weather {
+    background: #273549 !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+html.sf-dark-mode .sf-btn-refresh-weather:hover:not(:disabled),
+body.sf-dark-mode .sf-btn-refresh-weather:hover:not(:disabled) {
+    background: #334155 !important;
+    border-color: #475569 !important;
+    color: #ffffff !important;
+}
+
+/* Alert Card in Dark Mode */
+html.sf-dark-mode .sf-alert-item,
+body.sf-dark-mode .sf-alert-item {
+    border-bottom-color: #273549 !important;
+}
+html.sf-dark-mode .sf-alert-item:nth-child(odd),
+body.sf-dark-mode .sf-alert-item:nth-child(odd) {
+    background: #273549 !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-alert-text,
+body.sf-dark-mode .sf-alert-text {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-alert-time,
+body.sf-dark-mode .sf-alert-time {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-dash-alert-bottom-btn,
+body.sf-dark-mode .sf-dash-alert-bottom-btn,
+html.sf-dark-mode .sf-btn-view-all-notif,
+body.sf-dark-mode .sf-btn-view-all-notif {
+    background: #273549 !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-dash-alert-bottom-btn:hover,
+body.sf-dark-mode .sf-dash-alert-bottom-btn:hover,
+html.sf-dark-mode .sf-btn-view-all-notif:hover,
+body.sf-dark-mode .sf-btn-view-all-notif:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-btn-resolve-dash,
+body.sf-dark-mode .sf-btn-resolve-dash {
+    background: #064e3b !important;
+    border-color: #059669 !important;
+    color: #6ee7b7 !important;
+}
+html.sf-dark-mode .sf-link-btn,
+body.sf-dark-mode .sf-link-btn {
+    color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-link-btn:hover,
+body.sf-dark-mode .sf-link-btn:hover {
+    color: #7dd3fc !important;
+}
+
+/* GPS & Map Placeholder in Dark Mode */
+html.sf-dark-mode .sf-gps-map,
+body.sf-dark-mode .sf-gps-map {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-no-data,
+body.sf-dark-mode .sf-no-data {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-gps-row,
+body.sf-dark-mode .sf-gps-row {
+    color: #e2e8f0 !important;
+    border-bottom-color: #334155 !important;
+}
+
+/* Soil Sensors in Dark Mode */
+html.sf-dark-mode .sf-sensor-row,
+body.sf-dark-mode .sf-sensor-row {
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-sensor-name,
+body.sf-dark-mode .sf-sensor-name {
+    color: #e2e8f0 !important;
+}
+html.sf-dark-mode .sf-sensor-val,
+body.sf-dark-mode .sf-sensor-val {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-bar,
+body.sf-dark-mode .sf-bar {
+    background: #334155 !important;
+}
+
+/* Farm Tasks in Dark Mode */
+html.sf-dark-mode .sf-task,
+body.sf-dark-mode .sf-task {
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-task-text,
+body.sf-dark-mode .sf-task-text {
+    color: #e2e8f0 !important;
+}
+html.sf-dark-mode .sf-task-text:hover,
+body.sf-dark-mode .sf-task-text:hover {
+    color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-task-text.done,
+body.sf-dark-mode .sf-task-text.done {
+    color: #64748b !important;
+}
+html.sf-dark-mode .sf-check,
+body.sf-dark-mode .sf-check {
+    border-color: #475569 !important;
+    background: #0f172a !important;
+}
+html.sf-dark-mode .sf-check.done,
+body.sf-dark-mode .sf-check.done {
+    background: rgba(22, 163, 74, 0.25) !important;
+    border-color: #22c55e !important;
+    color: #4ade80 !important;
+}
+
+/* Badges & Tags in Dark Mode */
+html.sf-dark-mode .badge-live,
+body.sf-dark-mode .badge-live {
+    background: rgba(22, 163, 74, 0.2) !important;
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    color: #4ade80 !important;
+}
+html.sf-dark-mode .badge-demo,
+body.sf-dark-mode .badge-demo {
+    background: rgba(2, 132, 199, 0.2) !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+    color: #38bdf8 !important;
+}
+html.sf-dark-mode .tag-green,
+body.sf-dark-mode .tag-green {
+    background: rgba(22, 163, 74, 0.2) !important;
+    color: #4ade80 !important;
+    border-color: rgba(34, 197, 94, 0.4) !important;
+}
+html.sf-dark-mode .tag-amber,
+body.sf-dark-mode .tag-amber {
+    background: rgba(217, 119, 6, 0.2) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+}
+html.sf-dark-mode .tag-blue,
+body.sf-dark-mode .tag-blue {
+    background: rgba(2, 132, 199, 0.2) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+/* Dropdowns & Modals in Dark Mode */
+html.sf-dark-mode .sf-dropdown-menu,
+body.sf-dark-mode .sf-dropdown-menu {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+html.sf-dark-mode .sf-dropdown-header,
+body.sf-dark-mode .sf-dropdown-header {
+    color: #94a3b8 !important;
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-dropdown-link,
+body.sf-dark-mode .sf-dropdown-link {
+    color: #e2e8f0 !important;
+}
+html.sf-dark-mode .sf-dropdown-link:hover,
+body.sf-dark-mode .sf-dropdown-link:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-dropdown-divider,
+body.sf-dark-mode .sf-dropdown-divider {
+    background: #334155 !important;
+}
+html.sf-dark-mode .sf-notif-header,
+body.sf-dark-mode .sf-notif-header {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-notif-item,
+body.sf-dark-mode .sf-notif-item {
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-notif-item.unresolved,
+body.sf-dark-mode .sf-notif-item.unresolved {
+    background: #273549 !important;
+}
+html.sf-dark-mode .sf-notif-title,
+body.sf-dark-mode .sf-notif-title {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-notif-desc,
+body.sf-dark-mode .sf-notif-desc {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-notif-empty,
+body.sf-dark-mode .sf-notif-empty {
+    color: #94a3b8 !important;
+}
+
+/* Drawers & Footer */
+html.sf-dark-mode .sf-drawer,
+body.sf-dark-mode .sf-drawer {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-footer,
+body.sf-dark-mode .sf-footer {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+

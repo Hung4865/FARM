@@ -27,7 +27,17 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=140"/>
+                <script><![CDATA[
+                    (function() {
+                        try {
+                            var t = localStorage.getItem('sf_theme');
+                            if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                                document.documentElement.classList.add('sf-dark-mode');
+                            }
+                        } catch(e) {}
+                    })();
+                ]]></script>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=142"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
@@ -503,6 +513,22 @@
                             <div class="sf-nav-right">
                                 <!-- Quick action buttons (Bell & Gear) -->
                                 <div class="sf-nav-actions">
+                                    <button type="button" class="sf-icon-btn sf-theme-btn" id="sf-theme-toggle" title="Chuyển chế độ Tối / Sáng" onclick="sfToggleTheme(event)">
+                                        <svg id="sf-theme-svg-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                        </svg>
+                                        <svg id="sf-theme-svg-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                                            <circle cx="12" cy="12" r="5"></circle>
+                                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                        </svg>
+                                    </button>
                                     <div class="sf-dropdown-wrapper">
                                         <button type="button" class="sf-icon-btn" id="sf-notif-btn" title="Thông báo &amp; Cảnh báo" onclick="sfToggleDropdown(event, 'sf-notif-menu')">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2050,7 +2076,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=140"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=142"></script>
             </body>
         </html>
     </template>
