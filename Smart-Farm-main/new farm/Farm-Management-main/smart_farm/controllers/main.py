@@ -562,6 +562,59 @@ class SmartFarmDashboard(http.Controller):
                 status=500
             )
 
+    @http.route('/smart_farm/api/alert/create', type='http', auth='user', methods=['POST'], csrf=False)
+    def create_alert(self, **kwargs):
+        """API tạo cảnh báo/thông báo mới theo sự kiện"""
+        try:
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            name = (data.get('name') or '').strip()
+            if not name:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Vui lòng cung cấp tiêu đề thông báo.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+            content = (data.get('content') or '').strip()
+            alert_type = data.get('alert_type') or 'info'
+            if alert_type not in ('danger', 'warning', 'info', 'success'):
+                alert_type = 'info'
+            area = (data.get('area') or 'Hệ thống').strip()
+
+            alert = request.env['smart.farm.alert'].create({
+                'name': name,
+                'content': content,
+                'alert_type': alert_type,
+                'area': area,
+                'is_resolved': False,
+            })
+            unresolved_count = request.env['smart.farm.alert'].search_count([('is_resolved', '=', False)])
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Đã tạo thông báo thành công!',
+                    'alert': {
+                        'id': alert.id,
+                        'name': alert.name,
+                        'content': alert.content or '',
+                        'alert_type': alert.alert_type,
+                        'area': alert.area or '',
+                        'timestamp': 'Vừa xong',
+                        'is_resolved': False,
+                    },
+                    'unresolved_count': unresolved_count
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi tạo thông báo: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
     @http.route('/smart_farm/api/zone/control', type='http', auth='user', methods=['POST'], csrf=False)
     def control_zone_device(self, **kwargs):
         """API điều khiển thiết bị IoT theo phân khu (Zone A, B, C)"""
@@ -582,13 +635,37 @@ class SmartFarmDashboard(http.Controller):
             dev_name = device_names.get(device, f'Thiết bị {device}')
             action_text = "Bật" if state else "Tắt"
 
+            # Tự động tạo bản ghi thông báo tương ứng trong smart.farm.alert
+            alert_type = 'info' if state else 'warning'
+            alert_name = f"{action_text} {dev_name}"
+            alert_content = f"Người dùng đã {action_text.lower()} {dev_name.lower()} tại Khu {zone}."
+
+            created_alert = request.env['smart.farm.alert'].create({
+                'name': alert_name,
+                'content': alert_content,
+                'alert_type': alert_type,
+                'area': f"Khu {zone}",
+                'is_resolved': False,
+            })
+            unresolved_count = request.env['smart.farm.alert'].search_count([('is_resolved', '=', False)])
+
             return request.make_response(
                 json.dumps({
                     'success': True,
                     'zone': zone,
                     'device': device,
                     'state': state,
-                    'message': f'Đã {action_text.lower()} {dev_name} tại Khu {zone} thành công!'
+                    'message': f'Đã {action_text.lower()} {dev_name} tại Khu {zone} thành công!',
+                    'alert': {
+                        'id': created_alert.id,
+                        'name': created_alert.name,
+                        'content': created_alert.content or '',
+                        'alert_type': created_alert.alert_type,
+                        'area': created_alert.area or '',
+                        'timestamp': 'Vừa xong',
+                        'is_resolved': False,
+                    },
+                    'unresolved_count': unresolved_count
                 }),
                 headers={'Content-Type': 'application/json'},
                 status=200

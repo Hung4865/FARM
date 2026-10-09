@@ -8,10 +8,10 @@
 ## Danh sách công việc theo chuẩn 4 bước (Task Checklist)
 
 ### Subtask 1: Backend API & Tự động tạo Thông báo khi Bật/Tắt Thiết bị
-- [ ] **T001** `[odoo-backend-developer]` Xây dựng API `POST /smart_farm/api/alert/create` và nâng cấp API `control_zone_device` trong `smart_farm/controllers/main.py`: tự động tạo bản ghi `smart.farm.alert` khi bật/tắt thiết bị (quạt thông gió, phun sương, tưới nhỏ giọt, bơm) và trả về đối tượng `alert` kèm `unresolved_count`.
-- [ ] **T002** `[odoo-code-reviewer]` Soi diff `smart_farm/controllers/main.py`, kiểm tra cú pháp Python, try/catch exception, định dạng JSON và tính toàn vẹn của logic điều khiển.
-- [ ] **T003** Lập trình viên nghiệm thu (F5 Odoo, test thử thao tác bật/tắt quạt hoặc gọi API), xác nhận bản ghi cảnh báo được sinh chuẩn trong database.
-- [ ] **T004** Commit: `feat(smart_farm): subtask 1 - auto-create alerts on zone device toggle`
+- [x] **T001** `[odoo-backend-developer]` Xây dựng API `POST /smart_farm/api/alert/create` và nâng cấp API `control_zone_device` trong `smart_farm/controllers/main.py`: tự động tạo bản ghi `smart.farm.alert` khi bật/tắt thiết bị (quạt thông gió, phun sương, tưới nhỏ giọt, bơm) và trả về đối tượng `alert` kèm `unresolved_count`.
+- [x] **T002** `[odoo-code-reviewer]` Soi diff `smart_farm/controllers/main.py`, kiểm tra cú pháp Python, try/catch exception, định dạng JSON và tính toàn vẹn của logic điều khiển.
+- [x] **T003** Lập trình viên nghiệm thu (F5 Odoo, test thử thao tác bật/tắt quạt hoặc gọi API), xác nhận bản ghi cảnh báo được sinh chuẩn trong database.
+- [x] **T004** Commit: `feat(smart_farm): subtask 1 - auto-create alerts on zone device toggle`
 
 ---
 
