@@ -659,13 +659,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .badge-demo { font-size: 11px; background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
 
 /* Weather */
-.sf-temp { font-size: 44px; font-weight: 700; color: #0f172a; line-height: 1; }
-.sf-temp sup { font-size: 20px; font-weight: 500; color: #64748b; }
+.sf-temp { font-size: 40px; font-weight: 700; color: #0f172a; line-height: 1; }
+.sf-temp sup { font-size: 18px; font-weight: 500; color: #64748b; }
+.sf-weather-icon { font-size: 32px; margin-right: 8px; line-height: 1; display: inline-block; cursor: default; }
 .sf-weather-info { font-size: 12px; color: #475569; line-height: 1.8; padding-top: 4px; }
 .sf-forecast { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
-.sf-fc-day { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px 4px; text-align: center; }
+.sf-fc-day { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; text-align: center; transition: all 0.2s ease; }
+.sf-fc-day:hover { border-color: #cbd5e1; background: #ffffff; }
 .sf-fc-label { font-size: 11px; font-weight: 500; color: #64748b; }
-.sf-fc-temp { font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 4px; }
+.sf-fc-icon { font-size: 18px; margin: 4px 0 2px 0; line-height: 1; }
+.sf-fc-temp { font-size: 14px; font-weight: 700; color: #0f172a; }
+.sf-weather-advice { margin-top: 12px; padding: 8px 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 11.5px; line-height: 1.45; color: #15803d; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 
 /* Alerts */
 .sf-alert-item { display: flex; gap: 10px; padding: 10px 8px; border-radius: 8px; border-bottom: 1px solid #f1f5f9; }

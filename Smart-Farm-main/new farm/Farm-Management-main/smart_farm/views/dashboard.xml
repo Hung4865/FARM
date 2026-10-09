@@ -27,7 +27,7 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=138"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=139"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
@@ -705,26 +705,37 @@
                         <div class="sf-card">
                             <div class="sf-card-hd">
                                 <div class="sf-card-title">Thời tiết</div>
-                                <span class="badge-live">
+                                <span class="badge-live" id="sf-weather-source-badge">
                                     <t t-if="weather['source'] == 'live'">Trực tiếp</t>
                                     <t t-elif="weather['source'] == 'db'">Từ DB</t>
                                     <t t-else="">Mẫu</t>
                                 </span>
                             </div>
                             <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;">
-                                <div class="sf-temp"><t t-esc="weather['temperature']"/><sup>°C</sup></div>
+                                <div class="sf-temp" style="display:flex;align-items:center;">
+                                    <span class="sf-weather-icon" t-att-title="weather.get('desc', 'Thời tiết')" id="sf-weather-main-icon"><t t-esc="weather.get('icon', '🌤️')"/></span>
+                                    <span><span id="sf-weather-temp-val"><t t-esc="weather['temperature']"/></span><sup>°C</sup></span>
+                                </div>
                                 <div class="sf-weather-info">
-                                    Gió: <t t-esc="weather['windspeed']"/> km/h<br/>
-                                    Độ ẩm: <t t-esc="weather['humidity']"/>%<br/>
-                                    TP. Hồ Chí Minh
+                                    Gió: <span id="sf-weather-wind-val"><t t-esc="weather['windspeed']"/></span> km/h<br/>
+                                    Độ ẩm: <span id="sf-weather-hum-val"><t t-esc="weather['humidity']"/></span>%<br/>
+                                    <span id="sf-weather-location-val"><t t-esc="weather.get('location', 'TP. Hà Nội')"/></span>
                                 </div>
                             </div>
-                            <div class="sf-forecast">
-                                <div class="sf-fc-day"><div class="sf-fc-label">Hôm nay</div><div class="sf-fc-temp"><t t-esc="weather['temperature']"/>°</div></div>
-                                <div class="sf-fc-day"><div class="sf-fc-label">Ngày mai</div><div class="sf-fc-temp">29°</div></div>
-                                <div class="sf-fc-day"><div class="sf-fc-label">Ngày kia</div><div class="sf-fc-temp">28°</div></div>
-                                <div class="sf-fc-day"><div class="sf-fc-label">Sau đó</div><div class="sf-fc-temp">30°</div></div>
+                            <div class="sf-forecast" id="sf-weather-forecast-list">
+                                <t t-foreach="weather.get('forecast', [])" t-as="fc">
+                                    <div class="sf-fc-day">
+                                        <div class="sf-fc-label"><t t-esc="fc['day']"/></div>
+                                        <div class="sf-fc-icon" t-att-title="fc.get('desc', '')"><t t-esc="fc.get('icon', '🌤️')"/></div>
+                                        <div class="sf-fc-temp"><t t-esc="fc['temp']"/></div>
+                                    </div>
+                                </t>
                             </div>
+                            <t t-if="weather.get('agri_advice')">
+                                <div class="sf-weather-advice" id="sf-weather-agri-advice">
+                                    <t t-esc="weather.get('agri_advice')"/>
+                                </div>
+                            </t>
                         </div>
 
                         <div class="sf-card">

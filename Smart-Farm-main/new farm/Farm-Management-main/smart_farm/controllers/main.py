@@ -5,6 +5,45 @@ import json
 import requests as req_lib
 
 
+def map_weather_code(code):
+    """Ánh xạ mã thời tiết WMO sang icon và mô tả tiếng Việt"""
+    if code == 0:
+        return {'icon': '☀️', 'desc': 'Quang đãng'}
+    elif code in (1, 2):
+        return {'icon': '🌤️', 'desc': 'Ít mây'}
+    elif code == 3:
+        return {'icon': '⛅', 'desc': 'Nhiều mây'}
+    elif code in (45, 48):
+        return {'icon': '🌫️', 'desc': 'Sương mù'}
+    elif code in (51, 53, 55, 56, 57):
+        return {'icon': '🌧️', 'desc': 'Mưa phùn'}
+    elif code in (61, 63, 65, 66, 67, 80, 81, 82):
+        return {'icon': '🌧️', 'desc': 'Mưa rào'}
+    elif code in (71, 73, 75, 77, 85, 86):
+        return {'icon': '❄️', 'desc': 'Tuyết rơi'}
+    elif code in (95, 96, 99):
+        return {'icon': '⛈️', 'desc': 'Dông bão'}
+    return {'icon': '🌤️', 'desc': 'Mây thay đổi'}
+
+
+def analyze_agri_advice(temp, humidity):
+    """Phân tích khuyến nghị nông vụ dựa trên thời tiết thực tế"""
+    try:
+        t = float(temp)
+        h = float(humidity)
+    except Exception:
+        return "🌿 Thời tiết Hà Nội thuận lợi cho sự phát triển của cây trồng."
+    if h > 85:
+        return "⚠️ Độ ẩm cao (>85%): Chú ý thông gió nhà màng, đề phòng nấm bệnh lá."
+    elif t > 34:
+        return "☀️ Nắng gắt (>34°C): Nên che rèm chắn nắng và bật quạt thông gió làm mát."
+    elif t < 18:
+        return "❄️ Rét lạnh (<18°C): Cần giữ ấm rễ cây và giảm lượng nước tưới tiêu."
+    elif h < 45:
+        return "💧 Không khí khô hanh: Tăng cường bổ sung nước tưới phun sương."
+    return "🌿 Thời tiết Hà Nội lý tưởng cho sinh trưởng cây trồng."
+
+
 class SmartFarmDashboard(http.Controller):
 
     @http.route(['/smart_farm', '/smart_farm/', '/smart_farm/dashboard'], type='http', auth='user')
@@ -21,49 +60,86 @@ class SmartFarmDashboard(http.Controller):
         try:
             r = req_lib.get(
                 "https://api.open-meteo.com/v1/forecast"
-                "?latitude=10.82&longitude=106.63"
-                "&current_weather=true&past_days=1&hourly=temperature_2m,relative_humidity_2m,soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,shortwave_radiation",
+                "?latitude=21.0285&longitude=105.8542"
+                "&current_weather=true&past_days=1"
+                "&hourly=temperature_2m,relative_humidity_2m,soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,shortwave_radiation"
+                "&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia/Bangkok",
                 timeout=5,
             )
             if r.status_code == 200:
                 data = r.json()
-                cw = data['current_weather']
+                cw = data.get('current_weather', {})
                 hourly = data.get('hourly', {})
-                
+                daily = data.get('daily', {})
+
                 current_hour = datetime.now().hour
                 current_index = 24 + current_hour
-                
+
                 start_idx = current_index - 23
                 end_idx = current_index + 1
-                
+
                 chart_times = hourly.get('time', [])[start_idx:end_idx]
                 chart_temps = hourly.get('temperature_2m', [])[start_idx:end_idx]
                 chart_hums = hourly.get('relative_humidity_2m', [])[start_idx:end_idx]
-                
+
                 chart_labels = [t.split('T')[1] for t in chart_times]
                 chart_data_json = json.dumps({
                     'labels': chart_labels,
                     'temps': chart_temps,
                     'hums': chart_hums
                 })
-                
+
                 humidity = hourly.get('relative_humidity_2m', [75]*48)[current_index]
                 soil_temp = hourly.get('soil_temperature_0cm', [28]*48)[current_index]
                 soil_m_a = hourly.get('soil_moisture_0_to_1cm', [0.72]*48)[current_index]
                 soil_m_b = hourly.get('soil_moisture_1_to_3cm', [0.38]*48)[current_index]
                 soil_m_c = hourly.get('soil_moisture_3_to_9cm', [0.81]*48)[current_index]
                 radiation = hourly.get('shortwave_radiation', [70]*48)[current_index]
-                
+
                 moisture_a_pct = int(soil_m_a * 100) if soil_m_a is not None else 72
                 moisture_b_pct = max(0, int(soil_m_b * 100) - 15) if soil_m_b is not None else 38
                 moisture_c_pct = min(100, int(soil_m_c * 100) + 12) if soil_m_c is not None else 81
                 lux = int(radiation * 120) if radiation is not None else 8400
 
+                # Xử lý dự báo 4 ngày thực tế tại Hà Nội
+                daily_codes = daily.get('weathercode', [])
+                daily_max = daily.get('temperature_2m_max', [])
+                day_labels = ['Hôm nay', 'Ngày mai', 'Ngày kia', 'Sau đó']
+                forecast_list = []
+                for i in range(4):
+                    label = day_labels[i]
+                    if i == 0:
+                        f_temp = f"{cw.get('temperature', 25.0)}°"
+                        f_code = cw.get('weathercode', 0)
+                    else:
+                        if i < len(daily_max) and daily_max[i] is not None:
+                            f_temp = f"{int(round(daily_max[i]))}°"
+                            f_code = daily_codes[i] if i < len(daily_codes) else 0
+                        else:
+                            f_temp = "28°"
+                            f_code = 0
+                    w_meta = map_weather_code(f_code)
+                    forecast_list.append({
+                        'day': label,
+                        'temp': f_temp,
+                        'icon': w_meta['icon'],
+                        'desc': w_meta['desc'],
+                    })
+
+                cur_w_meta = map_weather_code(cw.get('weathercode', 0))
+                cur_agri_advice = analyze_agri_advice(cw.get('temperature', 25.0), humidity)
+
                 weather = {
-                    'temperature': cw['temperature'],
-                    'windspeed': cw['windspeed'],
+                    'temperature': cw.get('temperature', 25.0),
+                    'windspeed': cw.get('windspeed', 8.0),
                     'humidity': humidity,
+                    'location': 'TP. Hà Nội',
+                    'weather_code': cw.get('weathercode', 0),
+                    'icon': cur_w_meta['icon'],
+                    'desc': cur_w_meta['desc'],
                     'source': 'live',
+                    'forecast': forecast_list,
+                    'agri_advice': cur_agri_advice,
                 }
                 soil = {
                     'temp': soil_temp,
@@ -73,6 +149,21 @@ class SmartFarmDashboard(http.Controller):
                     'lux': lux,
                     'source': 'live'
                 }
+
+                # Lưu bản ghi tự động vào database
+                try:
+                    env['smart.farm.weather'].sudo().create({
+                        'name': f"Thời tiết Hà Nội {datetime.now().strftime('%H:%M %d/%m')}",
+                        'temperature': cw.get('temperature', 25.0),
+                        'windspeed': cw.get('windspeed', 8.0),
+                        'humidity': humidity,
+                        'weather_code': cw.get('weathercode', 0),
+                        'location': 'TP. Hà Nội',
+                        'latitude': 21.0285,
+                        'longitude': 105.8542,
+                    })
+                except Exception:
+                    pass
         except Exception:
             pass
 
@@ -81,20 +172,44 @@ class SmartFarmDashboard(http.Controller):
                 [], limit=1, order='timestamp desc'
             )
             if latest:
+                w_code = getattr(latest, 'weather_code', 0)
+                w_meta = map_weather_code(w_code)
                 weather = {
                     'temperature': latest.temperature,
                     'windspeed': latest.windspeed,
                     'humidity': latest.humidity,
+                    'location': latest.location or 'TP. Hà Nội',
+                    'weather_code': w_code,
+                    'icon': w_meta['icon'],
+                    'desc': w_meta['desc'],
                     'source': 'db',
+                    'forecast': [
+                        {'day': 'Hôm nay', 'temp': f"{latest.temperature}°", 'icon': w_meta['icon'], 'desc': w_meta['desc']},
+                        {'day': 'Ngày mai', 'temp': '29°', 'icon': '🌤️', 'desc': 'Ít mây'},
+                        {'day': 'Ngày kia', 'temp': '28°', 'icon': '⛅', 'desc': 'Nhiều mây'},
+                        {'day': 'Sau đó', 'temp': '30°', 'icon': '☀️', 'desc': 'Nắng'},
+                    ],
+                    'agri_advice': analyze_agri_advice(latest.temperature, latest.humidity),
                 }
             else:
                 weather = {
-                    'temperature': 31,
-                    'windspeed': 12,
-                    'humidity': 78,
+                    'temperature': 25.0,
+                    'windspeed': 8.0,
+                    'humidity': 75,
+                    'location': 'TP. Hà Nội',
+                    'weather_code': 1,
+                    'icon': '🌤️',
+                    'desc': 'Ít mây',
                     'source': 'mock',
+                    'forecast': [
+                        {'day': 'Hôm nay', 'temp': '25°', 'icon': '🌤️', 'desc': 'Ít mây'},
+                        {'day': 'Ngày mai', 'temp': '28°', 'icon': '⛅', 'desc': 'Nhiều mây'},
+                        {'day': 'Ngày kia', 'temp': '27°', 'icon': '☀️', 'desc': 'Nắng'},
+                        {'day': 'Sau đó', 'temp': '29°', 'icon': '🌧️', 'desc': 'Mưa rào'},
+                    ],
+                    'agri_advice': '🌿 Thời tiết Hà Nội lý tưởng cho sinh trưởng cây trồng.',
                 }
-            
+
             soil = {
                 'temp': 28,
                 'moisture_a': 72,
