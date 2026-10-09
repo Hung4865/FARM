@@ -4,7 +4,25 @@
 
 ---
 
-## [v0.6.1] – 2026-09-26 (Hiện tại)
+## [v0.7.0] – 2026-10-10 (Hiện tại)
+
+### 🔔 Trung Tâm Thông Báo & Cảnh Báo Sự Kiện Thời Gian Thực (Feature 004)
+1. **Thông Báo Tự Động Theo Tương Tác Thiết Bị & Công Việc**:
+   - Khi bật/tắt thiết bị tại các phân khu (quạt thông gió, phun sương, tưới nhỏ giọt, châm dinh dưỡng, mái che), hệ thống tự động lưu bản ghi `smart.farm.alert` vào database và trả về đối tượng alert thời gian thực.
+   - Khi tạo mới công việc hoặc hoàn thành công việc, tự động sinh cảnh báo/thông báo tương ứng.
+2. **Toast Notification Hiện Đại Kèm Thanh Chạy Đếm Ngược (`sfShowToast`)**:
+   - Thiết kế dạng card nổi bo góc 12px, nền trắng thanh lịch, đổ bóng mờ, icon trạng thái tròn phân loại theo cấp độ (`success`, `info`, `warning`, `danger`).
+   - Thanh tiến trình đếm ngược chạy ở đáy card (`@keyframes sfToastProgress`) co dần từ 100% về 0% trong 4 giây rồi tự đóng mượt mà.
+3. **Giới Hạn Thẻ "Cảnh Báo & Log" Trên Dashboard (Tối đa 3 mục) & Điều Hướng Quả Chuông**:
+   - Thẻ hiển thị trên Dashboard được giới hạn hiển thị tối đa 3 cảnh báo mới nhất (`alerts[:3]`).
+   - Tích hợp nút `Xem tất cả (N) →` ở tiêu đề và nút `Xem thêm N-3 thông báo khác trong Quả Chuông 🔔` ở đáy thẻ, click vào sẽ tự động mở dropdown Quả chuông và cuộn mượt đến vị trí thông báo.
+4. **Tiện Ích Mô Phỏng Cảnh Báo Cảm Biến Demo (`sfSimulateSensorAlert`)**:
+   - Bổ sung nút **`⚡ Mô phỏng sự cố`** trên thanh công cụ lớp bản đồ.
+   - Tự động sinh sự cố cảm biến ngẫu nhiên theo phân khu (nhiệt độ vượt 38°C, độ ẩm đất tụt dưới 28%, nồng độ EC/pH bất thường), đẩy thông báo vào menu chuông, hiển thị Toast và ghim điểm phát sóng radar `.sf-alert-beacon` động lên bản đồ nông trại.
+
+---
+
+## [v0.6.1] – 2026-09-26
 
 ### 🐛 Sửa lỗi & Nâng cấp Trải nghiệm 3D (3D Bug Fixes & Action Enhancements)
 1. **Khắc Phục Triệt Để Lỗi Không Thể Nhấp Vào Cây Để Mở Bảng Cài Đặt Bên Phải (`#sf-plant-drawer`)**:

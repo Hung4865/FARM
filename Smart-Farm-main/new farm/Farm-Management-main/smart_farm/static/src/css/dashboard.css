@@ -1912,6 +1912,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     background: #ef4444 !important;
     color: #ffffff !important;
 }
+.sf-btn-sim-alert {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+.sf-btn-sim-alert:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #991b1b;
+}
+
 
 /* Zone Interactive Chips (Hover Only) */
 .sf-zone-chip {

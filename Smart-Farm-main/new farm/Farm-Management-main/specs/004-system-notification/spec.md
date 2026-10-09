@@ -2,7 +2,7 @@
 
 **Feature Branch**: `004-system-notification`  
 **Created**: 2026-10-03 | **Updated**: 2026-10-10  
-**Status**: In Progress (Spec Review)  
+**Status**: Complete (Đã nghiệm thu và hoàn thành 100%)  
 **Input**: Nâng cấp Trung tâm Thông báo từ chế độ tĩnh sang **Hệ thống Thông báo & Cảnh báo Kích hoạt theo Sự kiện Demo (Event-Driven Notification System)**. Mỗi khi phát sinh sự kiện tương tác trong trang trại (bật/tắt quạt thông gió, bật/tắt máy bơm tưới tiêu, tạo mới/hoàn thành công việc, hoặc cảm biến vượt ngưỡng an toàn), hệ thống sẽ tự động tạo thông báo, đẩy thời gian thực vào menu chuông Navbar, cập nhật huy hiệu số đếm, hiển thị Toast và đồng bộ đa điểm mà không cần tải lại trang.
 
 ---

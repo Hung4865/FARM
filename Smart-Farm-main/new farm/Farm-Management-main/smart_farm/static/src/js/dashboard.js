@@ -932,6 +932,98 @@ window.sfHideAlertDetails = function() {
     currentAlertBeaconEl = null;
 };
 
+// Simulate sensor threshold alert for Demo & Testing
+window.sfSimulateSensorAlert = function(zone, sensorType) {
+    var zones = ['A', 'B', 'C'];
+    var types = ['temp', 'moisture', 'ec', 'ph'];
+
+    if (!zone) {
+        zone = zones[Math.floor(Math.random() * zones.length)];
+    }
+    if (!sensorType) {
+        sensorType = types[Math.floor(Math.random() * types.length)];
+    }
+
+    var alertPayload = {
+        name: '',
+        content: '',
+        alert_type: 'danger',
+        area: 'Khu ' + zone
+    };
+
+    if (sensorType === 'temp') {
+        var tempVal = (37.5 + Math.random() * 2.5).toFixed(1);
+        alertPayload.name = 'Cảnh báo nhiệt độ cao Khu ' + zone;
+        alertPayload.content = 'Nhiệt độ môi trường đạt ' + tempVal + '°C vượt ngưỡng an toàn (32°C). Cần bật quạt thông gió làm mát!';
+        alertPayload.alert_type = 'danger';
+    } else if (sensorType === 'moisture') {
+        var moistVal = (25 + Math.random() * 8).toFixed(0);
+        alertPayload.name = 'Độ ẩm đất thấp Khu ' + zone;
+        alertPayload.content = 'Độ ẩm đất tụt xuống ' + moistVal + '% dưới mức tối thiểu (45%). Đất khô hạn, cần kích hoạt tưới tiêu!';
+        alertPayload.alert_type = 'warning';
+    } else if (sensorType === 'ec') {
+        alertPayload.name = 'Nồng độ dinh dưỡng bất thường Khu ' + zone;
+        alertPayload.content = 'Chỉ số EC đạt 2.9 mS/cm vượt ngưỡng cho phép (2.2 mS/cm). Cần kiểm tra bồn pha phân bón NPK.';
+        alertPayload.alert_type = 'warning';
+    } else {
+        alertPayload.name = 'Độ pH dung dịch vượt chuẩn Khu ' + zone;
+        alertPayload.content = 'Độ pH rễ cây đạt 7.4 (chuẩn 5.8 - 6.5). Nguy cơ hạn chế hấp thu vi lượng.';
+        alertPayload.alert_type = 'warning';
+    }
+
+    fetch('/smart_farm/api/alert/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(alertPayload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success && data.alert) {
+            // 1. Push real-time notification to Bell & Dashboard card & Toast
+            if (window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            }
+
+            // 2. Add dynamic Beacon on Map
+            var mapWrapper = document.getElementById('sf-map-wrapper');
+            if (mapWrapper) {
+                var posStyle = 'left: 48%; top: 38%;';
+                if (zone === 'A') posStyle = 'left: 22%; top: 34%;';
+                else if (zone === 'C') posStyle = 'left: 82%; top: 58%;';
+
+                var beaconId = 'sf-map-beacon-' + data.alert.id;
+                var existingBeacon = document.getElementById(beaconId);
+                if (!existingBeacon) {
+                    var isDanger = data.alert.alert_type === 'danger';
+                    var beaconHtml = '<div class="sf-map-layer-item sf-layer-alerts sf-alert-beacon ' + (isDanger ? 'beacon-danger' : 'beacon-warning') + '" ' +
+                        'id="' + beaconId + '" ' +
+                        'style="' + posStyle + '" ' +
+                        'data-id="' + data.alert.id + '" ' +
+                        'data-name="' + (data.alert.name || '') + '" ' +
+                        'data-area="' + (data.alert.area || '') + '" ' +
+                        'data-content="' + (data.alert.content || '') + '" ' +
+                        'onclick="sfOnAlertClick(event, this)" ' +
+                        'title="⚠️ Sự cố: ' + (data.alert.name || '') + ' (Nhấp xử lý)">' +
+                        '<div class="sf-beacon-pulse"></div>' +
+                        '<span class="sf-beacon-icon">⚠️</span>' +
+                        '<span class="sf-beacon-badge-text">' + (data.alert.name.substring(0, 16)) + '...</span>' +
+                    '</div>';
+                    mapWrapper.insertAdjacentHTML('beforeend', beaconHtml);
+                }
+            }
+
+            // 3. Update alert count badge on Map Topbar layer button
+            var alertLayerCount = document.querySelector('#layer-alerts-btn .sf-layer-count');
+            if (alertLayerCount && typeof data.unresolved_count !== 'undefined') {
+                alertLayerCount.textContent = data.unresolved_count;
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Error simulating sensor alert:', err);
+    });
+};
+
 // Floating Toast Notification System with countdown progress bar
 window.sfShowToast = function(options, type) {
     var title = '';

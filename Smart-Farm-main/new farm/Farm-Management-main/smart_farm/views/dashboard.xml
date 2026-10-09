@@ -27,7 +27,7 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=137"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=138"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
@@ -1174,6 +1174,10 @@
                                             <span>Cảnh báo sự cố</span>
                                             <span class="sf-layer-count count-danger"><t t-esc="len(active_alerts)"/></span>
                                         </button>
+                                        <button type="button" class="sf-layer-btn-pro sf-btn-sim-alert" id="layer-simulate-btn" onclick="sfSimulateSensorAlert()" title="Mô phỏng cảnh báo sự cố cảm biến (Demo)">
+                                            <span class="sf-layer-icon">⚡</span>
+                                            <span>Mô phỏng sự cố</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2030,7 +2034,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=137"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=138"></script>
             </body>
         </html>
     </template>

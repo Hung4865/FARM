@@ -1,7 +1,7 @@
 # Tasks: Hệ thống Thông báo Kích hoạt theo Sự kiện Demo (Event-Driven Notification System)
 
 **Input**: Kế hoạch từ [`plan.md`](./plan.md) và đặc tả từ [`spec.md`](./spec.md)  
-**Status**: Ready for Implementation (Chờ hiệu lệnh bắt đầu triển khai code)
+**Status**: Complete (Hoàn tất 100% 4/4 Subtasks)
 
 ---
 
@@ -32,7 +32,7 @@
 ---
 
 ### Subtask 4: Mô phỏng Cảnh báo Cảm biến Demo & Kiểm thử Toàn diện
-- [ ] **T013** `[odoo-fullstack-dev]` Xây dựng tiện ích `sfSimulateSensorAlert(zone, sensorType)` trong `dashboard.js` giả lập cảnh báo vượt ngưỡng nhiệt độ/độ ẩm, kết nối radar beacon trên bản đồ và cập nhật tài liệu `smart_farm/docs/CHANGED.md`.
-- [ ] **T014** `[odoo-code-reviewer]` Soi diff toàn bộ các file đã thay đổi, kiểm tra tính nhất quán mã nguồn và tài liệu kỹ thuật.
-- [ ] **T015** Lập trình viên nghiệm thu (F5 Odoo, kiểm tra tổng thể toàn bộ các kịch bản demo: bật/tắt thiết bị, tạo việc, xử lý 1-chạm, xử lý tất cả), xác nhận 0 visual regression.
-- [ ] **T016** Commit: `feat(smart_farm): subtask 4 - simulated sensor alerts and comprehensive verification`
+- [x] **T013** `[odoo-fullstack-dev]` Xây dựng tiện ích `sfSimulateSensorAlert(zone, sensorType)` trong `dashboard.js` giả lập cảnh báo vượt ngưỡng nhiệt độ/độ ẩm, kết nối radar beacon trên bản đồ và cập nhật tài liệu `smart_farm/docs/CHANGED.md`.
+- [x] **T014** `[odoo-code-reviewer]` Soi diff toàn bộ các file đã thay đổi, kiểm tra tính nhất quán mã nguồn và tài liệu kỹ thuật.
+- [x] **T015** Lập trình viên nghiệm thu (F5 Odoo, kiểm tra tổng thể toàn bộ các kịch bản demo: bật/tắt thiết bị, tạo việc, xử lý 1-chạm, xử lý tất cả), xác nhận 0 visual regression.
+- [x] **T016** Commit: `feat(smart_farm): subtask 4 - simulated sensor alerts and comprehensive verification`
