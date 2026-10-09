@@ -18,10 +18,10 @@
 
 ### Subtask 2: Nút Làm mới Dữ liệu 1-Chạm & Toast Feedback (AJAX API & UI Interaction)
 *Mục tiêu nghiệm thu: Bấm nút 🔄 trên thẻ thời tiết thấy icon xoay, số liệu cập nhật tức thời không cần reload trang và Toast thông báo 4s hiện lên.*
-- [ ] **T005** `[odoo-fullstack-dev]` Xây dựng API `POST /smart_farm/api/weather/refresh` trong `smart_farm/controllers/main.py` (lưu CSDL và trả về JSON); thêm nút làm mới 🔄 trên header thẻ Thời tiết trong `dashboard.xml`; viết hàm `sfRefreshWeather(btn)` trong `dashboard.js` gọi AJAX không reload trang, hiệu ứng icon xoay, cập nhật số liệu/icon tức thời và kích hoạt Toast feedback 4s.
-- [ ] **T006** `[odoo-code-reviewer]` Soi diff `main.py`, `dashboard.xml`, `dashboard.css` và `dashboard.js`, kiểm tra cơ chế chống spam click (disabled khi đang tải), format JSON phản hồi và toast notification.
-- [ ] **T007** Lập trình viên nghiệm thu (mở Dashboard, bấm nút làm mới 🔄), xác nhận icon xoay, số liệu cập nhật tức thời không giật màn hình và Toast thông báo hiện lên 4s.
-- [ ] **T008** Commit: `feat(smart_farm): subtask 2 - instant 1-click weather refresh api and toast feedback`
+- [x] **T005** `[odoo-fullstack-dev]` Xây dựng API `POST /smart_farm/api/weather/refresh` trong `smart_farm/controllers/main.py` (lưu CSDL và trả về JSON); thêm nút làm mới 🔄 trên header thẻ Thời tiết trong `dashboard.xml`; viết hàm `sfRefreshWeather(btn)` trong `dashboard.js` gọi AJAX không reload trang, hiệu ứng icon xoay, cập nhật số liệu/icon tức thời và kích hoạt Toast feedback 4s.
+- [x] **T006** `[odoo-code-reviewer]` Soi diff `main.py`, `dashboard.xml`, `dashboard.css` và `dashboard.js`, kiểm tra cơ chế chống spam click (disabled khi đang tải), format JSON phản hồi và toast notification.
+- [x] **T007** Lập trình viên nghiệm thu (mở Dashboard, bấm nút làm mới 🔄), xác nhận icon xoay, số liệu cập nhật tức thời không giật màn hình và Toast thông báo hiện lên 4s.
+- [x] **T008** Commit: `feat(smart_farm): subtask 2 - instant 1-click weather refresh api and toast feedback`
 
 ---
 

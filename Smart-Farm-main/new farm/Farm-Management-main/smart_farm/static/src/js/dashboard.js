@@ -3578,3 +3578,123 @@ window.sfFocusFirstPlant = function(plantId) {
         });
     }
 };
+
+// Weather Refresh Handler (1-Click Instant Refresh & Toast Feedback)
+window.sfRefreshWeather = function(btn) {
+    if (!btn) btn = document.getElementById('sf-btn-refresh-weather');
+    if (!btn || btn.disabled) return;
+
+    var icon = btn.querySelector('.sf-refresh-icon');
+    if (icon) icon.classList.add('spin');
+    btn.disabled = true;
+
+    fetch('/smart_farm/api/weather/refresh', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({})
+    })
+    .then(function(res) {
+        return res.json();
+    })
+    .then(function(result) {
+        if (result && result.success && result.data) {
+            var data = result.data;
+            // Update Temp
+            var tempEl = document.getElementById('sf-weather-temp-val');
+            if (tempEl && data.temperature !== undefined) tempEl.textContent = data.temperature;
+
+            // Update Icon
+            var iconEl = document.getElementById('sf-weather-main-icon');
+            if (iconEl && data.icon) {
+                iconEl.textContent = data.icon;
+                if (data.desc) iconEl.setAttribute('title', data.desc);
+            }
+
+            // Update Wind
+            var windEl = document.getElementById('sf-weather-wind-val');
+            if (windEl && data.windspeed !== undefined) windEl.textContent = data.windspeed;
+
+            // Update Humidity
+            var humEl = document.getElementById('sf-weather-hum-val');
+            if (humEl && data.humidity !== undefined) humEl.textContent = data.humidity;
+
+            // Update Location
+            var locEl = document.getElementById('sf-weather-location-val');
+            if (locEl && data.location) locEl.textContent = data.location;
+
+            // Update Badge
+            var badgeEl = document.getElementById('sf-weather-source-badge');
+            if (badgeEl && data.source) {
+                if (data.source === 'live') badgeEl.textContent = 'Trực tiếp';
+                else if (data.source === 'db') badgeEl.textContent = 'Từ DB';
+                else badgeEl.textContent = 'Mẫu';
+            }
+
+            // Update Forecast
+            var fcListEl = document.getElementById('sf-weather-forecast-list');
+            if (fcListEl && Array.isArray(data.forecast) && data.forecast.length > 0) {
+                var html = '';
+                data.forecast.forEach(function(fc) {
+                    html += '<div class="sf-fc-day">' +
+                        '<div class="sf-fc-label">' + (fc.day || '') + '</div>' +
+                        '<div class="sf-fc-icon" title="' + (fc.desc || '') + '">' + (fc.icon || '🌤️') + '</div>' +
+                        '<div class="sf-fc-temp">' + (fc.temp || '') + '</div>' +
+                    '</div>';
+                });
+                fcListEl.innerHTML = html;
+            }
+
+            // Update Agri Advice
+            var adviceEl = document.getElementById('sf-weather-agri-advice');
+            if (data.agri_advice) {
+                if (!adviceEl) {
+                    var card = btn.closest('.sf-card');
+                    if (card) {
+                        adviceEl = document.createElement('div');
+                        adviceEl.className = 'sf-weather-advice';
+                        adviceEl.id = 'sf-weather-agri-advice';
+                        card.appendChild(adviceEl);
+                    }
+                }
+                if (adviceEl) adviceEl.textContent = data.agri_advice;
+            }
+
+            // Trigger Toast (4 seconds)
+            if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Thời tiết Hà Nội',
+                    message: result.message || 'Đã cập nhật dữ liệu thời tiết mới nhất!',
+                    type: 'success',
+                    duration: 4000
+                });
+            }
+        } else {
+            if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Làm mới thời tiết',
+                    message: (result && result.message) || 'Không thể cập nhật dữ liệu thời tiết.',
+                    type: 'warning',
+                    duration: 4000
+                });
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Weather refresh error:', err);
+        if (typeof window.sfShowToast === 'function') {
+            window.sfShowToast({
+                title: 'Lỗi mạng',
+                message: 'Không thể kết nối đến máy chủ để làm mới thời tiết.',
+                type: 'error',
+                duration: 4000
+            });
+        }
+    })
+    .finally(function() {
+        if (icon) icon.classList.remove('spin');
+        btn.disabled = false;
+    });
+};

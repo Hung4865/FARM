@@ -670,6 +670,40 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .sf-fc-icon { font-size: 18px; margin: 4px 0 2px 0; line-height: 1; }
 .sf-fc-temp { font-size: 14px; font-weight: 700; color: #0f172a; }
 .sf-weather-advice { margin-top: 12px; padding: 8px 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 11.5px; line-height: 1.45; color: #15803d; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.sf-btn-refresh-weather {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #334155;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.sf-btn-refresh-weather:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.sf-btn-refresh-weather:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.sf-refresh-icon {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+.sf-refresh-icon.spin {
+    animation: sf-spin 0.75s linear infinite;
+}
+@keyframes sf-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
 /* Alerts */
 .sf-alert-item { display: flex; gap: 10px; padding: 10px 8px; border-radius: 8px; border-bottom: 1px solid #f1f5f9; }

@@ -840,3 +840,131 @@ class SmartFarmDashboard(http.Controller):
                 headers={'Content-Type': 'application/json'},
                 status=500
             )
+
+    @http.route('/smart_farm/api/weather/refresh', type='http', auth='user', methods=['POST'], csrf=False)
+    def refresh_weather(self, **kwargs):
+        """API làm mới thời tiết thực tế tại TP. Hà Nội từ Open-Meteo và lưu CSDL"""
+        env = request.env
+        try:
+            r = req_lib.get(
+                "https://api.open-meteo.com/v1/forecast"
+                "?latitude=21.0285&longitude=105.8542"
+                "&current_weather=true&past_days=1"
+                "&hourly=temperature_2m,relative_humidity_2m"
+                "&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia/Bangkok",
+                timeout=5,
+            )
+            if r.status_code == 200:
+                data = r.json()
+                cw = data.get('current_weather', {})
+                hourly = data.get('hourly', {})
+                daily = data.get('daily', {})
+
+                current_hour = datetime.now().hour
+                current_index = 24 + current_hour
+                humidity = hourly.get('relative_humidity_2m', [75]*48)[current_index]
+
+                daily_codes = daily.get('weathercode', [])
+                daily_max = daily.get('temperature_2m_max', [])
+                day_labels = ['Hôm nay', 'Ngày mai', 'Ngày kia', 'Sau đó']
+                forecast_list = []
+                for i in range(4):
+                    label = day_labels[i]
+                    if i == 0:
+                        f_temp = f"{cw.get('temperature', 25.0)}°"
+                        f_code = cw.get('weathercode', 0)
+                    else:
+                        if i < len(daily_max) and daily_max[i] is not None:
+                            f_temp = f"{int(round(daily_max[i]))}°"
+                            f_code = daily_codes[i] if i < len(daily_codes) else 0
+                        else:
+                            f_temp = "28°"
+                            f_code = 0
+                    w_meta = map_weather_code(f_code)
+                    forecast_list.append({
+                        'day': label,
+                        'temp': f_temp,
+                        'icon': w_meta['icon'],
+                        'desc': w_meta['desc'],
+                    })
+
+                cur_w_meta = map_weather_code(cw.get('weathercode', 0))
+                cur_agri_advice = analyze_agri_advice(cw.get('temperature', 25.0), humidity)
+
+                weather_dict = {
+                    'temperature': cw.get('temperature', 25.0),
+                    'windspeed': cw.get('windspeed', 8.0),
+                    'humidity': humidity,
+                    'location': 'TP. Hà Nội',
+                    'weather_code': cw.get('weathercode', 0),
+                    'icon': cur_w_meta['icon'],
+                    'desc': cur_w_meta['desc'],
+                    'source': 'live',
+                    'forecast': forecast_list,
+                    'agri_advice': cur_agri_advice,
+                }
+
+                # Lưu vào DB
+                try:
+                    env['smart.farm.weather'].sudo().create({
+                        'name': f"Thời tiết Hà Nội {datetime.now().strftime('%H:%M %d/%m')}",
+                        'temperature': cw.get('temperature', 25.0),
+                        'windspeed': cw.get('windspeed', 8.0),
+                        'humidity': humidity,
+                        'weather_code': cw.get('weathercode', 0),
+                        'location': 'TP. Hà Nội',
+                        'latitude': 21.0285,
+                        'longitude': 105.8542,
+                    })
+                except Exception:
+                    pass
+
+                return request.make_response(
+                    json.dumps({
+                        'success': True,
+                        'message': 'Đã cập nhật thời tiết Hà Nội mới nhất!',
+                        'data': weather_dict
+                    }),
+                    headers={'Content-Type': 'application/json'},
+                    status=200
+                )
+        except Exception:
+            pass
+
+        # Fallback từ DB
+        latest = env['smart.farm.weather'].search([], limit=1, order='timestamp desc')
+        if latest:
+            w_code = getattr(latest, 'weather_code', 0)
+            w_meta = map_weather_code(w_code)
+            weather_dict = {
+                'temperature': latest.temperature,
+                'windspeed': latest.windspeed,
+                'humidity': latest.humidity,
+                'location': latest.location or 'TP. Hà Nội',
+                'weather_code': w_code,
+                'icon': w_meta['icon'],
+                'desc': w_meta['desc'],
+                'source': 'db',
+                'forecast': [
+                    {'day': 'Hôm nay', 'temp': f"{latest.temperature}°", 'icon': w_meta['icon'], 'desc': w_meta['desc']},
+                    {'day': 'Ngày mai', 'temp': '29°', 'icon': '🌤️', 'desc': 'Ít mây'},
+                    {'day': 'Ngày kia', 'temp': '28°', 'icon': '⛅', 'desc': 'Nhiều mây'},
+                    {'day': 'Sau đó', 'temp': '30°', 'icon': '☀️', 'desc': 'Nắng'},
+                ],
+                'agri_advice': analyze_agri_advice(latest.temperature, latest.humidity),
+            }
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': 'Đã tải dữ liệu thời tiết gần nhất từ cơ sở dữ liệu.',
+                    'data': weather_dict
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+
+        return request.make_response(
+            json.dumps({'success': False, 'message': 'Không thể kết nối dịch vụ thời tiết.'}),
+            headers={'Content-Type': 'application/json'},
+            status=500
+        )

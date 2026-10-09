@@ -27,7 +27,7 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=139"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=140"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
@@ -705,11 +705,16 @@
                         <div class="sf-card">
                             <div class="sf-card-hd">
                                 <div class="sf-card-title">Thời tiết</div>
-                                <span class="badge-live" id="sf-weather-source-badge">
-                                    <t t-if="weather['source'] == 'live'">Trực tiếp</t>
-                                    <t t-elif="weather['source'] == 'db'">Từ DB</t>
-                                    <t t-else="">Mẫu</t>
-                                </span>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <button type="button" class="sf-btn-refresh-weather" id="sf-btn-refresh-weather" onclick="sfRefreshWeather(this)" title="Làm mới thời tiết Hà Nội">
+                                        <span class="sf-refresh-icon">🔄</span> Làm mới
+                                    </button>
+                                    <span class="badge-live" id="sf-weather-source-badge">
+                                        <t t-if="weather['source'] == 'live'">Trực tiếp</t>
+                                        <t t-elif="weather['source'] == 'db'">Từ DB</t>
+                                        <t t-else="">Mẫu</t>
+                                    </span>
+                                </div>
                             </div>
                             <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;">
                                 <div class="sf-temp" style="display:flex;align-items:center;">
@@ -2045,7 +2050,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=138"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=140"></script>
             </body>
         </html>
     </template>
