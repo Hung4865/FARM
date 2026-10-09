@@ -5,42 +5,42 @@
 
 ---
 
-## Danh sách công việc theo từng giai đoạn (Task Checklist)
+## Danh sách công việc theo chuẩn 4 bước (Task Checklist)
 
-### Giai đoạn 1: Backend APIs & Cung cấp Dữ liệu (Backend & APIs)
-- [x] **T001**: Bổ sung API `POST /smart_farm/api/alert/resolve` trong `smart_farm/controllers/main.py` để cập nhật trạng thái đã xử lý cho cảnh báo và trả về số lượng cảnh báo còn lại dạng JSON.
-- [x] **T002**: Bổ sung API `POST /smart_farm/api/zone/control` trong `smart_farm/controllers/main.py` để xử lý thao tác bật/tắt thiết bị IoT (van tưới, máy bơm, quạt phun sương) cho từng khu vực và phản hồi JSON.
-- [x] **T003**: Cập nhật hàm `dashboard` trong `smart_farm/controllers/main.py` để truyền danh sách cảnh báo chưa xử lý `active_alerts` kèm thông tin khu vực liên kết vào template QWeb.
-
----
-
-### Giai đoạn 2: Bộ lọc Lớp Bản đồ (Map Layer Controls)
-- [x] **T004**: Xây dựng thanh công cụ bộ lọc lớp `.sf-map-layer-bar` phía trên bản đồ trong `smart_farm/views/dashboard.xml` gồm các switch toggle: Phương tiện GPS, Hệ thống tưới/Cảm biến, Điểm cảnh báo.
-- [x] **T005**: Định nghĩa CSS cho thanh bộ lọc lớp và các trạng thái bật/tắt trong `smart_farm/static/src/css/dashboard.css`.
-- [x] **T006**: Viết hàm Javascript `sfToggleMapLayer(layerName, element)` trong `smart_farm/static/src/js/dashboard.js` để ẩn/hiện các lớp phần tử tương ứng mượt mà.
+### Subtask 1: Backend APIs & Cung cấp Dữ liệu Bản đồ (Backend APIs & Data Feeds)
+- [x] **T001** `[odoo-backend-developer]` Xây dựng API `POST /smart_farm/api/alert/resolve` và `POST /smart_farm/api/zone/control` trong `smart_farm/controllers/main.py`; cập nhật hàm `dashboard` truyền `active_alerts` liên kết khu vực vào template.
+- [x] **T002** `[odoo-code-reviewer]` Soi diff Python controller, kiểm tra xử lý tham số, bảo mật auth='user' và định dạng JSON response.
+- [x] **T003** Lập trình viên nghiệm thu (F5 Odoo, test gọi API resolve và zone control), xác nhận phản hồi đúng mã HTTP 200 và cấu trúc JSON.
+- [x] **T004** Commit: `feat(smart_farm): subtask 1 - backend apis for alert resolution and zone control`
 
 ---
 
-### Giai đoạn 3: Giám sát Phương tiện GPS thời gian thực (Live GPS Markers & Popover)
-- [x] **T007**: Bổ sung marker phương tiện máy kéo `.sf-vehicle-marker` với icon máy cày và vòng tròn sóng radar tỏa ra (`sf-radar-ping`) trên cánh đồng Khu B trong `views/dashboard.xml`.
-- [x] **T008**: Tạo popover thông tin phương tiện nổi `#sf-vehicle-popover` (Tên máy cày, tọa độ GPS thực tế, tốc độ, tài xế, trạng thái) và hàm JS `sfShowVehicleInfo(event, vehicleId)` trong `dashboard.js`.
+### Subtask 2: Bộ lọc Lớp Bản đồ & Điều khiển Hiển thị (Map Layer Controls)
+- [x] **T005** `[odoo-frontend-styler]` Xây dựng thanh công cụ `.sf-map-layer-bar` trong `smart_farm/views/dashboard.xml`, viết styling toggle trong `dashboard.css` và hàm JS `sfToggleMapLayer(layerName, element)` trong `dashboard.js`.
+- [x] **T006** `[odoo-code-reviewer]` Soi diff QWeb, CSS và JS, kiểm tra class toggle active/inactive và hiệu ứng ẩn/hiện các layer trên bản đồ.
+- [x] **T007** Lập trình viên nghiệm thu (mở Dashboard, bật/tắt từng switch lớp bản đồ), xác nhận các lớp GPS, cảm biến, cảnh báo ẩn/hiện chính xác.
+- [x] **T008** Commit: `feat(smart_farm): subtask 2 - interactive map layer filter toolbar`
 
 ---
 
-### Giai đoạn 4: Điểm Cảnh báo Sự cố nhấp nháy (Alert Pins & Resolve)
-- [x] **T009**: Render các điểm ghim cảnh báo nhấp nháy `.sf-alert-beacon` tại các khu vực đang có sự cố trong `views/dashboard.xml`.
-- [x] **T010**: Viết hàm Javascript `sfShowAlertDetails(alertId, message, zoneName)` và `sfResolveAlert(alertId, element)` trong `dashboard.js` để gọi API giải quyết sự cố tức thời và cập nhật UI.
+### Subtask 3: Giám sát Phương tiện GPS & Popover Chi tiết (Live GPS Markers & Popover)
+- [x] **T009** `[odoo-frontend-styler]` Thêm marker máy kéo `.sf-vehicle-marker` với vòng radar ping trên Khu B trong `views/dashboard.xml`, tạo popover `#sf-vehicle-popover` và hàm JS `sfShowVehicleInfo` trong `dashboard.js`.
+- [x] **T010** `[odoo-code-reviewer]` Soi diff, kiểm tra định vị tọa độ tương đối, z-index của popover và xử lý đóng popover khi click ngoài.
+- [x] **T011** Lập trình viên nghiệm thu (click vào icon máy cày trên bản đồ), xác nhận popover mở ra hiển thị chuẩn tọa độ GPS, tốc độ, tài xế.
+- [x] **T012** Commit: `feat(smart_farm): subtask 3 - live gps vehicle marker and detail popover`
 
 ---
 
-### Giai đoạn 5: Drawer Chi tiết Khu vực & Điều khiển IoT (Zone Drawer & Device Controls)
-- [x] **T011**: Xây dựng bảng trượt từ cạnh phải `#sf-zone-drawer` trong `views/dashboard.xml` gồm tiêu đề khu vực, các thông số môi trường chi tiết và cụm công tắc điều khiển thiết bị (Bơm nước, Tưới nhỏ giọt, Phun sương).
-- [x] **T012**: Viết CSS hiệu ứng trượt mượt mà cho Drawer và giao diện công tắc switch toggle trong `dashboard.css`.
-- [x] **T013**: Viết các hàm JS `sfOpenZoneDrawer(zoneId)`, `sfCloseZoneDrawer()` và `sfToggleDevice(zone, device, btn)` trong `dashboard.js` để kết nối API điều khiển và hiển thị toast thông báo.
+### Subtask 4: Điểm Cảnh báo Radar & Xử lý Tức thời (Alert Pins & Resolve Action)
+- [x] **T013** `[odoo-frontend-styler]` Render các điểm phát sóng cảnh báo `.sf-alert-beacon` trên bản đồ trong `views/dashboard.xml`; viết hàm JS `sfShowAlertDetails` và `sfResolveAlertFromPopover` trong `dashboard.js`.
+- [x] **T014** `[odoo-code-reviewer]` Soi diff, kiểm tra hiệu ứng radar ping CSS, liên kết alertId và hàm dọn sạch beacon khi đã resolve.
+- [x] **T015** Lập trình viên nghiệm thu (click vào điểm cảnh báo đỏ, bấm nút xử lý), xác nhận beacon biến mất và số cảnh báo giảm 1 tức thì.
+- [x] **T016** Commit: `feat(smart_farm): subtask 4 - pulsating alert beacons and map resolution action`
 
 ---
 
-### Giai đoạn 6: Kiểm thử, Nâng cấp Module & Tài liệu (Verification & Documentation)
-- [x] **T014**: Nâng cấp (Upgrade) module `smart_farm` trong container Odoo và khởi động lại dịch vụ web.
-- [x] **T015**: Kiểm thử toàn diện 4 tính năng trực tiếp trên trình duyệt: Lọc lớp, xem máy kéo GPS, kiểm tra cảnh báo và mở drawer bật/tắt thiết bị.
-- [x] **T016**: Cập nhật tài liệu thay đổi kỹ thuật vào `smart_farm/docs/UI/UI-Change.md` và `smart_farm/docs/CHANGED.md` theo đúng quy định.
+### Subtask 5: Bảng trượt Drawer & Điều khiển Thiết bị IoT (Zone Drawer & Device Controls)
+- [x] **T017** `[odoo-fullstack-dev]` Xây dựng bảng trượt cạnh phải `#sf-zone-drawer` trong `views/dashboard.xml`, hiệu ứng slide CSS trong `dashboard.css`, và các hàm JS `sfOpenZoneDrawer`, `sfCloseZoneDrawer`, `sfToggleDevice` trong `dashboard.js`.
+- [x] **T018** `[odoo-code-reviewer]` Soi diff toàn bộ giao diện và JS, kiểm tra animation transition trượt mượt mà và kết nối API điều khiển thiết bị.
+- [x] **T019** Lập trình viên nghiệm thu (F5 Odoo, click khu vực mở drawer, bật tắt công tắc bơm/phun sương), xác nhận toast thông báo hiện lên và thiết bị đổi trạng thái.
+- [x] **T020** Commit: `feat(smart_farm): subtask 5 - zone slide-in drawer and iot device controls`

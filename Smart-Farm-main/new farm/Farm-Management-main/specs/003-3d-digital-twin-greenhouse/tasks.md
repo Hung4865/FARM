@@ -5,49 +5,42 @@
 
 ---
 
-## Danh sách công việc theo từng giai đoạn (Task Checklist)
+## Danh sách công việc theo chuẩn 4 bước (Task Checklist)
 
-### Giai đoạn 1: Cơ sở hạ tầng Thư viện 3D & Cấu trúc Bản đồ Đa tầng (Foundation & Multi-level Map)
-- [x] **T001**: Nhúng thư viện Three.js (r128) và OrbitControls vào trang Dashboard trong `smart_farm/views/dashboard.xml`.
-- [x] **T002**: Xây dựng cấu trúc HTML phân tầng bên trong `#tab-map` trong `smart_farm/views/dashboard.xml`:
-  - `#sf-map-level-macro`: Vùng bản đồ toàn cảnh hiện tại.
-  - `#sf-map-level-zone-a`: Sơ đồ mặt bằng chi tiết Khu A (lưới 12 nhà màng GH-01 đến GH-12, bể nước, tấm pin mặt trời).
-  - `#sf-map-level-greenhouse-3d`: Khung nhìn 3D Digital Twin với thanh điều khiển camera và canvas WebGL.
-- [x] **T003**: Định nghĩa kiểu dáng CSS cho sơ đồ mặt bằng Khu A, thanh Breadcrumb chuyển tầng và viewport 3D trong `smart_farm/static/src/css/dashboard.css`.
+### Subtask 1: Thư viện 3D & Cấu trúc HTML Bản đồ Đa tầng (3D Library & Multi-level DOM)
+- [x] **T001** `[odoo-frontend-styler]` Nhúng Three.js (r128) và OrbitControls, tạo cấu trúc HTML phân tầng (`#sf-map-level-macro`, `#sf-map-level-zone-a`, `#sf-map-level-greenhouse-3d`) trong `smart_farm/views/dashboard.xml`, và định nghĩa CSS breadcrumb/viewport trong `dashboard.css`.
+- [x] **T002** `[odoo-code-reviewer]` Soi diff QWeb và CSS, kiểm tra tính toàn vẹn của thẻ script CDN, cấu trúc vùng chứa viewport và tính responsive.
+- [x] **T003** Lập trình viên nghiệm thu (F5 Odoo, kiểm tra tab Bản đồ), xác nhận thư viện Three.js nạp thành công và layout khung nhìn sẵn sàng.
+- [x] **T004** Commit: `feat(smart_farm): subtask 1 - integrate threejs and multi-level map dom structure`
 
 ---
 
-### Giai đoạn 2: Điều hướng Đa tầng giữa Bản đồ Vĩ mô và Sơ đồ Khu A (Multi-level Navigation Logic)
-- [x] **T004**: Viết hàm Javascript `sfNavigateMapLevel(level, contextData)` trong `smart_farm/static/src/js/dashboard.js` để chuyển đổi mượt mà giữa các tầng (Macro $\leftrightarrow$ Zone A $\leftrightarrow$ 3D Greenhouse).
-- [x] **T005**: Gắn sự kiện click vào Khu A trên bản đồ chính để kích hoạt chuyển sang sơ đồ mặt bằng Khu A, và gán sự kiện cho các nhà màng để vào không gian 3D.
+### Subtask 2: Logic Điều hướng Đa tầng Mượt mà (Multi-level Navigation Logic)
+- [x] **T005** `[odoo-frontend-styler]` Xây dựng hàm `sfNavigateMapLevel(level, contextData)` trong `smart_farm/static/src/js/dashboard.js`, gán sự kiện click vào Khu A trên bản đồ vĩ mô để chuyển sang sơ đồ mặt bằng và vào nhà màng 3D.
+- [x] **T006** `[odoo-code-reviewer]` Soi diff JavaScript, kiểm tra logic xử lý breadcrumb, ẩn/hiện display flex/none giữa các tầng không bị giật lag.
+- [x] **T007** Lập trình viên nghiệm thu (click vào Khu A $\rightarrow$ sơ đồ mặt bằng $\rightarrow$ nhà màng 3D $\rightarrow$ bấm breadcrumb quay lại), xác nhận luồng điều hướng mượt mà.
+- [x] **T008** Commit: `feat(smart_farm): subtask 2 - multi-level navigation and breadcrumb flow`
 
 ---
 
-### Giai đoạn 3: Xây dựng Không gian 3D Three.js cho Nhà màng (Procedural 3D Scene)
-- [x] **T006**: Xây dựng module Three.js quản lý Scene, Camera phối cảnh, Renderer WebGL và OrbitControls với khả năng tự co giãn (Resize handler) trong `smart_farm/static/src/js/dashboard.js`.
-- [x] **T007**: Dựng cấu trúc hình học 3D cho nhà màng công nghệ cao:
-  - Khung vòm thép chịu lực và các tấm kính cường lực trong suốt phản chiếu ánh sáng.
-  - Sàn bê tông kỹ thuật và các hàng luống giá thể trồng dưa lưới/cà chua với tán lá xanh và quả.
-  - Đường ống tưới nhỏ giọt dẫn tới từng gốc cây.
-- [x] **T008**: Thêm các đối tượng thiết bị IoT tương tác vào không gian 3D:
-  - Cụm quạt thông gió đối lưu gắn tường với cánh quạt có thể xoay.
-  - Hệ thống béc phun sương trần với Particle System hạt sương chuyển động.
-  - Các cọc cảm biến môi trường IoT cắm tại luống đất có đèn LED tín hiệu phát sáng xung nhịp.
+### Subtask 3: Không gian 3D Nhà màng Công nghệ cao (Three.js Scene & 3D Models)
+- [x] **T009** `[odoo-frontend-styler]` Dựng không gian 3D Three.js trong `dashboard.js`: Scene, PerspectiveCamera, WebGLRenderer, OrbitControls, khung vòm thép, kính trong suốt, các luống dưa lưới/cà chua, hệ thống ống tưới nhỏ giọt, quạt đối lưu, béc phun sương và cọc cảm biến IoT.
+- [x] **T010** `[odoo-code-reviewer]` Soi diff Three.js logic, kiểm tra mesh geometry, material ánh sáng, resize event handler và không bị memory leak.
+- [x] **T011** Lập trình viên nghiệm thu (mở khung nhìn 3D), xác nhận mô hình nhà màng render sắc nét, ánh sáng tự nhiên và xoay camera 360 độ mượt mà.
+- [x] **T012** Commit: `feat(smart_farm): subtask 3 - procedural 3d greenhouse scene, plants and iot fixtures`
 
 ---
 
-### Giai đoạn 4: Tương tác 2 chiều giữa Không gian 3D và Bảng điều khiển (Bidirectional Sync)
-- [x] **T009**: Thiết lập Raycaster bắt sự kiện rê chuột (Hover) và nhấp chuột (Click) trên các vật thể 3D (Quạt, Béc phun sương, Cảm biến luống cây):
-  - Khi click vào thiết bị $\rightarrow$ Highlight vật thể và mở Bảng điều khiển bên phải (`#sf-zone-drawer`), cuộn tới thiết bị tương ứng.
-- [x] **T010**: Đồng bộ trạng thái từ Bảng điều khiển sang 3D:
-  - Khi gạt công tắc Phun sương $\rightarrow$ Kích hoạt hoặc tắt hiệu ứng hạt sương trong 3D.
-  - Khi gạt công tắc Quạt $\rightarrow$ Kích hoạt quay hoặc dừng cánh quạt 3D.
-- [x] **T011**: Bổ sung bộ nút bấm chuyển nhanh góc nhìn camera ("Góc nhìn toàn cảnh", "Góc nhìn luống cây", "Góc nhìn trần thiết bị", "Bật/Tắt xoay tự động").
+### Subtask 4: Tương tác 2 chiều 3D và Bảng Điều khiển IoT (Raycaster & Bidirectional Sync)
+- [x] **T013** `[odoo-fullstack-dev]` Tích hợp Raycaster bắt hover/click trên vật thể 3D mở Drawer bên phải; đồng bộ trạng thái công tắc IoT (bật quạt $\rightarrow$ quay cánh quạt 3D, bật phun sương $\rightarrow$ kích hoạt hạt sương bay); thêm cụm nút chuyển nhanh góc nhìn camera trong `dashboard.js`.
+- [x] **T014** `[odoo-code-reviewer]` Soi diff, kiểm tra raycasting intersect logic, animation loop cập nhật cánh quạt và particle system.
+- [x] **T015** Lập trình viên nghiệm thu (click vào quạt trong 3D $\rightarrow$ mở drawer, bật công tắc quạt $\rightarrow$ cánh quạt 3D quay), xác nhận đồng bộ 2 chiều hoàn hảo.
+- [x] **T016** Commit: `feat(smart_farm): subtask 4 - bidirectional raycasting interaction and device animation sync`
 
 ---
 
-### Giai đoạn 5: Tối ưu hóa, Nâng cấp Module & Xác minh (Verification & Polish)
-- [x] **T012**: Tối ưu hiệu năng render (RequestAnimationFrame loop chỉ chạy khi cần, giải phóng bộ nhớ khi rời tab Bản đồ).
-- [x] **T013**: Nâng cấp module `smart_farm` trong container Odoo và khởi động lại dịch vụ web.
-- [x] **T014**: Kiểm thử toàn diện trải nghiệm 3D trên trình duyệt: Chuyển tầng, xoay 360°, click vật thể 3D mở drawer, bật tắt công tắc kích hoạt hiệu ứng 3D.
-- [x] **T015**: Ghi nhận toàn bộ thay đổi kỹ thuật vào `smart_farm/docs/UI/UI-Change.md` và `smart_farm/docs/CHANGED.md`.
+### Subtask 5: Tối ưu Render Loop & Kiểm thử Toàn diện (Performance Polish & Verification)
+- [x] **T017** `[odoo-fullstack-dev]` Tối ưu RequestAnimationFrame (tạm dừng khi rời tab Bản đồ), giải phóng bộ nhớ WebGL; cập nhật hồ sơ kỹ thuật vào `smart_farm/docs/UI/UI-Change.md` và `smart_farm/docs/CHANGED.md`.
+- [x] **T018** `[odoo-code-reviewer]` Soi diff toàn bộ, kiểm tra hiệu năng CPU/GPU, dọn dẹp biến thừa và đối chiếu tài liệu kỹ thuật.
+- [x] **T019** Lập trình viên nghiệm thu (F5 Odoo, test toàn diện 3D và chuyển qua lại các tab khác), xác nhận 0 visual regression và FPS ổn định 60fps.
+- [x] **T020** Commit: `perf(smart_farm): subtask 5 - optimize render loop, memory management and docs update`

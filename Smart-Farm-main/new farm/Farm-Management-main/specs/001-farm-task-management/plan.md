@@ -11,11 +11,11 @@ Xây dựng module con quản lý công việc trong `smart_farm`:
 2. **Security**: Cấu hình quyền truy cập CRUD trong `security/ir.model.access.csv`.
 3. **Backend Views**: Tạo List view, Form view, Search view và Menuitem trong `views/task_views.xml`.
 4. **Dashboard Controller & API**:
-   - Cập nhật hàm `dashboard` trong `controllers/main.py` để query các task có ngày là hôm nay (`date = fields.Date.today()`).
-   - Tạo endpoint API `POST /smart_farm/api/task/toggle` nhận `task_id` và cập nhật trường `is_done`.
-5. **Dashboard Frontend**:
-   - Cập nhật QWeb template trong `views/dashboard.xml` để render động danh sách task.
-   - Bổ sung hàm Javascript trong `static/src/js/dashboard.js` xử lý sự kiện click checkbox và gửi AJAX cập nhật mượt mà.
+   - Truy vấn danh sách công việc toàn trang trại (`all_tasks`), sắp xếp ưu tiên theo `sequence asc, is_done asc, date desc, id desc`, tính tổng số việc và số việc hoàn thành.
+   - Endpoint API `POST /smart_farm/api/task/toggle` nhận `task_id` và cập nhật trường `is_done`.
+5. **Dashboard Frontend & UX Tối ưu**:
+   - Cập nhật QWeb template trong `views/dashboard.xml`: render thẻ "Công việc nông trại", thêm thanh cuộn dọc `max-height: 240px; overflow-y: auto`, hiển thị ghi chú `task.notes`.
+   - Bổ sung hàm Javascript trong `static/src/js/dashboard.js`: `sfToggleTask` gửi AJAX, `sfSyncTaskUI` có fallback tự đếm trên DOM, và `sfDeleteTask` cập nhật bộ đếm & chèn empty state khi xóa hết task.
 
 ---
 
