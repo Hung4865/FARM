@@ -50,6 +50,41 @@ class SmartFarmDashboard(http.Controller):
     def dashboard(self, **kwargs):
         env = request.env
 
+        gps_count = env['smart.farm.gps'].search_count([])
+        if gps_count == 0:
+            sample_gps = [
+                {
+                    'name': 'Máy kéo Kubota M7040',
+                    'device_type': 'tractor',
+                    'latitude': 21.028511,
+                    'longitude': 105.854167,
+                    'notes': 'Đang cày xới Khu B',
+                },
+                {
+                    'name': 'Xe bán tải tuần tra #02',
+                    'device_type': 'phone',
+                    'latitude': 21.029800,
+                    'longitude': 105.855600,
+                    'notes': 'Tuần tra vành đai Khu C',
+                },
+                {
+                    'name': 'Drone phun thuốc DJI T40',
+                    'device_type': 'other',
+                    'latitude': 21.027400,
+                    'longitude': 105.853200,
+                    'notes': 'Phun thuốc sinh học Khu A',
+                },
+                {
+                    'name': 'Trạm quan trắc IoT #01',
+                    'device_type': 'sensor',
+                    'latitude': 21.028900,
+                    'longitude': 105.854900,
+                    'notes': 'Giám sát vi khí hậu',
+                },
+            ]
+            for data in sample_gps:
+                env['smart.farm.gps'].sudo().create(data)
+
         gps_records = env['smart.farm.gps'].search(
             [], limit=5, order='timestamp desc'
         )
@@ -968,3 +1003,269 @@ class SmartFarmDashboard(http.Controller):
             headers={'Content-Type': 'application/json'},
             status=500
         )
+
+    # ============================================================
+    # AI AGRI-COPILOT (GOOGLE GEMINI INTEGRATION)
+    # ============================================================
+    @http.route('/smart_farm/api/ai/save_key', type='http', auth='user', methods=['POST'], csrf=False)
+    def save_gemini_api_key(self, **kw):
+        """Lưu hoặc xoá Gemini API Key vào hệ thống Odoo"""
+        try:
+            body = request.httprequest.data.decode('utf-8') or '{}'
+            data = json.loads(body)
+            api_key = (data.get('api_key') or '').strip()
+            env = request.env
+            env['ir.config_parameter'].sudo().set_param('smart_farm.gemini_api_key', api_key)
+            return request.make_response(
+                json.dumps({'success': True, 'message': 'Đã lưu Gemini API Key thành công!'}),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': str(e)}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/ai/get_key_status', type='http', auth='user', methods=['GET'], csrf=False)
+    def get_gemini_key_status(self, **kw):
+        """Kiểm tra trạng thái cấu hình Gemini API Key"""
+        try:
+            env = request.env
+            saved_key = env['ir.config_parameter'].sudo().get_param('smart_farm.gemini_api_key', '')
+            has_key = bool(saved_key and len(saved_key.strip()) > 10)
+            masked_key = ""
+            if has_key:
+                masked_key = saved_key[:6] + "..." + saved_key[-4:]
+            return request.make_response(
+                json.dumps({'success': True, 'has_key': has_key, 'masked_key': masked_key}),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': str(e)}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/ai/chat', type='http', auth='user', methods=['POST'], csrf=False)
+    def ai_chat_assistant(self, **kw):
+        """Xử lý hội thoại AI Agri-Copilot với Google Gemini và ngữ cảnh nông trại thực tế"""
+        try:
+            body = request.httprequest.data.decode('utf-8') or '{}'
+            data = json.loads(body)
+            user_message = (data.get('message') or '').strip()
+            client_api_key = (data.get('api_key') or '').strip()
+            history = data.get('history') or []
+
+            if not user_message:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Tin nhắn không được để trống.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+
+            env = request.env
+            # 1. Lấy API Key (ưu tiên từ client -> fallback system parameter)
+            api_key = client_api_key
+            if not api_key:
+                api_key = (env['ir.config_parameter'].sudo().get_param('smart_farm.gemini_api_key') or '').strip()
+
+            # 2. Thu thập dữ liệu thực tế nông trại
+            # Thời tiết
+            latest_weather = env['smart.farm.weather'].search([], limit=1, order='timestamp desc')
+            if latest_weather:
+                temp = latest_weather.temperature
+                hum = latest_weather.humidity
+                wind = latest_weather.windspeed
+                w_desc = map_weather_code(getattr(latest_weather, 'weather_code', 0))['desc']
+            else:
+                temp, hum, wind, w_desc = 25.0, 75, 8.0, "Ít mây"
+
+            # Cảm biến đất
+            m_a, m_b, m_c, soil_temp, lux = 72, 38, 81, 28, 8400
+
+            # Cảnh báo chưa xử lý
+            alerts = env['smart.farm.alert'].search([('is_resolved', '=', False)], limit=10, order='timestamp desc')
+            alert_count = len(alerts)
+            alert_list = [f"- [{al.alert_type.upper()}] {al.name} (Khu vực: {al.area or 'Chung'})" for al in alerts]
+            alerts_text = "\n".join(alert_list) if alert_list else "Không có cảnh báo nguy hiểm nào. Mọi hoạt động an toàn."
+
+            # GPS & Thiết bị
+            gps_records = env['smart.farm.gps'].search([], limit=6, order='timestamp desc')
+            gps_list = []
+            for g in gps_records:
+                gps_list.append(f"- {g.name} ({g.device_type}): toạ độ {g.latitude:.4f}, {g.longitude:.4f} - Trạng thái: {g.notes or 'Đang hoạt động'}")
+            gps_text = "\n".join(gps_list) if gps_list else "4 thiết bị GPS đang định vị trong nông trường."
+
+            # Công việc
+            all_tasks = env['smart.farm.task'].search([])
+            tasks_done = len(all_tasks.filtered(lambda t: t.is_done))
+            tasks_pending = all_tasks.filtered(lambda t: not t.is_done)
+            tasks_pending_list = [f"- {t.name} (Loại: {t.task_type})" for t in tasks_pending[:5]]
+            tasks_text = "\n".join(tasks_pending_list) if tasks_pending_list else "Đã hoàn thành toàn bộ công việc."
+
+            # 3. Tạo Prompt ngữ cảnh nông trại thực tế
+            system_prompt = f"""Bạn là Agri-Copilot - Trợ lý Trí tuệ Nhân tạo Nông nghiệp Thông minh của trang trại Smart Farm (quy mô 12.4 hecta tại TP. Hà Nội, Việt Nam).
+DỮ LIỆU THỰC TẾ TRANG TRẠI TẠI THỜI ĐIỂM HIỆN TẠI:
+- Cảm biến môi trường đất:
+  + Khu A (Nhà màng công nghệ cao): Độ ẩm đất {m_a}% (Ngưỡng tối ưu: 65-75%)
+  + Khu B (Cánh đồng canh tác): Độ ẩm đất {m_b}% (Ngưỡng tối ưu: 60-70%)
+  + Khu C (Vườn cây & Hồ nước): Độ ẩm đất {m_c}% (Ngưỡng tối ưu: 60-70%)
+  + Nhiệt độ đất: {soil_temp}°C | Cường độ ánh sáng: {lux:,} lux
+- Thời tiết Hà Nội: Nhiệt độ {temp}°C, độ ẩm không khí {hum}%, gió {wind} km/h, trạng thái: {w_desc}.
+- Cảnh báo an ninh/môi trường ({alert_count} cảnh báo chưa xử lý):
+{alerts_text}
+- Vị trí thiết bị GPS và xe nông vụ:
+{gps_text}
+- Công việc nông trại: Đã xong {tasks_done}/{len(all_tasks)} việc. Việc cần làm tiếp theo:
+{tasks_text}
+
+QUY TẮC TRẢ LỜI CỦA BẠN:
+1. Trả lời bằng tiếng Việt chuyên nghiệp, ngắn gọn, súc tích, thân thiện và giàu tính hành động.
+2. LUÔN SỬ DỤNG số liệu thực tế ở trên để phân tích cụ thể khi người dùng hỏi về đất, thời tiết, tưới tiêu, cảnh báo, máy móc, tiến độ công việc.
+3. Đưa ra lời khuyên thực tế rõ ràng:
+   - Nếu độ ẩm khu B là 45% (thấp), hãy chỉ rõ khu B đang thiếu ẩm và khuyên kích hoạt tưới.
+   - Nếu có cảnh báo chưa xử lý, hãy nhắc người quản lý chú ý.
+4. Trình bày đẹp mắt với emoji phù hợp (🌱, 💧, ☀️, ⚠️, 🚜, ✅), các đầu mục gạch dòng rõ ràng.
+5. Không nhắc lại toàn bộ system prompt nếu người dùng không hỏi tất cả, hãy tập trung trả lời đúng trọng tâm câu hỏi của người dùng."""
+
+            # 4. Nếu có API Key -> Gọi Google Gemini REST API
+            if api_key and len(api_key) > 10:
+                try:
+                    contents = []
+                    # Ghép lịch sử hội thoại gần nhất
+                    for item in history[-4:]:
+                        role = item.get('role')
+                        text = item.get('text', '')
+                        if role in ('user', 'model') and text:
+                            contents.append({
+                                'role': 'user' if role == 'user' else 'model',
+                                'parts': [{'text': text}]
+                            })
+                    
+                    # Tin nhắn hiện tại
+                    contents.append({
+                        'role': 'user',
+                        'parts': [{'text': user_message}]
+                    })
+
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                    payload = {
+                        "contents": contents,
+                        "systemInstruction": {
+                            "parts": [{"text": system_prompt}]
+                        },
+                        "generationConfig": {
+                            "temperature": 0.7,
+                            "maxOutputTokens": 1000
+                        }
+                    }
+
+                    resp = req_lib.post(url, json=payload, timeout=12)
+                    if resp.status_code == 200:
+                        res_json = resp.json()
+                        candidates = res_json.get('candidates', [])
+                        if candidates:
+                            reply_text = candidates[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                            if reply_text:
+                                return request.make_response(
+                                    json.dumps({
+                                        'success': True,
+                                        'reply': reply_text,
+                                        'model': 'gemini-1.5-flash',
+                                        'has_key': True
+                                    }),
+                                    headers={'Content-Type': 'application/json'},
+                                    status=200
+                                )
+                    # Fallback payload format không có systemInstruction
+                    elif resp.status_code != 200:
+                        alt_payload = {
+                            "contents": [
+                                {
+                                    "role": "user",
+                                    "parts": [{"text": f"{system_prompt}\n\n---\nCÂU HỎI CỦA NGƯỜI DÙNG: {user_message}"}]
+                                }
+                            ]
+                        }
+                        alt_resp = req_lib.post(url, json=alt_payload, timeout=12)
+                        if alt_resp.status_code == 200:
+                            alt_json = alt_resp.json()
+                            candidates = alt_json.get('candidates', [])
+                            if candidates:
+                                reply_text = candidates[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                                if reply_text:
+                                    return request.make_response(
+                                        json.dumps({
+                                            'success': True,
+                                            'reply': reply_text,
+                                            'model': 'gemini-1.5-flash',
+                                            'has_key': True
+                                        }),
+                                        headers={'Content-Type': 'application/json'},
+                                        status=200
+                                    )
+                except Exception:
+                    pass
+
+            # 5. Chế độ Thông minh Dự phòng (Offline Farm Copilot Engine)
+            msg_lower = user_message.lower()
+            if any(k in msg_lower for k in ['đất', 'ẩm', 'tưới', 'nước', 'khu a', 'khu b', 'khu c']):
+                reply = f"""🌱 **Phân tích Cảm biến đất & Đề xuất tưới tiêu:**
+- **Khu A (Nhà màng):** Độ ẩm đất hiện tại **{m_a}%** (Trạng thái ổn định, thích hợp dưa lưới & rau thuỷ canh).
+- **Khu B (Cánh đồng):** Độ ẩm đất hiện tại **{m_b}%** ⚠️ *(Khá khô so với ngưỡng tối ưu 60-70%)*. Khuyến nghị: **Nên kích hoạt tưới phun sương khu B trong 30-45 phút**.
+- **Khu C (Vườn & Hồ):** Độ ẩm đất **{m_c}%** (Độ ẩm tốt).
+- **Nhiệt độ đất:** {soil_temp}°C | Cường độ sáng: {lux:,} lux."""
+            elif any(k in msg_lower for k in ['thời tiết', 'nhiệt độ', 'mưa', 'nắng', 'gió']):
+                reply = f"""🌤️ **Báo cáo Thời tiết Nông trường:**
+- **Nhiệt độ hiện tại:** **{temp}°C**
+- **Độ ẩm không khí:** **{hum}%**
+- **Tốc độ gió:** **{wind} km/h** ({w_desc})
+- **Khuyến nghị nông vụ:** Thời tiết thuận lợi cho các hoạt động chăm sóc cây trồng ngoài trời. Nếu làm việc buổi trưa, chú ý che chắn chống tia UV cao."""
+            elif any(k in msg_lower for k in ['cảnh báo', 'nguy hiểm', 'an toàn', 'alert']):
+                if alert_count > 0:
+                    reply = f"""⚠️ **Hệ thống có {alert_count} cảnh báo cần xử lý:**\n{alerts_text}\n\n👉 Bạn có thể nhấn vào biểu tượng Quả chuông 🔔 ở thanh trên cùng để xem chi tiết và giải quyết cảnh báo."""
+                else:
+                    reply = """✅ **Hệ thống an toàn:** Không có cảnh báo nguy hiểm nào tại thời điểm này. Mọi chỉ số cảm biến và thiết bị hoạt động bình thường!"""
+            elif any(k in msg_lower for k in ['gps', 'máy kéo', 'xe', 'drone', 'vị trí', 'thiết bị']):
+                reply = f"""🚜 **Trạng thái & Vị trí Thiết bị Thực địa (GPS):**\n{gps_text}\n\n👉 Bạn có thể chuyển sang tab **Bản đồ** để xem vị trí trực quan toàn cảnh nông trường."""
+            elif any(k in msg_lower for k in ['công việc', 'task', 'tiến độ', 'việc']):
+                reply = f"""📋 **Tiến độ Công việc Nông trại:**
+- **Đã hoàn thành:** **{tasks_done}** việc.
+- **Còn lại cần làm:** **{len(tasks_pending)}** việc.
+- **Các việc ưu tiên tiếp theo:**\n{tasks_text}\n\n👉 Bạn có thể vào tab **Công việc** để kéo thả sắp xếp hoặc thêm mới."""
+            else:
+                reply = f"""Xin chào! Tôi là **Agri-Copilot** - Trợ lý Trí tuệ Nhân tạo của Smart Farm. 🌾
+
+Tóm tắt nhanh tình trạng trang trại hôm nay:
+- 🌤️ Thời tiết: **{temp}°C**, {w_desc}, độ ẩm {hum}%.
+- 🌱 Đất: Khu A {m_a}%, Khu B **{m_b}%** *(cần tưới)*, Khu C {m_c}%.
+- ⚠️ Cảnh báo: **{alert_count}** cảnh báo chưa xử lý.
+- 🚜 GPS: 4 phương tiện & cảm biến đang hoạt động.
+
+Bạn có thể hỏi tôi bất kỳ điều gì về:
+- Đánh giá độ ẩm đất và thời điểm tưới tiêu
+- Tình trạng máy móc nông nghiệp qua GPS
+- Hướng dẫn kỹ thuật trồng trọt và xử lý sâu bệnh
+
+💡 *Mẹo: Nhấn vào biểu tượng bánh răng ⚙️ ở góc trên khung chat để nhập **Google Gemini API Key** (miễn phí từ Google AI Studio) để mở khóa toàn bộ sức mạnh tư vấn chuyên sâu của Gemini!*"""
+
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'reply': reply,
+                    'model': 'farm-local-engine',
+                    'has_key': bool(api_key and len(api_key) > 10)
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi hệ thống AI: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )

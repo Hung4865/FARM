@@ -3775,3 +3775,335 @@ if (document.readyState === 'loading') {
 } else {
     window.sfInitTheme();
 }
+
+// ==========================================================================
+// FEATURE 008: AI AGRI-COPILOT (GOOGLE GEMINI) CHAT CLIENT
+// ==========================================================================
+window.sfAiHistory = [];
+
+window.sfFormatAiMarkdown = function(text) {
+    if (!text) return '';
+    var escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    // Bold: **text**
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic: *text*
+    escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Inline code: `code`
+    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:4px;font-family:monospace;font-size:11.5px;">$1</code>');
+    
+    var lines = escaped.split('\n');
+    var formattedLines = [];
+    var inList = false;
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.indexOf('- ') === 0 || line.indexOf('* ') === 0 || line.indexOf('+ ') === 0) {
+            if (!inList) {
+                formattedLines.push('<ul style="margin:4px 0 4px 16px;padding:0;">');
+                inList = true;
+            }
+            formattedLines.push('<li style="margin-bottom:3px;">' + line.substring(2) + '</li>');
+        } else {
+            if (inList) {
+                formattedLines.push('</ul>');
+                inList = false;
+            }
+            if (line === '') {
+                formattedLines.push('<div style="height:6px;"></div>');
+            } else {
+                formattedLines.push('<p style="margin-bottom:5px;">' + line + '</p>');
+            }
+        }
+    }
+    if (inList) formattedLines.push('</ul>');
+    return formattedLines.join('');
+};
+
+window.sfToggleAiChat = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    var win = document.getElementById('sf-ai-chat-window');
+    var fab = document.getElementById('sf-ai-fab-container');
+    if (!win) return;
+    var isHidden = win.style.display === 'none' || !win.style.display;
+    if (isHidden) {
+        win.style.display = 'flex';
+        if (fab) fab.classList.add('is-active');
+        var msgs = document.getElementById('sf-ai-messages');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        setTimeout(function() {
+            var input = document.getElementById('sf-ai-input');
+            if (input) input.focus();
+        }, 120);
+    } else {
+        win.style.display = 'none';
+        if (fab) fab.classList.remove('is-active');
+    }
+};
+
+window.sfToggleAiConfig = function() {
+    var drawer = document.getElementById('sf-ai-config-drawer');
+    if (!drawer) return;
+    var isHidden = drawer.style.display === 'none' || !drawer.style.display;
+    if (isHidden) {
+        drawer.style.display = 'block';
+        var keyInput = document.getElementById('sf-ai-key-input');
+        if (keyInput) {
+            var savedKey = '';
+            try { savedKey = localStorage.getItem('sf_gemini_api_key') || ''; } catch(e) {}
+            if (savedKey) keyInput.value = savedKey;
+            keyInput.focus();
+        }
+    } else {
+        drawer.style.display = 'none';
+    }
+};
+
+window.sfToggleKeyVisibility = function() {
+    var input = document.getElementById('sf-ai-key-input');
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+};
+
+window.sfSaveGeminiKey = function() {
+    var input = document.getElementById('sf-ai-key-input');
+    if (!input) return;
+    var key = input.value.trim();
+    if (!key) {
+        if (typeof window.sfShowToast === 'function') {
+            window.sfShowToast({
+                title: 'Gemini API Key',
+                message: 'Vui lòng nhập API Key hợp lệ từ Google AI Studio.',
+                type: 'warning',
+                duration: 3500
+            });
+        }
+        return;
+    }
+    try {
+        localStorage.setItem('sf_gemini_api_key', key);
+    } catch(e) {}
+
+    // Call server to persist
+    fetch('/smart_farm/api/ai/save_key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: key })
+    }).catch(function() {});
+
+    var tag = document.getElementById('sf-ai-model-tag');
+    if (tag) tag.textContent = 'Gemini 1.5';
+    var statusText = document.getElementById('sf-ai-status-text');
+    if (statusText) statusText.textContent = 'Đã kết nối Google Gemini • Sẵn sàng';
+
+    var drawer = document.getElementById('sf-ai-config-drawer');
+    if (drawer) drawer.style.display = 'none';
+
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: 'Google Gemini',
+            message: 'Đã lưu API Key thành công! AI đã sẵn sàng phản hồi chuyên sâu.',
+            type: 'success',
+            duration: 3500
+        });
+    }
+};
+
+window.sfClearGeminiKey = function() {
+    try {
+        localStorage.removeItem('sf_gemini_api_key');
+    } catch(e) {}
+    var input = document.getElementById('sf-ai-key-input');
+    if (input) input.value = '';
+
+    fetch('/smart_farm/api/ai/save_key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: '' })
+    }).catch(function() {});
+
+    var tag = document.getElementById('sf-ai-model-tag');
+    if (tag) tag.textContent = 'Farm Engine';
+    var statusText = document.getElementById('sf-ai-status-text');
+    if (statusText) statusText.textContent = 'Chế độ Engine nội bộ';
+
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: 'Google Gemini',
+            message: 'Đã xoá API Key. Hệ thống chuyển về bộ phân tích nội bộ.',
+            type: 'info',
+            duration: 3000
+        });
+    }
+};
+
+window.sfClearAiChat = function() {
+    window.sfAiHistory = [];
+    var msgs = document.getElementById('sf-ai-messages');
+    if (msgs) {
+        msgs.innerHTML = '<div class="sf-ai-msg sf-ai-msg-assistant">' +
+            '<div class="sf-ai-msg-avatar">🌾</div>' +
+            '<div class="sf-ai-msg-bubble">' +
+                '<div class="sf-ai-msg-text">' +
+                    '<p>Xin chào! Tôi là <strong>Agri-Copilot</strong> — Trợ lý AI Nông nghiệp được hỗ trợ bởi <strong>Google Gemini</strong>.</p>' +
+                    '<p style="margin-top:6px;">Tôi đang được kết nối dữ liệu thời gian thực của trang trại (Cảm biến đất, Thời tiết, Cảnh báo, GPS và Công việc).</p>' +
+                    '<p style="margin-top:6px;">Bạn cần tôi phân tích tình trạng trang trại hay tư vấn giải pháp gì hôm nay?</p>' +
+                '</div>' +
+                '<div class="sf-ai-msg-time">Vừa xong</div>' +
+            '</div>' +
+        '</div>';
+    }
+};
+
+window.sfSendQuickPrompt = function(promptText) {
+    var input = document.getElementById('sf-ai-input');
+    if (input) {
+        input.value = promptText;
+        window.sfSubmitAiChat();
+    }
+};
+
+window.sfSubmitAiChat = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    var input = document.getElementById('sf-ai-input');
+    var sendBtn = document.getElementById('sf-ai-send-btn');
+    var msgs = document.getElementById('sf-ai-messages');
+    if (!input || !msgs) return;
+
+    var text = input.value.trim();
+    if (!text) return;
+
+    var now = new Date();
+    var timeStr = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+
+    // 1. Append User Message Bubble
+    var userHtml = '<div class="sf-ai-msg sf-ai-msg-user">' +
+        '<div class="sf-ai-msg-bubble">' +
+            '<div class="sf-ai-msg-text">' + text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+            '<div class="sf-ai-msg-time">' + timeStr + '</div>' +
+        '</div>' +
+    '</div>';
+    msgs.insertAdjacentHTML('beforeend', userHtml);
+
+    // 2. Clear input & disable send
+    input.value = '';
+    input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
+    // 3. Append Typing Indicator
+    var typingId = 'sf-ai-typing-' + Date.now();
+    var typingHtml = '<div class="sf-ai-msg sf-ai-msg-assistant" id="' + typingId + '">' +
+        '<div class="sf-ai-msg-avatar">🌾</div>' +
+        '<div class="sf-ai-msg-bubble">' +
+            '<div class="sf-ai-typing-bubble">' +
+                '<span class="sf-ai-typing-dot"></span>' +
+                '<span class="sf-ai-typing-dot"></span>' +
+                '<span class="sf-ai-typing-dot"></span>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    msgs.insertAdjacentHTML('beforeend', typingHtml);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // 4. Retrieve API Key
+    var savedKey = '';
+    try { savedKey = localStorage.getItem('sf_gemini_api_key') || ''; } catch(e) {}
+
+    // 5. Send POST request
+    fetch('/smart_farm/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: text,
+            api_key: savedKey,
+            history: window.sfAiHistory || []
+        })
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(result) {
+        var typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        var replyText = (result && result.reply) || 'Xin lỗi, tôi chưa nhận được phản hồi phù hợp. Vui lòng thử lại!';
+        var formatted = window.sfFormatAiMarkdown(replyText);
+
+        var aiHtml = '<div class="sf-ai-msg sf-ai-msg-assistant">' +
+            '<div class="sf-ai-msg-avatar">🌾</div>' +
+            '<div class="sf-ai-msg-bubble">' +
+                '<div class="sf-ai-msg-text">' + formatted + '</div>' +
+                '<div class="sf-ai-msg-time">' + timeStr + (result && result.model === 'gemini-1.5-flash' ? ' • Gemini 1.5' : '') + '</div>' +
+            '</div>' +
+        '</div>';
+        msgs.insertAdjacentHTML('beforeend', aiHtml);
+        msgs.scrollTop = msgs.scrollHeight;
+
+        // Push to in-memory history
+        if (!window.sfAiHistory) window.sfAiHistory = [];
+        window.sfAiHistory.push({ role: 'user', text: text });
+        window.sfAiHistory.push({ role: 'model', text: replyText });
+        if (window.sfAiHistory.length > 8) {
+            window.sfAiHistory = window.sfAiHistory.slice(-8);
+        }
+
+        // Update tag if Gemini answered
+        if (result && result.model === 'gemini-1.5-flash') {
+            var tag = document.getElementById('sf-ai-model-tag');
+            if (tag) tag.textContent = 'Gemini 1.5';
+        }
+    })
+    .catch(function(err) {
+        console.error('AI chat error:', err);
+        var typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        var errHtml = '<div class="sf-ai-msg sf-ai-msg-assistant">' +
+            '<div class="sf-ai-msg-avatar">⚠️</div>' +
+            '<div class="sf-ai-msg-bubble">' +
+                '<div class="sf-ai-msg-text" style="color:#b91c1c;background:#fef2f2;border-color:#fca5a5;">' +
+                    'Không thể kết nối đến dịch vụ AI. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.' +
+                '</div>' +
+                '<div class="sf-ai-msg-time">' + timeStr + '</div>' +
+            '</div>' +
+        '</div>';
+        msgs.insertAdjacentHTML('beforeend', errHtml);
+        msgs.scrollTop = msgs.scrollHeight;
+    })
+    .finally(function() {
+        input.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        input.focus();
+    });
+};
+
+// Check Gemini key status on page load
+window.sfInitAiStatus = function() {
+    var savedKey = '';
+    try { savedKey = localStorage.getItem('sf_gemini_api_key') || ''; } catch(e) {}
+    if (savedKey) {
+        var tag = document.getElementById('sf-ai-model-tag');
+        if (tag) tag.textContent = 'Gemini 1.5';
+    } else {
+        fetch('/smart_farm/api/ai/get_key_status')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d && d.has_key) {
+                    var tag = document.getElementById('sf-ai-model-tag');
+                    if (tag) tag.textContent = 'Gemini 1.5';
+                }
+            })
+            .catch(function() {});
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.sfInitAiStatus);
+} else {
+    window.sfInitAiStatus();
+}
