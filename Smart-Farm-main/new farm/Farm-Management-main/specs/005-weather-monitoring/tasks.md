@@ -1,7 +1,7 @@
 # Tasks: Hệ thống Giám sát & Dự báo Thời tiết Nông nghiệp Thông minh tại Hà Nội
 
 **Input**: Kế hoạch từ [`plan.md`](./plan.md) và đặc tả từ [`spec.md`](./spec.md)  
-**Status**: Ready for Implementation (Chờ hiệu lệnh bắt đầu triển khai code)
+**Status**: Completed (100% hoàn thành và đã kiểm thử trên Odoo 18)
 
 ---
 
@@ -27,7 +27,7 @@
 
 ### Subtask 3: Chế độ Ngoại tuyến (Offline Fallback) & Kiểm thử Toàn diện
 *Mục tiêu nghiệm thu: Kiểm tra cơ chế tự động fallback khi mất mạng, hiển thị badge "Từ DB", chống spam click và đối chiếu tài liệu kỹ thuật.*
-- [ ] **T009** `[odoo-fullstack-dev]` Hoàn thiện cơ chế fallback ngoại tuyến khi mất mạng hoặc API Open-Meteo timeout $\rightarrow$ tự động nạp bản ghi gần nhất trong `smart.farm.weather`, đổi badge sang "Từ DB"; cập nhật tài liệu kỹ thuật `smart_farm/docs/CHANGED.md`.
-- [ ] **T010** `[odoo-code-reviewer]` Soi diff toàn bộ các file đã thay đổi, kiểm tra tính nhất quán mã nguồn, tài liệu và không có lỗi console JavaScript.
-- [ ] **T011** Lập trình viên nghiệm thu (F5 Odoo, kiểm tra tổng thể kịch bản online, refresh và fallback offline), xác nhận 0 visual regression.
-- [ ] **T012** Commit: `feat(smart_farm): subtask 3 - offline fallback resilience and comprehensive verification`
+- [x] **T009** `[odoo-fullstack-dev]` Hoàn thiện cơ chế fallback ngoại tuyến khi mất mạng hoặc API Open-Meteo timeout $\rightarrow$ tự động nạp bản ghi gần nhất trong `smart.farm.weather`, đổi badge sang "Từ DB"; cập nhật tài liệu kỹ thuật `smart_farm/docs/CHANGED.md`.
+- [x] **T010** `[odoo-code-reviewer]` Soi diff toàn bộ các file đã thay đổi, kiểm tra tính nhất quán mã nguồn, tài liệu và không có lỗi console JavaScript.
+- [x] **T011** Lập trình viên nghiệm thu (F5 Odoo, kiểm tra tổng thể kịch bản online, refresh và fallback offline), xác nhận 0 visual regression.
+- [x] **T012** Commit: `feat(smart_farm): subtask 3 - offline fallback resilience and comprehensive verification`

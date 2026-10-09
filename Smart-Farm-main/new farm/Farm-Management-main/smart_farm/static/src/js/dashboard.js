@@ -3628,9 +3628,16 @@ window.sfRefreshWeather = function(btn) {
             // Update Badge
             var badgeEl = document.getElementById('sf-weather-source-badge');
             if (badgeEl && data.source) {
-                if (data.source === 'live') badgeEl.textContent = 'Trực tiếp';
-                else if (data.source === 'db') badgeEl.textContent = 'Từ DB';
-                else badgeEl.textContent = 'Mẫu';
+                if (data.source === 'live') {
+                    badgeEl.textContent = 'Trực tiếp';
+                    badgeEl.className = 'badge-live';
+                } else if (data.source === 'db') {
+                    badgeEl.textContent = 'Từ DB';
+                    badgeEl.className = 'badge-demo';
+                } else {
+                    badgeEl.textContent = 'Mẫu';
+                    badgeEl.className = 'badge-demo';
+                }
             }
 
             // Update Forecast

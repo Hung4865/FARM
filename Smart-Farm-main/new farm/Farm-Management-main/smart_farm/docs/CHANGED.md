@@ -4,7 +4,26 @@
 
 ---
 
-## [v0.7.0] – 2026-10-10 (Hiện tại)
+## [v0.8.0] – 2026-10-10 (Hiện tại)
+
+### ⛅ Giám Sát & Dự Báo Thời Tiết Nông Nghiệp Thông Minh Hà Nội (Feature 005)
+1. **Dữ Liệu Thực Tế Hà Nội & Chuẩn Mã Thời Tiết WMO**:
+   - Tích hợp tọa độ địa lý chuẩn của Thủ đô Hà Nội (`lat = 21.0285`, `lon = 105.8542`) trong model `smart.farm.weather` và bộ điều khiển trung tâm `smart_farm/controllers/main.py`.
+   - Kết nối trực tiếp dịch vụ khí tượng Open-Meteo, chuẩn hóa mã thời tiết WMO Weather Interpretation Codes (0-99) sang biểu tượng thời tiết sinh động (☀️, 🌤️, ⛅, ☁️, 🌧️, ⛈️, ❄️,...) và chú thích trạng thái khí hậu.
+2. **Dự Báo 4 Ngày Động & Phân Tích Lời Khuyên Nông Nghiệp Tức Thời**:
+   - Thay thế toàn bộ số liệu mẫu fix cứng (29°, 28°, 30°) bằng chuỗi dự báo khí tượng 4 ngày thực tế (Hôm nay, Ngày mai, Ngày kia, Sau đó) kèm icon và nhiệt độ cao nhất theo ngày.
+   - Bổ sung thuật toán `analyze_agri_advice` tự động đưa ra khuyến nghị canh tác chuyên sâu (ví dụ: cảnh báo sương muối khi nhiệt độ thấp, khuyến nghị tưới mát khi nắng nóng, lưu ý thoát nước khi độ ẩm cao,...).
+3. **Nút Làm Mới 1-Chạm & Thông Báo Toast Feedback 4s**:
+   - Thêm nút làm mới 🔄 trên header thẻ Thời tiết, tích hợp cơ chế khóa nút chống click đúp (anti-spam) và animation xoay icon `@keyframes sf-spin`.
+   - Xây dựng API `POST /smart_farm/api/weather/refresh` cập nhật CSDL và trả về JSON chuẩn hóa.
+   - Tự động kích hoạt Toast notification thông báo kết quả cập nhật trong 4 giây kèm thanh tiến trình co dần.
+4. **Cơ Chế Ngoại Tuyến (Offline Fallback Resilience)**:
+   - Trong trường hợp mất kết nối mạng hoặc API Open-Meteo quá tải timeout, hệ thống tự động truy xuất bản ghi gần nhất trong cơ sở dữ liệu `smart.farm.weather`.
+   - Tự động chuyển đổi badge nguồn dữ liệu sang nhãn "Từ DB" (màu xanh dương `.badge-demo`) giúp người vận hành nhận biết độ tin cậy của thông tin mà không làm gián đoạn trải nghiệm giao diện.
+
+---
+
+## [v0.7.0] – 2026-10-10
 
 ### 🔔 Trung Tâm Thông Báo & Cảnh Báo Sự Kiện Thời Gian Thực (Feature 004)
 1. **Thông Báo Tự Động Theo Tương Tác Thiết Bị & Công Việc**:

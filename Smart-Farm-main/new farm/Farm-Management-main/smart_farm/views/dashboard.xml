@@ -709,7 +709,7 @@
                                     <button type="button" class="sf-btn-refresh-weather" id="sf-btn-refresh-weather" onclick="sfRefreshWeather(this)" title="Làm mới thời tiết Hà Nội">
                                         <span class="sf-refresh-icon">🔄</span> Làm mới
                                     </button>
-                                    <span class="badge-live" id="sf-weather-source-badge">
+                                    <span t-attf-class="badge-#{weather.get('source') == 'live' and 'live' or 'demo'}" id="sf-weather-source-badge">
                                         <t t-if="weather['source'] == 'live'">Trực tiếp</t>
                                         <t t-elif="weather['source'] == 'db'">Từ DB</t>
                                         <t t-else="">Mẫu</t>
