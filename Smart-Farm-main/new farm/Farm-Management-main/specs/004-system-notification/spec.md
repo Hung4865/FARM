@@ -87,9 +87,31 @@ Là người dùng tương tác, khi một sự kiện xảy ra ở User Story 4
 
 ---
 
+### User Story 8 - Hiển thị Thông báo Nổi (Toast) kèm Thanh Tiến trình Chạy Đếm ngược (Priority: P1)
+Là người dùng vận hành, khi tương tác kích hoạt thiết bị hoặc có cảnh báo mới, tôi muốn nhìn thấy thông báo dạng Toast hiện đại ở góc trên bên phải, có icon trạng thái, tiêu đề đậm, nội dung mô tả rõ ràng và **thanh tiến trình đếm ngược chạy ở dưới cùng** để biết thời gian hiển thị tự đóng (4 giây).
+* **Giá trị**: Nâng cao trải nghiệm thị giác theo tiêu chuẩn thiết kế UI hiện đại, giúp người dùng nhận biết ngay sự kiện mà không che khuất màn hình.
+* **Acceptance Scenarios**:
+  1. **Given** có sự kiện thông báo mới, **When** hàm `sfShowToast` được gọi, **Then** hiển thị thẻ toast bo góc 12px, nền trắng cao cấp, đổ bóng mờ, icon tròn theo màu (`success` xanh lá, `info` xanh dương, `warning` vàng, `danger` đỏ), kèm nút đóng "×".
+  2. **Given** toast đang hiển thị, **When** thời gian trôi qua, **Then** thanh tiến trình (`.sf-toast-progress-bar`) chạy co dần từ 100% về 0% trong 4 giây rồi toast tự động trượt mờ và biến mất.
+
+---
+
+### User Story 9 - Tinh gọn Thẻ "Cảnh báo & Log" trên Dashboard (Tối đa 3 mục) & Điều hướng Quả Chuông (Priority: P1)
+Là người quản lý xem Dashboard, tôi muốn khu vực "Cảnh báo & Log" chỉ hiển thị ngắn gọn tối đa 3 cảnh báo mới nhất để giao diện không bị dài lê thê; muốn xem toàn bộ lịch sử thì click vào liên kết xem tất cả hoặc quả chuông thông báo.
+* **Giá trị**: Giữ bố cục trang tổng quan cân đối, gọn đẹp, đồng thời cung cấp lối tắt mở trung tâm thông báo đầy đủ chỉ với 1 click.
+* **Acceptance Scenarios**:
+  1. **Given** hệ thống có nhiều hơn 3 cảnh báo, **When** tải Dashboard, **Then** thẻ "Cảnh báo & Log" chỉ hiển thị đúng 3 cảnh báo mới nhất.
+  2. **Given** tổng số cảnh báo > 3, **When** xem thẻ, **Then** xuất hiện liên kết `Xem tất cả (N) →` ở tiêu đề và nút `Xem thêm N-3 thông báo khác trong Quả Chuông 🔔` ở cuối thẻ.
+  3. **Given** người dùng click nút "Xem tất cả" hoặc "Xem thêm", **When** sự kiện kích hoạt, **Then** dropdown Quả chuông (`#sf-notif-menu`) tự động mở ra, cuộn nhẹ nhàng đến vị trí chuông để người dùng xem trọn vẹn toàn bộ danh sách.
+  4. **Given** sự kiện đẩy thời gian thực phát sinh (Subtask 3), **When** thêm dòng cảnh báo mới vào đầu thẻ Dashboard, **Then** nếu số lượng vượt quá 3, tự động loại bỏ dòng cũ thứ 4 để luôn duy trì đúng 3 mục.
+
+---
+
 ## 3. Edge Cases & Xử lý lỗi (Requirements)
 
 1. **Chống Spam Thông báo (Event Debounce / Throttle)**: Nếu người dùng click bật/tắt liên tục công tắc quạt hoặc tưới trong vòng 2 giây, chỉ gửi thông báo cho trạng thái cuối cùng, tránh làm ngập tràn danh sách thông báo.
 2. **Giới hạn số lượng hiển thị trong Dropdown**: Dropdown duy trì tối đa 15 thông báo mới nhất. Khi có thông báo mới đẩy vào đầu danh sách, nếu tổng số vượt quá 15 bản ghi, tự động loại bỏ bản ghi cũ nhất ở cuối danh sách DOM.
-3. **Độ bền vững dữ liệu (Persistence)**: Mọi thông báo sinh ra từ sự kiện đều phải được gọi API lưu vào bảng `smart.farm.alert` trong database Odoo, đảm bảo người dùng F5 hoặc đăng nhập từ máy khác vẫn giữ nguyên lịch sử thông báo.
-4. **Mất kết nối mạng / Lỗi server Odoo**: Nếu API lưu thông báo backend thất bại, vẫn hiển thị thông báo cục bộ trên giao diện kèm Toast cảnh báo nhẹ nhàng để trải nghiệm người dùng không bị gián đoạn.
+3. **Giới hạn số lượng trên Dashboard Card**: Thẻ Dashboard luôn cố định tối đa 3 mục mới nhất, giữ chiều cao thẻ hài hòa với widget Thời tiết và GPS bên cạnh.
+4. **Độ bền vững dữ liệu (Persistence)**: Mọi thông báo sinh ra từ sự kiện đều phải được gọi API lưu vào bảng `smart.farm.alert` trong database Odoo, đảm bảo người dùng F5 hoặc đăng nhập từ máy khác vẫn giữ nguyên lịch sử thông báo.
+5. **Mất kết nối mạng / Lỗi server Odoo**: Nếu API lưu thông báo backend thất bại, vẫn hiển thị thông báo cục bộ trên giao diện kèm Toast cảnh báo nhẹ nhàng để trải nghiệm người dùng không bị gián đoạn.
+

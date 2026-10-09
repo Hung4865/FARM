@@ -81,6 +81,38 @@ window.sfToggleDropdown = function(event, menuId) {
     }
 };
 
+window.sfOpenNotifications = function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    var targetMenu = document.getElementById('sf-notif-menu');
+    var notifBtn = document.getElementById('sf-notif-btn');
+
+    // Close other dropdowns
+    var allDropdowns = document.querySelectorAll('.sf-dropdown-menu');
+    for (var i = 0; i < allDropdowns.length; i++) {
+        if (allDropdowns[i] !== targetMenu) {
+            allDropdowns[i].classList.remove('show');
+        }
+    }
+    var allWrappers = document.querySelectorAll('.sf-dropdown-wrapper');
+    for (var j = 0; j < allWrappers.length; j++) {
+        allWrappers[j].classList.remove('open');
+    }
+
+    if (targetMenu) {
+        targetMenu.classList.add('show');
+        var wrapper = targetMenu.closest('.sf-dropdown-wrapper');
+        if (wrapper) {
+            wrapper.classList.add('open');
+        }
+    }
+
+    if (notifBtn) {
+        notifBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+};
+
 // Close all dropdowns when clicking outside
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.sf-dropdown-wrapper')) {
@@ -423,6 +455,9 @@ window.sfToggleTask = function(taskId, element) {
     .then(function(data) {
         if (data.success) {
             sfSyncTaskUI(taskId, data.is_done, data);
+            if (data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            }
         } else {
             // Revert
             sfSyncTaskUI(taskId, currentlyDone);
@@ -456,6 +491,9 @@ window.sfToggleMgmtTask = function(taskId, element) {
     .then(function(data) {
         if (data.success) {
             sfSyncTaskUI(taskId, data.is_done, data);
+            if (data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            }
         } else {
             // Revert
             sfSyncTaskUI(taskId, isDone);
@@ -892,6 +930,173 @@ window.sfHideAlertDetails = function() {
     if (popover) popover.style.display = 'none';
     currentAlertId = null;
     currentAlertBeaconEl = null;
+};
+
+// Floating Toast Notification System with countdown progress bar
+window.sfShowToast = function(options, type) {
+    var title = '';
+    var message = '';
+    var toastType = 'success';
+    var duration = 4000;
+
+    if (typeof options === 'string') {
+        title = options;
+        message = '';
+        toastType = type || 'success';
+    } else if (typeof options === 'object' && options !== null) {
+        title = options.title || options.name || '';
+        message = options.message || options.content || '';
+        toastType = options.type || options.alert_type || type || 'success';
+        if (options.duration) duration = options.duration;
+    }
+
+    if (!title && !message) return;
+
+    var container = document.getElementById('sf-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'sf-toast-container';
+        container.className = 'sf-toast-container';
+        document.body.appendChild(container);
+    }
+
+    var toast = document.createElement('div');
+    toast.className = 'sf-toast sf-toast-' + toastType;
+
+    // SVG icon matching the user sample screenshot
+    var iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+    if (toastType === 'error' || toastType === 'danger') {
+        iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+    } else if (toastType === 'warning') {
+        iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    } else if (toastType === 'info') {
+        iconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+    }
+
+    var descHtml = message ? '<div class="sf-toast-desc">' + message + '</div>' : '';
+
+    toast.innerHTML =
+        '<div class="sf-toast-icon">' + iconSvg + '</div>' +
+        '<div class="sf-toast-body">' +
+            '<div class="sf-toast-title">' + title + '</div>' +
+            descHtml +
+        '</div>' +
+        '<button type="button" class="sf-toast-close" title="Đóng">&times;</button>' +
+        '<div class="sf-toast-progress-track">' +
+            '<div class="sf-toast-progress-bar" style="animation-duration: ' + duration + 'ms;"></div>' +
+        '</div>';
+
+    var closeBtn = toast.querySelector('.sf-toast-close');
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            toast.classList.add('sf-toast-hiding');
+            setTimeout(function() {
+                if (toast && toast.parentNode) toast.remove();
+            }, 250);
+        };
+    }
+
+    container.appendChild(toast);
+
+    setTimeout(function() {
+        if (toast && toast.parentNode) {
+            toast.classList.add('sf-toast-hiding');
+            setTimeout(function() {
+                if (toast && toast.parentNode) toast.remove();
+            }, 300);
+        }
+    }, duration);
+};
+
+// Push real-time notification to UI
+window.sfPushNotification = function(alertData, unresolvedCount) {
+    if (!alertData) return;
+
+    // 1. Update dropdown list
+    var notifList = document.getElementById('sf-notif-items');
+    if (notifList) {
+        // Remove empty state if present
+        var emptyState = document.getElementById('sf-notif-empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        // Determine icon box styling and svg
+        var iconBoxClass = 'icon-info';
+        var iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+
+        if (alertData.alert_type === 'danger') {
+            iconBoxClass = 'icon-danger';
+            iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+        } else if (alertData.alert_type === 'warning') {
+            iconBoxClass = 'icon-warning';
+            iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+        }
+
+        var timeText = alertData.timestamp || 'Vừa xong';
+        var areaHtml = alertData.area ? ' · <span class="sf-notif-area">' + alertData.area + '</span>' : '';
+
+        var itemHtml = '<div class="sf-notif-item unresolved sf-notif-new-highlight" id="sf-notif-alert-' + alertData.id + '">' +
+            '<div class="sf-notif-icon-box ' + iconBoxClass + '">' + iconSvg + '</div>' +
+            '<div class="sf-notif-content">' +
+                '<div class="sf-notif-msg">' + (alertData.name || 'Thông báo mới') + '</div>' +
+                '<div class="sf-notif-meta">' +
+                    '<span class="sf-notif-time">' + timeText + '</span>' + areaHtml +
+                '</div>' +
+            '</div>' +
+            '<div class="sf-notif-action">' +
+                '<button type="button" class="sf-btn-resolve-single" onclick="sfResolveAlert(' + alertData.id + ')" title="Đánh dấu đã xử lý">Xử lý</button>' +
+            '</div>' +
+        '</div>';
+
+        // Prepend to dropdown list
+        notifList.insertAdjacentHTML('afterbegin', itemHtml);
+
+        // Cap at 15 items to keep DOM performant
+        var currentItems = notifList.querySelectorAll('.sf-notif-item');
+        if (currentItems.length > 15) {
+            currentItems[currentItems.length - 1].remove();
+        }
+    }
+
+    // 2. Update dashboard card list ("Cảnh báo & Log")
+    var dashList = document.getElementById('sf-dash-alert-list');
+    if (dashList) {
+        var emptyDash = document.getElementById('sf-dash-alert-empty');
+        if (emptyDash) {
+            emptyDash.remove();
+        }
+        var dotType = alertData.alert_type || 'info';
+        var dashItemHtml = '<div class="sf-alert-item sf-notif-new-highlight" id="sf-dash-alert-' + alertData.id + '">' +
+            '<div class="sf-alert-dot dot-' + dotType + '"></div>' +
+            '<div style="flex:1;">' +
+                '<div class="sf-alert-text">' + (alertData.name || 'Thông báo mới') + '</div>' +
+                '<div class="sf-alert-time">' + (alertData.timestamp || 'Vừa xong') + (alertData.area ? ' · ' + alertData.area : '') + '</div>' +
+            '</div>' +
+            '<button type="button" class="sf-btn-resolve-dash" onclick="sfResolveAlert(' + alertData.id + ')" title="Giải quyết cảnh báo">Xử lý</button>' +
+        '</div>';
+        dashList.insertAdjacentHTML('afterbegin', dashItemHtml);
+        var dashItems = dashList.querySelectorAll('.sf-alert-item');
+        if (dashItems.length > 3) {
+            dashItems[dashItems.length - 1].remove();
+        }
+    }
+
+    // 3. Update badge and top stats
+    var count = typeof unresolvedCount !== 'undefined' ? unresolvedCount : 1;
+    if (window.sfUpdateAlertsUI) {
+        window.sfUpdateAlertsUI(count);
+    }
+
+    // 4. Trigger Toast Notification with bottom progress bar matching reference screenshot
+    if (typeof window.sfShowToast === 'function') {
+        window.sfShowToast({
+            title: alertData.name || 'Thông báo mới',
+            message: alertData.content || (alertData.area ? 'Khu vực: ' + alertData.area : ''),
+            type: alertData.alert_type || 'info'
+        });
+    }
 };
 
 // Centralized Alert UI updater
@@ -1436,14 +1641,30 @@ window.sfToggleDevice = function(zone, device, checkboxEl) {
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.success) {
-            window.sfShowToast(data.message, 'success');
+            if (data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            } else if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Điều khiển thiết bị',
+                    message: data.message,
+                    type: 'success'
+                });
+            }
         } else {
-            window.sfShowToast(data.message || 'Lỗi khi điều khiển thiết bị', 'error');
+            if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Lỗi điều khiển thiết bị',
+                    message: data.message || 'Lỗi khi điều khiển thiết bị',
+                    type: 'error'
+                });
+            }
         }
     })
     .catch(function(err) {
         console.error(err);
-        window.sfShowToast('Lỗi kết nối khi gửi lệnh điều khiển!', 'error');
+        if (typeof window.sfShowToast === 'function') {
+            window.sfShowToast('Lỗi kết nối khi gửi lệnh điều khiển!', 'error');
+        }
     });
 };
 
@@ -1586,7 +1807,33 @@ window.sfWaterSinglePlantNow = function() {
         if (moistureEl) moistureEl.textContent = window.sfCurrentPlant.moisture + '%';
         if (moistureBarEl) moistureBarEl.style.width = window.sfCurrentPlant.moisture + '%';
 
-        window.sfShowToast('💧 Đã tưới thành công 150ml cho ' + window.sfCurrentPlant.plantName + ' #' + window.sfCurrentPlant.id + '! Độ ẩm rễ: ' + window.sfCurrentPlant.moisture + '%', 'success');
+        var pName = window.sfCurrentPlant.plantName || 'Dưa lưới Taki';
+        var pId = window.sfCurrentPlant.id;
+        var pMois = window.sfCurrentPlant.moisture;
+
+        fetch('/smart_farm/api/alert/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: 'Tưới cây thành công: ' + pName + ' #' + pId,
+                content: 'Đã hoàn tất cữ tưới 150ml. Độ ẩm rễ hiện tại đạt ' + pMois + '%.',
+                alert_type: 'info',
+                area: 'Nhà màng GH-01'
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success && data.alert && window.sfPushNotification) {
+                window.sfPushNotification(data.alert, data.unresolved_count);
+            } else if (typeof window.sfShowToast === 'function') {
+                window.sfShowToast({
+                    title: 'Tưới cây thành công (150ml)',
+                    message: pName + ' #' + pId + ' • Độ ẩm rễ: ' + pMois + '%',
+                    type: 'success'
+                });
+            }
+        })
+        .catch(function(e) { console.error('Alert error:', e); });
 
         if (btn) {
             btn.disabled = false;

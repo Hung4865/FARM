@@ -113,6 +113,33 @@ graph TD
 
 ---
 
+### 2.4 Toast UI Component với Thanh Tiến Trình Đếm Ngược (`dashboard.css`, `dashboard.js`)
+
+* **Cấu trúc Toast Card**: `.sf-toast` bo góc 12px, nền trắng `#ffffff`, viền nhẹ `#e2e8f0`, đổ bóng mềm mại `0 10px 25px -5px rgba(0,0,0,0.1)`.
+* **Thành phần**:
+  * Icon trạng thái SVG (`.sf-toast-icon`) phân màu theo loại sự kiện.
+  * Tiêu đề in đậm (`.sf-toast-title`), mô tả ngắn (`.sf-toast-desc`), nút đóng `×` (`.sf-toast-close`).
+  * **Thanh đếm ngược đáy**: `.sf-toast-progress-track` và `.sf-toast-progress-bar` chạy animation CSS `@keyframes sfToastProgress` từ `scaleX(1)` về `scaleX(0)` đều đặn trong 4 giây.
+* **Tự động đóng**: Hàm `window.sfShowToast` tự huỷ toast sau 4000ms với hiệu ứng trượt mờ `.sf-toast-hiding`.
+
+---
+
+### 2.5 Tinh Gọn Thẻ "Cảnh báo & Log" Trên Dashboard (Tối đa 3 mục) & Điều Hướng Chuông
+
+* **Template QWeb (`dashboard.xml`)**:
+  * Chỉ lặp hiển thị 3 phần tử mới nhất: `<t t-foreach="alerts[:3]" t-as="alert">`.
+  * Nếu `len(alerts) > 3`:
+    * Tiêu đề có nút liên kết `.sf-link-btn`: `Xem tất cả (len(alerts)) →`.
+    * Chân danh sách có nút bấm `.sf-btn-view-all-notif`: `Xem thêm len(alerts) - 3 thông báo khác trong Quả Chuông 🔔`.
+* **Thời gian thực (`dashboard.js`)**:
+  * Khi hàm `sfPushNotification` nhận alert mới, chèn vào đầu `#sf-dash-alert-list`.
+  * Giữ cố định tối đa 3 item: nếu `dashItems.length > 3`, tự động xóa `dashItems[dashItems.length - 1]`.
+* **Điều hướng mở Quả Chuông (`sfOpenNotifications`)**:
+  * Đóng các dropdown khác, tự động gắn class `.show` cho `#sf-notif-menu` và `.open` cho wrapper.
+  * Cuộn mượt màn hình lên vị trí Quả chuông `#sf-notif-btn` để người dùng quan sát toàn bộ danh sách.
+
+---
+
 ## 3. Kế hoạch Kiểm thử & Xác minh (Verification Plan)
 
 1. **Test Case 1 — Tương tác Quạt / Máy bơm**:
@@ -125,3 +152,8 @@ graph TD
    * Bấm *"Xử lý tất cả"* $\rightarrow$ Toàn bộ thông báo chuyển thành *"Đã xong"*, số đếm về 0, icon chuông ẩn badge đỏ.
 4. **Test Case 4 — Tải lại trang (F5)**:
    * Sau khi có thông báo mới, F5 lại trang $\rightarrow$ Thông báo vẫn hiển thị đầy đủ (do đã được lưu vào PostgreSQL qua model `smart.farm.alert`).
+5. **Test Case 5 — Toast với Thanh Tiến trình Đếm ngược**:
+   * Khi kích hoạt thiết bị, Toast màu sắc nổi bật xuất hiện ở góc trên phải với thanh tiến trình đáy co dần trong 4s và tự biến mất.
+6. **Test Case 6 — Thẻ Dashboard giới hạn 3 mục & Điều hướng Quả Chuông**:
+   * Thẻ "Cảnh báo & Log" chỉ hiện đúng 3 mục. Bấm "Xem tất cả" hoặc "Xem thêm" sẽ mở ngay dropdown quả chuông với danh sách đầy đủ.
+

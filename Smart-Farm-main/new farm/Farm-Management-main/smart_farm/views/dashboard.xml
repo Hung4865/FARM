@@ -27,7 +27,7 @@
                 <link rel="icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="shortcut icon" type="image/jpeg" href="/smart_farm/static/src/img/Favicon.jpg"/>
                 <link rel="apple-touch-icon" href="/smart_farm/static/src/img/Favicon.jpg"/>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=117"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=137"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
@@ -730,35 +730,51 @@
                         <div class="sf-card">
                             <div class="sf-card-hd">
                                 <div class="sf-card-title">Cảnh báo &amp; Log</div>
-                                <span class="badge-live">Từ Odoo</span>
-                            </div>
-                            <t t-if="alerts">
-                                <t t-foreach="alerts" t-as="alert">
-                                    <div class="sf-alert-item" t-att-id="'sf-dash-alert-' + str(alert.id)">
-                                        <div t-attf-class="sf-alert-dot dot-#{alert.alert_type}"></div>
-                                        <div style="flex:1;">
-                                            <div t-attf-class="sf-alert-text #{alert.is_resolved and 'sf-resolved' or ''}">
-                                                <t t-esc="alert.name"/>
-                                            </div>
-                                            <div class="sf-alert-time">
-                                                <t t-esc="alert.timestamp.strftime('%H:%M')"/>
-                                                <t t-if="alert.area"> · <t t-esc="alert.area"/></t>
-                                            </div>
-                                        </div>
-                                        <t t-if="not alert.is_resolved">
-                                            <button type="button" class="sf-btn-resolve-dash" t-att-onclick="'sfResolveAlert(' + str(alert.id) + ')'" title="Giải quyết cảnh báo">
-                                                Xử lý
-                                            </button>
-                                        </t>
-                                        <t t-else="">
-                                            <span class="sf-dash-resolved-tag">Đã xong</span>
-                                        </t>
-                                    </div>
+                                <t t-if="alerts and len(alerts) &gt; 3">
+                                    <button type="button" class="sf-link-btn" onclick="sfOpenNotifications(event)" title="Xem tất cả thông báo trong quả chuông">
+                                        Xem tất cả (<t t-esc="len(alerts)"/>) →
+                                    </button>
                                 </t>
-                            </t>
-                            <t t-else="">
-                                <div style="font-size:12px;color:#888780;padding:12px 0;text-align:center;">Chưa có cảnh báo nào</div>
-                            </t>
+                                <t t-else="">
+                                    <span class="badge-live">Từ Odoo</span>
+                                </t>
+                            </div>
+                            <div class="sf-dash-alert-list" id="sf-dash-alert-list">
+                                <t t-if="alerts">
+                                    <t t-foreach="alerts[:3]" t-as="alert">
+                                        <div class="sf-alert-item" t-att-id="'sf-dash-alert-' + str(alert.id)">
+                                            <div t-attf-class="sf-alert-dot dot-#{alert.alert_type}"></div>
+                                            <div style="flex:1;">
+                                                <div t-attf-class="sf-alert-text #{alert.is_resolved and 'sf-resolved' or ''}">
+                                                    <t t-esc="alert.name"/>
+                                                </div>
+                                                <div class="sf-alert-time">
+                                                    <t t-esc="alert.timestamp.strftime('%H:%M') if alert.timestamp else ''"/>
+                                                    <t t-if="alert.area"> · <t t-esc="alert.area"/></t>
+                                                </div>
+                                            </div>
+                                            <t t-if="not alert.is_resolved">
+                                                <button type="button" class="sf-btn-resolve-dash" t-att-onclick="'sfResolveAlert(' + str(alert.id) + ')'" title="Giải quyết cảnh báo">
+                                                    Xử lý
+                                                </button>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="sf-dash-resolved-tag">Đã xong</span>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <t t-if="len(alerts) &gt; 3">
+                                        <div class="sf-dash-alert-more-wrap">
+                                            <button type="button" class="sf-btn-view-all-notif" onclick="sfOpenNotifications(event)" title="Mở danh sách thông báo đầy đủ">
+                                                <span>Xem thêm <t t-esc="len(alerts) - 3"/> thông báo khác trong Quả Chuông 🔔</span>
+                                            </button>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="sf-dash-alert-empty" id="sf-dash-alert-empty" style="font-size:12px;color:#888780;padding:12px 0;text-align:center;">Chưa có cảnh báo nào</div>
+                                </t>
+                            </div>
                         </div>
 
                         <div class="sf-card">
@@ -2014,7 +2030,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=120"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=137"></script>
             </body>
         </html>
     </template>

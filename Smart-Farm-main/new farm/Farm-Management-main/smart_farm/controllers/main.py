@@ -274,6 +274,26 @@ class SmartFarmDashboard(http.Controller):
             done = len(all_farm_tasks.filtered(lambda t: t.is_done))
             remaining = total - done
 
+            alert_payload = None
+            if new_state:
+                created_alert = request.env['smart.farm.alert'].create({
+                    'name': f"Hoàn thành: {task.name}",
+                    'content': f"Công việc '{task.name}' đã được đánh dấu hoàn thành.",
+                    'alert_type': 'info',
+                    'area': 'Lịch làm việc',
+                    'is_resolved': False,
+                })
+                alert_payload = {
+                    'id': created_alert.id,
+                    'name': created_alert.name,
+                    'content': created_alert.content or '',
+                    'alert_type': created_alert.alert_type,
+                    'area': created_alert.area or '',
+                    'timestamp': 'Vừa xong',
+                    'is_resolved': False,
+                }
+            unresolved_count = request.env['smart.farm.alert'].search_count([('is_resolved', '=', False)])
+
             return request.make_response(
                 json.dumps({
                     'success': True,
@@ -282,7 +302,9 @@ class SmartFarmDashboard(http.Controller):
                     'task_total': total,
                     'task_done': done,
                     'task_remaining': remaining,
-                    'message': 'Đã đánh dấu hoàn thành!' if new_state else 'Đã chuyển về chưa hoàn thành!'
+                    'message': 'Đã đánh dấu hoàn thành!' if new_state else 'Đã chuyển về chưa hoàn thành!',
+                    'alert': alert_payload,
+                    'unresolved_count': unresolved_count
                 }),
                 headers={'Content-Type': 'application/json'},
                 status=200
@@ -332,6 +354,16 @@ class SmartFarmDashboard(http.Controller):
                 'inventory': 'Kho',
                 'report': 'Báo cáo',
             }
+            task_type_label = type_labels.get(task.task_type, 'Khác')
+
+            created_alert = request.env['smart.farm.alert'].create({
+                'name': f"Việc mới: {task.name}",
+                'content': f"Đã giao việc '{task.name}' ({task_type_label}).",
+                'alert_type': 'info',
+                'area': 'Lịch làm việc',
+                'is_resolved': False,
+            })
+            unresolved_count = request.env['smart.farm.alert'].search_count([('is_resolved', '=', False)])
 
             return request.make_response(
                 json.dumps({
@@ -341,13 +373,23 @@ class SmartFarmDashboard(http.Controller):
                         'id': task.id,
                         'name': task.name,
                         'task_type': task.task_type,
-                        'task_type_label': type_labels.get(task.task_type, 'Khác'),
+                        'task_type_label': task_type_label,
                         'date': str(task.date),
                         'is_done': task.is_done,
                         'user_name': task.user_id.name or 'Farm Admin',
                         'notes': task.notes or '',
                         'sequence': task.sequence,
-                    }
+                    },
+                    'alert': {
+                        'id': created_alert.id,
+                        'name': created_alert.name,
+                        'content': created_alert.content or '',
+                        'alert_type': created_alert.alert_type,
+                        'area': created_alert.area or '',
+                        'timestamp': 'Vừa xong',
+                        'is_resolved': False,
+                    },
+                    'unresolved_count': unresolved_count
                 }),
                 headers={'Content-Type': 'application/json'},
                 status=200
@@ -627,15 +669,22 @@ class SmartFarmDashboard(http.Controller):
 
             device_names = {
                 'mist': 'Hệ thống phun sương làm mát',
+                'misting': 'Hệ thống phun sương làm mát',
+                'phun_suong': 'Hệ thống phun sương làm mát',
                 'fan': 'Quạt thông gió đối lưu',
+                'quat': 'Quạt thông gió đối lưu',
                 'drip': 'Hệ thống tưới nhỏ giọt thông minh',
+                'sprinkler': 'Hệ thống tưới phun mưa tự động',
+                'fert': 'Hệ thống châm dinh dưỡng NPK',
+                'npk': 'Hệ thống châm dinh dưỡng NPK',
+                'phan_bon': 'Hệ thống châm dinh dưỡng NPK',
                 'pump': 'Trạm máy bơm cấp nước hồ chứa',
-                'shade': 'Hệ thống mái che tự động'
+                'shade': 'Hệ thống mái che tự động',
+                'mai_che': 'Hệ thống mái che tự động'
             }
             dev_name = device_names.get(device, f'Thiết bị {device}')
             action_text = "Bật" if state else "Tắt"
 
-            # Tự động tạo bản ghi thông báo tương ứng trong smart.farm.alert
             alert_type = 'info' if state else 'warning'
             alert_name = f"{action_text} {dev_name}"
             alert_content = f"Người dùng đã {action_text.lower()} {dev_name.lower()} tại Khu {zone}."

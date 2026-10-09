@@ -16,18 +16,18 @@
 ---
 
 ### Subtask 2: Tự động tạo Thông báo khi Tạo mới & Cập nhật Công việc
-- [ ] **T005** `[odoo-backend-developer]` Nâng cấp API `create_task` và `toggle_task` trong `smart_farm/controllers/main.py`: tự động tạo bản ghi `smart.farm.alert` khi tạo công việc mới và khi đánh dấu hoàn thành công việc.
-- [ ] **T006** `[odoo-code-reviewer]` Soi diff `smart_farm/controllers/main.py`, kiểm tra logic tạo alert không làm ảnh hưởng đến luồng CRUD và tính toán bộ đếm công việc.
-- [ ] **T007** Lập trình viên nghiệm thu (F5 Odoo, thêm 1 công việc mới và tick hoàn thành), xác nhận thông báo được ghi nhận chính xác vào bảng `smart.farm.alert`.
-- [ ] **T008** Commit: `feat(smart_farm): subtask 2 - auto-create alerts on task events`
+- [x] **T005** `[odoo-backend-developer]` Nâng cấp API `create_task` và `toggle_task` trong `smart_farm/controllers/main.py`: tự động tạo bản ghi `smart.farm.alert` khi tạo công việc mới và khi đánh dấu hoàn thành công việc.
+- [x] **T006** `[odoo-code-reviewer]` Soi diff `smart_farm/controllers/main.py`, kiểm tra logic tạo alert không làm ảnh hưởng đến luồng CRUD và tính toán bộ đếm công việc.
+- [x] **T007** Lập trình viên nghiệm thu (F5 Odoo, thêm 1 công việc mới và tick hoàn thành), xác nhận thông báo được ghi nhận chính xác vào bảng `smart.farm.alert`.
+- [x] **T008** Commit: `feat(smart_farm): subtask 2 - auto-create alerts on task events`
 
 ---
 
-### Subtask 3: Frontend Real-time Push Engine & Hiệu ứng Trượt Dropdown
-- [ ] **T009** `[odoo-frontend-styler]` Xây dựng hàm `sfPushNotification(alertData, unresolvedCount)` trong `smart_farm/static/src/js/dashboard.js`, gắn callback vào luồng bật/tắt thiết bị và tạo việc mới; bổ sung animation `@keyframes sfSlideInDown` và `.sf-notif-new-highlight` trong `smart_farm/static/src/css/dashboard.css`.
-- [ ] **T010** `[odoo-code-reviewer]` Soi diff `dashboard.js` và `dashboard.css`, kiểm tra không syntax error, đảm bảo cơ chế tự động ẩn empty state và cắt tỉa giữ tối đa 15 item trên DOM.
-- [ ] **T011** Lập trình viên nghiệm thu (mở Dashboard, bấm bật quạt hoặc thêm việc), xác nhận thông báo trượt vào tức thì ở đầu danh sách, huy hiệu chuông nhảy số đếm, không cần reload trang.
-- [ ] **T012** Commit: `feat(smart_farm): subtask 3 - real-time notification push and animation`
+### Subtask 3: Frontend Real-time Push Engine, Toast Progress Bar & Giới hạn Thẻ Dashboard (3 mục)
+- [x] **T009** `[odoo-frontend-styler]` Xây dựng hàm `sfPushNotification(alertData, unresolvedCount)` trong `smart_farm/static/src/js/dashboard.js`, gắn callback vào luồng bật/tắt thiết bị và tạo việc mới; xây dựng Toast notification card cao cấp có thanh đếm ngược đáy (`@keyframes sfToastProgress` co trong 4s); giới hạn thẻ "Cảnh báo & Log" trên Dashboard hiển thị tối đa 3 mục mới nhất kèm nút xem thêm mở Quả chuông (`sfOpenNotifications`).
+- [x] **T010** `[odoo-code-reviewer]` Soi diff `dashboard.js`, `dashboard.css`, `dashboard.xml`, kiểm tra không syntax error, đảm bảo cơ chế tự động cắt tỉa DOM tối đa 3 item trên thẻ Dashboard và tối đa 15 item trong Dropdown Quả chuông.
+- [x] **T011** Lập trình viên nghiệm thu (mở Dashboard, bấm bật quạt hoặc thêm việc), xác nhận toast chạy đếm ngược 4s, thẻ cảnh báo giữ đúng 3 mục, huy hiệu chuông nhảy số đếm và lưu bền vững vào database Odoo.
+- [x] **T012** Commit: `feat(smart_farm): subtask 3 - real-time notification push, toast progress bar, and dashboard alert limit`
 
 ---
 
