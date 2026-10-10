@@ -49,7 +49,7 @@ Bổ sung tab `"Nhân sự"` ngắn gọn trên thanh điều hướng, ẩn/hi�
 ### Subtask 3: Giao Diện Phân Hệ Quản Lý Nhân Sự & Giao Việc (Tab "Nhân sự")
 Xây dựng giao diện hiển thị danh sách nhân sự thực tế, bộ lọc, thẻ thông tin nhân viên, tính năng gán vai trò (cho Admin) và giao việc trực tiếp (Admin & Manager).
 
-- [ ] **Bước 1: Xử lý code** `[developer]`
+- [x] **Bước 1: Xử lý code** `[developer]`
   - Thêm container `<div id="tab-staff" class="sf-tab-content">` trong `smart_farm/views/dashboard.xml`:
     - Khối thống kê nhân sự (Tổng nhân sự, Quản lý, Nhân viên, Tỷ lệ việc hoàn thành).
     - Thanh tìm kiếm nhân sự theo tên/email và bộ lọc vai trò (Tất cả, Quản lý, Nhân viên).
@@ -58,11 +58,11 @@ Xây dựng giao diện hiển thị danh sách nhân sự thực tế, bộ l�
     - Nút / Dropdown `Set Role` đổi vai trò: Chỉ hiển thị cho Admin, ẩn đối với Manager; vô hiệu hóa thao tác trên Superuser ID 2.
   - Bổ sung CSS giao diện nhân sự chuyên nghiệp trong `smart_farm/static/src/css/dashboard.css`.
   - Bổ sung JS logic trong `smart_farm/static/src/js/dashboard.js`: tìm kiếm/lọc thẻ nhân viên, gọi API `/smart_farm/api/user/set_role`, mở modal giao việc.
-- [ ] **Bước 2: Review diff** `[code-reviewer]`
+- [x] **Bước 2: Review diff** `[code-reviewer]`
   - Kiểm tra toàn bộ diff QWeb XML, CSS, JS, đảm bảo tính responsive trên mobile và desktop.
-- [ ] **Bước 3: Lập trình viên nghiệm thu F5 Odoo** `[developer-verify]`
+- [x] **Bước 3: Lập trình viên nghiệm thu F5 Odoo** `[developer-verify]`
   - F5 Odoo, kiểm tra tab Nhân sự: tìm kiếm nhân viên, thử nghiệm tính năng đổi vai trò từ Admin và thử nghiệm nút Giao việc.
-- [ ] **Bước 4: Commit** `[git-commit]`
+- [x] **Bước 4: Commit** `[git-commit]`
   - Tạo commit với format: `feat(staff): subtask 3 - staff management directory and role assignment ui`
 
 ---

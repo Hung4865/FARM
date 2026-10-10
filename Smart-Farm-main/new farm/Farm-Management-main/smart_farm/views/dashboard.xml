@@ -1216,6 +1216,8 @@
                                              t-att-data-name="t.name"
                                              t-att-data-date="str(t.date)"
                                              t-att-data-notes="t.notes or ''"
+                                             t-att-data-user-id="t.user_id.id if t.user_id else ''"
+                                             t-att-data-user-name="t.user_id.name or 'Farm Admin'"
                                              draggable="true">
                                             
                                             <!-- Drag Handle -->
@@ -1839,7 +1841,162 @@
 
                         <!-- Tab: Quản lý Nhân sự (Chỉ dành cho Admin & Manager) -->
                         <div id="tab-staff" class="sf-tab-content" style="display:none;">
-                            <!-- Nội dung chi tiết của phân hệ Nhân sự sẽ được triển khai ở Subtask 3 -->
+                            <div class="sf-card sf-staff-mgmt-card">
+                                <!-- Header Toolbar -->
+                                <div class="sf-staff-header">
+                                    <div class="sf-staff-header-left">
+                                        <h2 class="sf-staff-title">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#0284c7;">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                            </svg>
+                                            Đội ngũ &amp; Quản lý nhân sự nông trại
+                                        </h2>
+                                        <div class="sf-staff-desc">
+                                            Theo dõi danh sách thành viên nông trường, phân công nhiệm vụ sản xuất và thiết lập vai trò tài khoản.
+                                        </div>
+                                    </div>
+                                    <div class="sf-staff-header-stats">
+                                        <div class="sf-staff-stat-pill">
+                                            <span class="sf-ssp-num"><t t-esc="staff_count"/></span>
+                                            <span class="sf-ssp-label">Tổng nhân sự</span>
+                                        </div>
+                                        <div class="sf-staff-stat-pill" style="border-left: 1px solid #e2e8f0; padding-left: 14px;">
+                                            <span class="sf-ssp-num" style="color:#0284c7;"><t t-esc="manager_count"/></span>
+                                            <span class="sf-ssp-label">Quản lý</span>
+                                        </div>
+                                        <div class="sf-staff-stat-pill" style="border-left: 1px solid #e2e8f0; padding-left: 14px;">
+                                            <span class="sf-ssp-num" style="color:#16a34a;"><t t-esc="employee_count"/></span>
+                                            <span class="sf-ssp-label">Nhân viên</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filter Toolbar -->
+                                <div class="sf-staff-toolbar">
+                                    <div class="sf-staff-search-wrapper">
+                                        <svg class="sf-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                        </svg>
+                                        <input type="text" id="sf-staff-search-input" class="sf-staff-search-input" placeholder="Tìm kiếm nhân viên theo tên, email..." oninput="sfFilterStaff()"/>
+                                        <button type="button" id="sf-staff-search-clear" class="sf-search-clear" onclick="sfClearStaffSearch()" style="display:none;" title="Xóa tìm kiếm">×</button>
+                                    </div>
+
+                                    <div class="sf-staff-filter-group">
+                                        <div class="sf-filter-pills" id="sf-staff-role-filter-pills">
+                                            <button type="button" class="sf-filter-pill active" data-role="all" onclick="sfSetStaffRoleFilter('all', this)">Tất cả (<t t-esc="staff_count"/>)</button>
+                                            <button type="button" class="sf-filter-pill" data-role="manager" onclick="sfSetStaffRoleFilter('manager', this)">Quản lý (<t t-esc="manager_count"/>)</button>
+                                            <button type="button" class="sf-filter-pill" data-role="staff" onclick="sfSetStaffRoleFilter('staff', this)">Nhân viên (<t t-esc="employee_count"/>)</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Staff Grid -->
+                                <div class="sf-staff-grid" id="sf-staff-grid">
+                                    <t t-if="staff_members">
+                                        <t t-foreach="staff_members" t-as="m">
+                                            <div class="sf-staff-card"
+                                                 t-att-id="'sf-staff-card-' + str(m['id'])"
+                                                 t-att-data-user-id="m['id']"
+                                                 t-att-data-name="m['name']"
+                                                 t-att-data-email="m['email']"
+                                                 t-att-data-role="m['role']">
+                                                
+                                                <div class="sf-staff-card-top">
+                                                    <div class="sf-staff-avatar-wrap">
+                                                        <img t-attf-src="/web/image?model=res.users&amp;id=#{m['id']}&amp;field=avatar_128"
+                                                             class="sf-staff-avatar"
+                                                             alt="Avatar"
+                                                             t-attf-onerror="'this.src=\'https://ui-avatars.com/api/?name=' + m['name'] + '&amp;background=0284c7&amp;color=fff\''"/>
+                                                        <span t-attf-class="sf-staff-status-dot #{'admin-dot' if m['role'] == 'admin' else ('manager-dot' if m['role'] == 'manager' else 'staff-dot')}"></span>
+                                                    </div>
+                                                    <div class="sf-staff-meta">
+                                                        <div class="sf-staff-name-row">
+                                                            <div class="sf-staff-name" t-att-title="m['name']"><t t-esc="m['name']"/></div>
+                                                            <span t-attf-class="sf-role-badge sf-role-badge-#{m['role']}">
+                                                                <t t-esc="m['role_name']"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="sf-staff-email" t-att-title="m['email']">
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                                                <polyline points="22,6 12,13 2,6"></polyline>
+                                                            </svg>
+                                                            <span><t t-esc="m['email']"/></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Work Progress Info -->
+                                                <div class="sf-staff-work-block">
+                                                    <div class="sf-staff-work-hd">
+                                                        <span class="sf-staff-work-label">Nhiệm vụ nông trại</span>
+                                                        <span class="sf-staff-work-val">
+                                                            <strong><t t-esc="m['task_done_count']"/></strong>/<t t-esc="m['task_count']"/> hoàn thành
+                                                        </span>
+                                                    </div>
+                                                    <div class="sf-staff-prog-bar">
+                                                        <div class="sf-staff-prog-fill" t-attf-style="width: #{m['task_progress']}%;"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Action Buttons Row -->
+                                                <div class="sf-staff-actions">
+                                                    <!-- Giao việc (Available for Admin & Manager) -->
+                                                    <button type="button"
+                                                            class="sf-btn-staff sf-btn-staff-assign"
+                                                            t-att-onclick="'sfAssignTaskToStaff(' + str(m['id']) + ', \'' + m['name'] + '\')'"
+                                                            title="Giao công việc mới cho nhân sự này">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M12 5v14M5 12h14"></path>
+                                                        </svg>
+                                                        <span>Giao việc</span>
+                                                    </button>
+
+                                                    <!-- Set Role (ONLY available for Admin) -->
+                                                    <t t-if="user_role == 'admin'">
+                                                        <t t-if="m['is_super_admin']">
+                                                            <div class="sf-staff-role-lock" title="Quản trị viên tối cao (Không thể đổi vai trò)">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                                                </svg>
+                                                                <span>Admin gốc</span>
+                                                            </div>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <div class="sf-staff-role-select-wrap">
+                                                                <select class="sf-staff-role-select"
+                                                                        t-att-id="'sf-role-sel-' + str(m['id'])"
+                                                                        t-att-onchange="'sfChangeUserRole(' + str(m['id']) + ', this.value)'"
+                                                                        title="Thiết lập vai trò người dùng">
+                                                                    <option value="staff" t-att-selected="'selected' if m['role'] == 'staff' else None">Nhân viên</option>
+                                                                    <option value="manager" t-att-selected="'selected' if m['role'] == 'manager' else None">Quản lý</option>
+                                                                    <option value="admin" t-att-selected="'selected' if m['role'] == 'admin' else None">Quản trị viên</option>
+                                                                </select>
+                                                            </div>
+                                                        </t>
+                                                    </t>
+                                                </div>
+
+                                            </div>
+                                        </t>
+                                    </t>
+                                </div>
+
+                                <!-- Empty Search state -->
+                                <div id="sf-staff-empty-state" style="display:none;" class="sf-task-empty">
+                                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <div class="sf-empty-title">Không tìm thấy nhân viên nào phù hợp</div>
+                                    <div class="sf-empty-sub">Hãy thử nhập từ khóa khác hoặc chuyển sang lọc vai trò khác.</div>
+                                </div>
+                            </div>
                         </div>
                     </t>
 
@@ -1967,6 +2124,19 @@
                                         <label class="sf-label" for="sf-task-date-input">Ngày thực hiện <span style="color:#ef4444;">*</span></label>
                                         <input type="date" id="sf-task-date-input" class="sf-input" required="required"/>
                                     </div>
+                                </div>
+
+                                <div class="sf-form-group">
+                                    <label class="sf-label" for="sf-task-user-input">Người phụ trách (Giao việc)</label>
+                                    <select id="sf-task-user-input" class="sf-input">
+                                        <t t-if="staff_members">
+                                            <t t-foreach="staff_members" t-as="sm">
+                                                <option t-att-value="sm['id']">
+                                                    <t t-esc="sm['name']"/> (<t t-esc="sm['role_name']"/>)
+                                                </option>
+                                            </t>
+                                        </t>
+                                    </select>
                                 </div>
 
                                 <div class="sf-form-group">

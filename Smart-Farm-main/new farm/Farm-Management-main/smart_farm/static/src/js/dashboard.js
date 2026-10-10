@@ -583,7 +583,7 @@ window.sfResetTaskFilters = function() {
 };
 
 // Task Modal (Open, Close, Save)
-window.sfOpenTaskModal = function(taskId) {
+window.sfOpenTaskModal = function(taskId, targetUserId, targetUserName) {
     var modal = document.getElementById('sf-task-modal');
     if (!modal) return;
 
@@ -594,6 +594,7 @@ window.sfOpenTaskModal = function(taskId) {
     var nameInput = document.getElementById('sf-task-name-input');
     var typeInput = document.getElementById('sf-task-type-input');
     var dateInput = document.getElementById('sf-task-date-input');
+    var userInput = document.getElementById('sf-task-user-input');
     var notesInput = document.getElementById('sf-task-notes-input');
     var modalTitle = document.getElementById('sf-task-modal-title');
     var modalSub = document.getElementById('sf-task-modal-sub');
@@ -609,6 +610,9 @@ window.sfOpenTaskModal = function(taskId) {
         typeInput.value = card.dataset.type || 'irrigation';
         dateInput.value = card.dataset.date || '';
         notesInput.value = card.dataset.notes || '';
+        if (userInput && card.dataset.userId) {
+            userInput.value = card.dataset.userId;
+        }
 
         modalTitle.innerText = 'Chỉnh sửa công việc';
         modalSub.innerText = 'Cập nhật nội dung hoặc trạng thái của công việc này';
@@ -622,8 +626,14 @@ window.sfOpenTaskModal = function(taskId) {
         dateInput.value = today;
         notesInput.value = '';
 
-        modalTitle.innerText = 'Thêm công việc mới';
-        modalSub.innerText = 'Điền thông tin chi tiết để lên lịch công việc nông trại';
+        if (targetUserId && userInput) {
+            userInput.value = targetUserId;
+            modalTitle.innerText = targetUserName ? ('Giao việc cho: ' + targetUserName) : 'Giao việc cho nhân sự';
+            modalSub.innerText = 'Tạo nhiệm vụ mới và phân công trực tiếp cho nhân viên';
+        } else {
+            modalTitle.innerText = 'Thêm công việc mới';
+            modalSub.innerText = 'Điền thông tin chi tiết để lên lịch công việc nông trại';
+        }
         saveText.innerText = 'Lưu công việc';
     }
 
@@ -647,6 +657,7 @@ window.sfSaveTask = function(event) {
     var taskType = document.getElementById('sf-task-type-input').value;
     var dateVal = document.getElementById('sf-task-date-input').value;
     var notes = document.getElementById('sf-task-notes-input').value.trim();
+    var userInput = document.getElementById('sf-task-user-input');
     var saveBtn = document.getElementById('sf-task-save-btn');
     var saveText = document.getElementById('sf-task-save-text');
     var alertBox = document.getElementById('sf-task-modal-alert');
@@ -668,6 +679,9 @@ window.sfSaveTask = function(event) {
         date: dateVal,
         notes: notes
     };
+    if (userInput && userInput.value) {
+        payload.user_id = parseInt(userInput.value);
+    }
     if (isEdit) {
         payload.task_id = parseInt(formId);
     }
@@ -840,6 +854,137 @@ function sfGetDragAfterElement(container, y) {
         }
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
+
+// ========================================================
+// Staff Management & Role Assignment (Feature 010)
+// ========================================================
+window.sfStaffRoleFilter = 'all';
+
+window.sfFilterStaff = function() {
+    var searchInput = document.getElementById('sf-staff-search-input');
+    var clearBtn = document.getElementById('sf-staff-search-clear');
+    var term = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+    if (clearBtn) {
+        clearBtn.style.display = term ? 'block' : 'none';
+    }
+
+    var cards = document.querySelectorAll('#sf-staff-grid .sf-staff-card');
+    var visibleCount = 0;
+
+    cards.forEach(function(card) {
+        var name = (card.dataset.name || '').toLowerCase();
+        var email = (card.dataset.email || '').toLowerCase();
+        var role = card.dataset.role || 'staff';
+
+        var matchesSearch = !term || name.indexOf(term) !== -1 || email.indexOf(term) !== -1;
+        var matchesRole = window.sfStaffRoleFilter === 'all' || role === window.sfStaffRoleFilter;
+
+        if (matchesSearch && matchesRole) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    var emptyState = document.getElementById('sf-staff-empty-state');
+    if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+};
+
+window.sfClearStaffSearch = function() {
+    var searchInput = document.getElementById('sf-staff-search-input');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    window.sfFilterStaff();
+};
+
+window.sfSetStaffRoleFilter = function(role, btnEl) {
+    window.sfStaffRoleFilter = role;
+    var pills = document.querySelectorAll('#sf-staff-role-filter-pills .sf-filter-pill');
+    pills.forEach(function(pill) {
+        pill.classList.remove('active');
+    });
+    if (btnEl) {
+        btnEl.classList.add('active');
+    }
+    window.sfFilterStaff();
+};
+
+window.sfAssignTaskToStaff = function(userId, userName) {
+    if (window.sfOpenTaskModal) {
+        window.sfOpenTaskModal(null, userId, userName);
+    }
+};
+
+window.sfChangeUserRole = function(userId, newRole) {
+    var sel = document.getElementById('sf-role-sel-' + userId);
+    var oldRole = sel ? sel.getAttribute('data-prev-role') || (newRole === 'admin' ? 'manager' : (newRole === 'manager' ? 'staff' : 'manager')) : 'staff';
+
+    if (!confirm('Bạn có chắc chắn muốn thay đổi vai trò của thành viên này thành "' + (newRole === 'admin' ? 'Quản trị viên' : (newRole === 'manager' ? 'Quản lý' : 'Nhân viên')) + '"?')) {
+        if (sel) sel.value = sel.getAttribute('data-current-role') || oldRole;
+        return;
+    }
+
+    if (sel) {
+        sel.disabled = true;
+    }
+
+    fetch('/smart_farm/api/user/set_role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: parseInt(userId), role: newRole })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (sel) sel.disabled = false;
+        if (data.success) {
+            if (sel) sel.setAttribute('data-current-role', newRole);
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Cập nhật vai trò thành công!', 'success');
+            } else {
+                alert(data.message || 'Cập nhật vai trò thành công!');
+            }
+
+            var card = document.getElementById('sf-staff-card-' + userId);
+            if (card) {
+                card.setAttribute('data-role', newRole);
+                var badge = card.querySelector('.sf-role-badge');
+                if (badge) {
+                    badge.className = 'sf-role-badge sf-role-badge-' + newRole;
+                    badge.textContent = newRole === 'admin' ? 'Quản trị viên' : (newRole === 'manager' ? 'Quản lý' : 'Nhân viên');
+                }
+                var dot = card.querySelector('.sf-staff-status-dot');
+                if (dot) {
+                    dot.className = 'sf-staff-status-dot ' + (newRole === 'admin' ? 'admin-dot' : (newRole === 'manager' ? 'manager-dot' : 'staff-dot'));
+                }
+            }
+        } else {
+            if (sel) sel.value = sel.getAttribute('data-current-role') || oldRole;
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Không thể cập nhật vai trò', 'error');
+            } else {
+                alert(data.message || 'Không thể cập nhật vai trò');
+            }
+        }
+    })
+    .catch(function(err) {
+        if (sel) {
+            sel.disabled = false;
+            sel.value = sel.getAttribute('data-current-role') || oldRole;
+        }
+        console.error('Error setting role:', err);
+        if (window.sfShowToast) {
+            window.sfShowToast('Lỗi kết nối máy chủ khi cập nhật vai trò!', 'error');
+        } else {
+            alert('Lỗi kết nối máy chủ khi cập nhật vai trò!');
+        }
+    });
+};
 
 // ========================================================
 // Interactive Smart Farm Map JS (Feature 002)

@@ -4660,6 +4660,417 @@ body.sf-dark-mode .sf-ai-input:focus {
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
 }
 
+/* ============================================================
+   STAFF MANAGEMENT & RBAC DIRECTORY STYLES
+   ============================================================ */
+.sf-staff-mgmt-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.sf-staff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sf-staff-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.sf-staff-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.sf-staff-header-stats {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 16px;
+}
+
+.sf-staff-stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sf-ssp-num {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.sf-ssp-label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.sf-staff-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 18px;
+    margin-bottom: 22px;
+}
+
+.sf-staff-search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+    max-width: 420px;
+}
+
+.sf-staff-search-input {
+    width: 100%;
+    padding: 9px 36px 9px 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 13px;
+    background: #f8fafc;
+    color: #0f172a;
+    transition: all 0.2s ease;
+}
+
+.sf-staff-search-input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.sf-staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+}
+
+.sf-staff-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.sf-staff-card:hover {
+    transform: translateY(-2px);
+    border-color: #93c5fd;
+    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.08);
+}
+
+.sf-staff-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sf-staff-avatar-wrap {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.sf-staff-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+}
+
+.sf-staff-status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+.sf-staff-status-dot.admin-dot { background: #eab308; }
+.sf-staff-status-dot.manager-dot { background: #0284c7; }
+.sf-staff-status-dot.staff-dot { background: #16a34a; }
+
+.sf-staff-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.sf-staff-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.sf-staff-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sf-staff-email {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sf-role-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    text-transform: capitalize;
+}
+
+.sf-role-badge-admin {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fef08a;
+}
+
+.sf-role-badge-manager {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.sf-role-badge-staff {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.sf-staff-work-block {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.sf-staff-work-hd {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    margin-bottom: 6px;
+    color: #475569;
+}
+
+.sf-staff-work-val strong {
+    color: #0284c7;
+}
+
+.sf-staff-prog-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.sf-staff-prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0284c7, #10b981);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.sf-staff-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.sf-btn-staff {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sf-btn-staff-assign {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    flex: 1;
+}
+
+.sf-btn-staff-assign:hover {
+    background: #16a34a;
+    color: #ffffff;
+    border-color: #16a34a;
+}
+
+.sf-staff-role-select-wrap {
+    flex: 1;
+}
+
+.sf-staff-role-select {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sf-staff-role-select:focus {
+    outline: none;
+    border-color: #0284c7;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.12);
+}
+
+.sf-staff-role-lock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+}
+
+/* Dark Mode Styles for Staff Management */
+html.sf-dark-mode .sf-staff-mgmt-card,
+body.sf-dark-mode .sf-staff-mgmt-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-header,
+body.sf-dark-mode .sf-staff-header {
+    border-bottom-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-title,
+body.sf-dark-mode .sf-staff-title {
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-header-stats,
+body.sf-dark-mode .sf-staff-header-stats {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-ssp-num,
+body.sf-dark-mode .sf-ssp-num {
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-search-input,
+body.sf-dark-mode .sf-staff-search-input {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-card,
+body.sf-dark-mode .sf-staff-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-card:hover,
+body.sf-dark-mode .sf-staff-card:hover {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.sf-dark-mode .sf-staff-name,
+body.sf-dark-mode .sf-staff-name {
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-work-block,
+body.sf-dark-mode .sf-staff-work-block {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-work-hd,
+body.sf-dark-mode .sf-staff-work-hd {
+    color: #94a3b8 !important;
+}
+
+html.sf-dark-mode .sf-staff-actions,
+body.sf-dark-mode .sf-staff-actions {
+    border-top-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-role-select,
+body.sf-dark-mode .sf-staff-role-select {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-role-lock,
+body.sf-dark-mode .sf-staff-role-lock {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+
 
 
 
