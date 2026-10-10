@@ -30,18 +30,18 @@ Xây dựng mô hình dữ liệu vai trò người dùng trong Odoo, truyền n
 ### Subtask 2: Tối Ưu Navbar Dynamic Visibility & Kiểm Soát Nút Cài Đặt ⚙️
 Bổ sung tab `"Nhân sự"` ngắn gọn trên thanh điều hướng, ẩn/hiện các tab và nút Cài đặt ⚙️ theo từng vai trò.
 
-- [ ] **Bước 1: Xử lý code** `[developer]`
+- [x] **Bước 1: Xử lý code** `[developer]`
   - Cập nhật thanh điều hướng trong `smart_farm/views/dashboard.xml`:
     - Thêm nút tab `"Nhân sự"` kế tiếp `"Kho & Sản phẩm"` (`onclick="sfOpenTab(event, 'tab-staff')"`).
     - Thêm điều kiện QWeb `t-if="user_role in ['admin', 'manager']"` cho tab `"Kho & Sản phẩm"` và `"Nhân sự"` (ẩn đối với `staff`).
     - Thêm điều kiện QWeb `t-if="user_role == 'admin'"` cho nút Cài đặt (⚙️) (ẩn đối với `manager` và `staff`).
     - Đảm bảo 2 icon Chế độ sáng/tối 🌙 và Chuông thông báo 🔔 hiển thị đầy đủ cho cả 3 vai trò.
   - Cập nhật hàm điều hướng tab trong `smart_farm/static/src/js/dashboard.js` để hỗ trợ hiển thị tab `tab-staff`.
-- [ ] **Bước 2: Review diff** `[code-reviewer]`
+- [x] **Bước 2: Review diff** `[code-reviewer]`
   - Kiểm tra diff XML và JS, đối chiếu selector QWeb không xung đột với các thẻ khác.
-- [ ] **Bước 3: Lập trình viên nghiệm thu F5 Odoo** `[developer-verify]`
+- [x] **Bước 3: Lập trình viên nghiệm thu F5 Odoo** `[developer-verify]`
   - F5 Dashboard Odoo, kiểm tra trực quan giao diện Navbar hiển thị đúng số lượng tab và icon theo quyền tài khoản hiện tại.
-- [ ] **Bước 4: Commit** `[git-commit]`
+- [x] **Bước 4: Commit** `[git-commit]`
   - Tạo commit với format: `feat(navbar): subtask 2 - dynamic tabs visibility and settings gear access control`
 
 ---

@@ -504,9 +504,14 @@
                                 <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-map')">
                                     Bản đồ
                                 </button>
-                                <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-inventory')">
-                                    Kho &amp; Sản phẩm
-                                </button>
+                                <t t-if="user_role in ['admin', 'manager']">
+                                    <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-inventory')">
+                                        Kho &amp; Sản phẩm
+                                    </button>
+                                    <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-staff')">
+                                        Nhân sự
+                                    </button>
+                                </t>
                             </nav>
 
                             <!-- Right: Actions & User Profile -->
@@ -615,8 +620,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="sf-dropdown-wrapper">
-                                        <button type="button" class="sf-icon-btn" title="Cài đặt hệ thống" onclick="sfToggleDropdown(event, 'sf-settings-menu')">
+                                    <t t-if="user_role == 'admin'">
+                                        <div class="sf-dropdown-wrapper">
+                                            <button type="button" class="sf-icon-btn" title="Cài đặt hệ thống" onclick="sfToggleDropdown(event, 'sf-settings-menu')">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <circle cx="12" cy="12" r="3"></circle>
                                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -648,7 +654,8 @@
                                             </a>
                                         </div>
                                     </div>
-                                </div>
+                                </t>
+                            </div>
 
                                 <!-- User Profile -->
                                 <div class="sf-dropdown-wrapper">
@@ -1769,65 +1776,72 @@
                         </div>
                     </div>
 
-                    <div id="tab-inventory" class="sf-tab-content" style="display:none;">
-                        <div class="sf-grid2">
-                            <!-- Kho Vật tư -->
-                            <div class="sf-card">
-                                <div class="sf-card-hd">
-                                    <div class="sf-card-title">Kho Vật tư Nông nghiệp</div>
-                                    <span class="badge-demo">Demo</span>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Phân bón NPK 20-20-15</div>
-                                    <div class="sf-sensor-val">250 kg
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:70%;background:#639922;"></div></div>
+                    <t t-if="user_role in ['admin', 'manager']">
+                        <div id="tab-inventory" class="sf-tab-content" style="display:none;">
+                            <div class="sf-grid2">
+                                <!-- Kho Vật tư -->
+                                <div class="sf-card">
+                                    <div class="sf-card-hd">
+                                        <div class="sf-card-title">Kho Vật tư Nông nghiệp</div>
+                                        <span class="badge-demo">Demo</span>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Phân bón NPK 20-20-15</div>
+                                        <div class="sf-sensor-val">250 kg
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:70%;background:#639922;"></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Phân hữu cơ vi sinh</div>
+                                        <div class="sf-sensor-val" style="color:#BA7517;">45 kg
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:20%;background:#BA7517;"></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Hạt giống Cà chua Cherry</div>
+                                        <div class="sf-sensor-val">12 gói
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:50%;background:#185FA5;"></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Thuốc trừ sâu sinh học</div>
+                                        <div class="sf-sensor-val" style="color:#E24B4A;">5 lít
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:10%;background:#E24B4A;"></div></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Phân hữu cơ vi sinh</div>
-                                    <div class="sf-sensor-val" style="color:#BA7517;">45 kg
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:20%;background:#BA7517;"></div></div>
+                                
+                                <!-- Kho Thành phẩm -->
+                                <div class="sf-card">
+                                    <div class="sf-card-hd">
+                                        <div class="sf-card-title">Sản phẩm Thu hoạch</div>
+                                        <span class="badge-demo">Demo</span>
                                     </div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Hạt giống Cà chua Cherry</div>
-                                    <div class="sf-sensor-val">12 gói
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:50%;background:#185FA5;"></div></div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Dưa lưới Huỳnh Long (Loại 1)</div>
+                                        <div class="sf-sensor-val" style="color:#639922;">1,200 kg</div>
                                     </div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Thuốc trừ sâu sinh học</div>
-                                    <div class="sf-sensor-val" style="color:#E24B4A;">5 lít
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:10%;background:#E24B4A;"></div></div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Cà chua Cherry đỏ</div>
+                                        <div class="sf-sensor-val">340 kg</div>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Kho Thành phẩm -->
-                            <div class="sf-card">
-                                <div class="sf-card-hd">
-                                    <div class="sf-card-title">Sản phẩm Thu hoạch</div>
-                                    <span class="badge-demo">Demo</span>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Dưa lưới Huỳnh Long (Loại 1)</div>
-                                    <div class="sf-sensor-val" style="color:#639922;">1,200 kg</div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Cà chua Cherry đỏ</div>
-                                    <div class="sf-sensor-val">340 kg</div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Rau xà lách thuỷ canh</div>
-                                    <div class="sf-sensor-val">150 kg</div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Dâu tây Hàn Quốc</div>
-                                    <div class="sf-sensor-val">25 kg</div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Rau xà lách thuỷ canh</div>
+                                        <div class="sf-sensor-val">150 kg</div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Dâu tây Hàn Quốc</div>
+                                        <div class="sf-sensor-val">25 kg</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Tab: Quản lý Nhân sự (Chỉ dành cho Admin & Manager) -->
+                        <div id="tab-staff" class="sf-tab-content" style="display:none;">
+                            <!-- Nội dung chi tiết của phân hệ Nhân sự sẽ được triển khai ở Subtask 3 -->
+                        </div>
+                    </t>
 
 
                 </div>

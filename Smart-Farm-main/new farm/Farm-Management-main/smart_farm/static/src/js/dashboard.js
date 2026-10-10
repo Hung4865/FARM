@@ -10,6 +10,10 @@ window.sfOpenTab = function(evt, tabName) {
         tablinks[i].classList.remove("active");
     }
     var target = document.getElementById(tabName);
+    if (!target) {
+        tabName = 'tab-overview';
+        target = document.getElementById('tab-overview');
+    }
     if (target) {
         target.style.display = "block";
     }
@@ -28,7 +32,8 @@ window.sfOpenTab = function(evt, tabName) {
         'tab-overview': { title: 'Tổng quan trang trại', showBadge: true },
         'tab-tasks': { title: 'Quản lý công việc', showBadge: false },
         'tab-map': { title: 'Bản đồ nông trại', showBadge: false },
-        'tab-inventory': { title: 'Kho vật tư & Sản phẩm', showBadge: false }
+        'tab-inventory': { title: 'Kho vật tư & Sản phẩm', showBadge: false },
+        'tab-staff': { title: 'Quản lý nhân sự nông trại', showBadge: false }
     };
     var currentInfo = tabInfo[tabName] || { title: 'Tổng quan trang trại', showBadge: false };
     if (pageTitleEl) {
