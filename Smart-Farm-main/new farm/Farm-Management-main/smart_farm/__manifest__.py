@@ -14,6 +14,7 @@
         'views/gps_views.xml',
         'views/weather_views.xml',
         'views/alert_views.xml',
+        'views/login_templates.xml',
     ],
     'installable': True,
     'application': True,
