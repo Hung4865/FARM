@@ -1,7 +1,7 @@
 # Tasks: Giao Diện Đăng Nhập & Đăng Ký Trượt Kép Hiện Đại (Modern Animated Sliding Auth Screen)
 
 **Input**: Kế hoạch từ [`plan.md`](./plan.md) và đặc tả từ [`spec.md`](./spec.md)  
-**Status**: Chờ Xác Nhận Danh Sách Task (Bước 3 của Lifecycle Policy)  
+**Status**: Complete (Hoàn tất 100% 4/4 Subtasks)  
 
 ---
 
@@ -32,7 +32,7 @@
 ---
 
 ### Subtask 4: Hoàn Thiện Luồng Xác Thực Odoo, Thông Báo Lỗi, Responsive Mobile & Nghiệm Thu Tổng Thể
-- [ ] **T013** `[odoo-fullstack-dev]` Tinh chỉnh form POST xác thực Odoo (CSRF token, tự động redirect vào `/smart_farm/dashboard`), thiết kế hộp thông báo lỗi đăng nhập đẹp mắt dạng card thông báo, tối ưu hiển thị responsive trên màn hình điện thoại/tablet nhỏ, và cập nhật tài liệu `smart_farm/docs/CHANGED.md`.
-- [ ] **T014** `[odoo-code-reviewer]` Soi diff toàn bộ các file, kiểm tra an toàn dữ liệu, tính toàn vẹn của luồng đăng nhập và tài liệu dự án.
-- [ ] **T015** Lập trình viên nghiệm thu (thử nhập sai mật khẩu để kiểm tra thông báo lỗi; thử đăng nhập đúng tài khoản `admin123@gmail.com` / `abc123` để xác nhận chuyển hướng mượt mà vào Dashboard nông trại), xác nhận 0 lỗi.
-- [ ] **T016** Commit: `feat(smart_farm): subtask 4 - auth validation flow, error handling and responsive polish`
+- [x] **T013** `[odoo-fullstack-dev]` Tinh chỉnh form POST xác thực Odoo (CSRF token, tự động redirect vào `/smart_farm/dashboard`), thiết kế hộp thông báo lỗi đăng nhập đẹp mắt dạng card thông báo, tối ưu hiển thị responsive trên màn hình điện thoại/tablet nhỏ, và cập nhật tài liệu `smart_farm/docs/CHANGED.md`.
+- [x] **T014** `[odoo-code-reviewer]` Soi diff toàn bộ các file, kiểm tra an toàn dữ liệu, tính toàn vẹn của luồng đăng nhập và tài liệu dự án.
+- [x] **T015** Lập trình viên nghiệm thu (thử nhập sai mật khẩu để kiểm tra thông báo lỗi; thử đăng nhập đúng tài khoản `admin123@gmail.com` / `abc123` để xác nhận chuyển hướng mượt mà vào Dashboard nông trại), xác nhận 0 lỗi.
+- [x] **T016** Commit: `feat(smart_farm): subtask 4 - auth validation flow, error handling and responsive polish`

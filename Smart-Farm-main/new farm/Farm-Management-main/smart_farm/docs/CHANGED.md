@@ -4,7 +4,25 @@
 
 ---
 
-## [v0.8.0] – 2026-10-10 (Hiện tại)
+## [v0.9.0] – 2026-10-10 (Hiện tại)
+
+### 🌿 Giao Diện Đăng Nhập & Đăng Ký Trượt Kép Hiện Đại (Feature 009 - Modern Sliding Auth Screen)
+1. **Tái Thiết Kế Toàn Diện Trang Xác Thực `/web/login`**:
+   - Thay thế hoàn toàn giao diện mặc định đơn điệu của Odoo 18 bằng thiết kế chuẩn theo 2 ảnh mẫu tham chiếu (High-Contrast Modern Eco Design).
+   - Nền toàn màn hình tích hợp các mảng màu hình học nghệ thuật (khối ruy băng đỏ cam góc trên phải, vầng sáng tròn vàng hổ phách góc dưới trái).
+2. **Cơ Chế Chuyển Động Trượt Kép (Double Sliding Overlay Animation 0.6s)**:
+   - Xây dựng lớp panel overlay xanh ngọc (`#10b981` đến `#0d9488`) có họa tiết khối kim cương chìm sang trọng, tự động trượt hoán đổi vị trí giữa Đăng nhập (Sign In) và Đăng ký (Sign Up) khi người dùng nhấp các nút "SIGN IN" / "SIGN UP".
+   - Hiệu ứng thị sai Parallax mượt mà 0.6s với đường cong gia tốc `cubic-bezier`, 0 giật lag, 0 layout shifting.
+3. **Tương Thích Chuẩn Xác Thực Odoo 18 & Bảo Mật CSRF**:
+   - Tích hợp chuẩn xác phương thức POST `/web/login`, tự động nạp `csrf_token()`, giữ nguyên tham số `redirect` (tự chuyển hướng thẳng vào `/smart_farm/dashboard` sau khi đăng nhập thành công).
+   - Hiển thị hộp thông báo lỗi (Error Alert) và thông báo hệ thống (Message Alert) tinh tế ngay trên form.
+   - Hỗ trợ form Đăng ký (Sign Up Demo) với phản hồi Toast/Alert chuyển trang tự động.
+4. **Tối Ưu Responsive Đa Thiết Bị**:
+   - Tự động co dãn hoàn hảo trên Desktop (kích thước cố định tỉ lệ vàng 860px x 520px) và Mobile/Tablet (< 768px dạng tab xếp tầng cảm ứng tiện lợi).
+
+---
+
+## [v0.8.0] – 2026-10-10
 
 ### ⛅ Giám Sát & Dự Báo Thời Tiết Nông Nghiệp Thông Minh Hà Nội (Feature 005)
 1. **Dữ Liệu Thực Tế Hà Nội & Chuẩn Mã Thời Tiết WMO**:

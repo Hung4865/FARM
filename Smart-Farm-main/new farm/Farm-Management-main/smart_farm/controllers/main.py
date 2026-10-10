@@ -1,8 +1,24 @@
 from odoo import http, fields
 from odoo.http import request
+from odoo.addons.web.controllers.home import Home
 from datetime import datetime
 import json
 import requests as req_lib
+
+
+class SmartFarmHome(Home):
+    """Ghi đè điều hướng đăng nhập: luôn ưu tiên mở Dashboard Smart Farm thay vì Odoo backend Discuss"""
+
+    def _login_redirect(self, uid, redirect=None):
+        if not redirect or redirect.startswith('/odoo') or redirect.startswith('/web'):
+            redirect = '/smart_farm/dashboard'
+        return super()._login_redirect(uid, redirect=redirect)
+
+    @http.route('/', type='http', auth="none")
+    def index(self, s_action=None, db=None, **kw):
+        if request.db and request.session.uid:
+            return request.redirect('/smart_farm/dashboard')
+        return request.redirect('/web/login?redirect=/smart_farm/dashboard')
 
 
 def map_weather_code(code):

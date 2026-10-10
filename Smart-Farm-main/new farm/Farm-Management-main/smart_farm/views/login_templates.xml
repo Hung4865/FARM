@@ -68,7 +68,7 @@
                     <form class="sf-auth-form oe_login_form" role="form" t-attf-action="/web/login" method="post" onsubmit="this.action = '/web/login' + location.hash">
                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                         <input type="hidden" name="type" value="password"/>
-                        <input type="hidden" name="redirect" t-att-value="redirect or '/smart_farm/dashboard'"/>
+                        <input type="hidden" name="redirect" t-att-value="'/smart_farm/dashboard' if (not redirect or redirect in ['/odoo', '/odoo/', '/web', '/web/', '/odoo/discuss']) else redirect"/>
 
                         <div class="sf-brand-header">
                             <div class="sf-brand-badge">
