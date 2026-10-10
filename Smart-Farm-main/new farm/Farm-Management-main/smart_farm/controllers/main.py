@@ -20,6 +20,64 @@ class SmartFarmHome(Home):
             return request.redirect('/smart_farm/dashboard')
         return request.redirect('/web/login?redirect=/smart_farm/dashboard')
 
+    @http.route('/smart_farm/api/auth/signup', type='json', auth="public", methods=['POST'], csrf=False)
+    def api_signup(self, name=None, email=None, password=None, **kw):
+        """API tạo tài khoản người dùng thực tế trên hệ thống Smart Farm"""
+        if not name or not name.strip():
+            return {'success': False, 'error': 'Vui lòng nhập họ và tên của bạn!'}
+        if not email or not email.strip():
+            return {'success': False, 'error': 'Vui lòng nhập địa chỉ email hợp lệ!'}
+        if not password or len(password) < 6:
+            return {'success': False, 'error': 'Mật khẩu phải có độ dài tối thiểu 6 ký tự!'}
+
+        name = name.strip()
+        email = email.strip().lower()
+
+        # Kiểm tra trùng lặp email / login
+        existing_user = request.env['res.users'].sudo().search([
+            '|', ('login', '=', email), ('email', '=', email)
+        ], limit=1)
+        if existing_user:
+            return {
+                'success': False,
+                'error': f'Tài khoản với email "{email}" đã tồn tại trên hệ thống. Vui lòng đăng nhập hoặc dùng email khác!'
+            }
+
+        try:
+            g_sf_user = request.env.ref('smart_farm.group_smart_farm_user', raise_if_not_found=False)
+            g_user = request.env.ref('base.group_user', raise_if_not_found=False)
+
+            groups = []
+            if g_sf_user:
+                groups.append(g_sf_user.id)
+            if g_user:
+                groups.append(g_user.id)
+
+            user_vals = {
+                'name': name,
+                'login': email,
+                'email': email,
+                'password': password,
+                'smart_farm_role': 'staff',  # Mặc định tài khoản tự đăng ký là Nhân viên
+            }
+            if groups:
+                user_vals['groups_id'] = [(6, 0, groups)]
+
+            new_user = request.env['res.users'].sudo().with_context(no_reset_password=True).create(user_vals)
+            request.env.cr.commit()
+
+            return {
+                'success': True,
+                'message': 'Đăng ký tài khoản thành công! Đang tự động đăng nhập...',
+                'user_id': new_user.id,
+                'email': email,
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Không thể tạo tài khoản: {str(e)}'
+            }
+
 
 def get_user_farm_role(user):
     """Xác định vai trò của người dùng trên hệ thống Smart Farm (admin, manager, staff)"""

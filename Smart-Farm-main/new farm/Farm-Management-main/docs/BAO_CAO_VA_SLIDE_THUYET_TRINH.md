@@ -842,3 +842,4 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 | 14 | `POST` | `/smart_farm/api/task/delete` | `auth='user'` (Admin/Manager) | Xóa vĩnh viễn nhiệm vụ khỏi bảng Kanban |
 | 15 | `POST` | `/smart_farm/api/task/reorder` | `auth='user'` (Admin/Manager) | Lưu thứ tự kéo thả sequence của các thẻ công việc |
 | 16 | `GET/POST` | `/web/login & /web/signup` | `auth='public'` | Cổng đăng nhập & đăng ký kép chuyển động, tự động redirect sang `/smart_farm/dashboard` |
+| 17 | `POST` | `/smart_farm/api/auth/signup` | `auth='public'` | API đăng ký tài khoản nhân sự mới (gán nhóm internal user & role staff, mã hóa mật khẩu chuẩn PBKDF2) |

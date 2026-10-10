@@ -24,7 +24,7 @@
             <div class="sf-auth-container" id="sf-auth-container">
                 <!-- ==================== SIGN UP FORM (RIGHT ON ACTIVE) ==================== -->
                 <div class="sf-form-container sf-sign-up-container">
-                    <form action="#" method="post" class="sf-auth-form" onsubmit="event.preventDefault(); sfHandleSignUpDemo();">
+                    <form action="#" method="post" class="sf-auth-form" id="sf-signup-form" onsubmit="event.preventDefault(); sfHandleSignUp();">
                         <div class="sf-mobile-brand d-md-none">
                             <span class="sf-brand-icon">🌱</span>
                             <span class="sf-brand-text">Smart Farm</span>
