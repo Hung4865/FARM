@@ -16,6 +16,12 @@
         'views/alert_views.xml',
         'views/login_templates.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'smart_farm/static/src/css/login.css',
+            'smart_farm/static/src/js/login.js',
+        ],
+    },
     'installable': True,
     'application': True,
     'license': 'LGPL-3',

@@ -24,10 +24,10 @@
 ---
 
 ### Subtask 3: JavaScript Kích Hoạt Chuyển Đổi Trạng Thái Trượt & Asset Bundle
-- [ ] **T009** `[odoo-frontend-developer]` Viết mã JavaScript trong `smart_farm/static/src/js/login.js` xử lý sự kiện click các nút "SIGN UP" và "SIGN IN" để bật/tắt class `.right-panel-active` trên container; đăng ký asset CSS và JS vào bundle `web.assets_frontend` trong `__manifest__.py`.
-- [ ] **T010** `[odoo-code-reviewer]` Soi diff `login.js` và `__manifest__.py`, kiểm tra logic event listener, DOM readiness, tính cô lập tránh conflict và cấu hình asset bundle.
-- [ ] **T011** Lập trình viên nghiệm thu (F5 trang `/web/login`, bấm thử các nút chuyển đổi "SIGN UP" và "SIGN IN"), xác nhận hiệu ứng trượt hoán đổi 2 trạng thái hoạt động mượt mà 0.6s đúng như mô tả.
-- [ ] **T012** Commit: `feat(smart_farm): subtask 3 - implement sliding interaction javascript and bundle assets`
+- [x] **T009** `[odoo-frontend-developer]` Viết mã JavaScript trong `smart_farm/static/src/js/login.js` xử lý sự kiện click các nút "SIGN UP" và "SIGN IN" để bật/tắt class `.right-panel-active` trên container; đăng ký asset CSS và JS vào bundle `web.assets_frontend` trong `__manifest__.py`.
+- [x] **T010** `[odoo-code-reviewer]` Soi diff `login.js` và `__manifest__.py`, kiểm tra logic event listener, DOM readiness, tính cô lập tránh conflict và cấu hình asset bundle.
+- [x] **T011** Lập trình viên nghiệm thu (F5 trang `/web/login`, bấm thử các nút chuyển đổi "SIGN UP" và "SIGN IN"), xác nhận hiệu ứng trượt hoán đổi 2 trạng thái hoạt động mượt mà 0.6s đúng như mô tả.
+- [x] **T012** Commit: `feat(smart_farm): subtask 3 - implement sliding interaction javascript and bundle assets`
 
 ---
 
