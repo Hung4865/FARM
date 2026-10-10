@@ -37,7 +37,7 @@
                         } catch(e) {}
                     })();
                 ]]></script>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=151"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=200"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
@@ -475,6 +475,527 @@
                         padding: 16px 24px;
                         border-top: 1px solid #e2e8f0;
                         background: #f8fafc;
+                    }
+
+                    /* ========================================================
+                       FEATURE 010: CRITICAL INLINED STAFF MANAGEMENT STYLES
+                       ======================================================== */
+                    .sf-staff-mgmt-card {
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 20px;
+                        padding: 26px;
+                        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+                        margin-bottom: 24px;
+                    }
+
+                    .sf-staff-hero {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                        padding-bottom: 24px;
+                        border-bottom: 1px solid #f1f5f9;
+                    }
+
+                    .sf-staff-hero-left {
+                        max-width: 520px;
+                    }
+
+                    .sf-staff-hero-title {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        font-size: 21px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        margin: 0 0 6px 0;
+                        letter-spacing: -0.3px;
+                    }
+
+                    .sf-staff-hero-icon {
+                        width: 42px;
+                        height: 42px;
+                        border-radius: 12px;
+                        background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+                        color: #0284c7;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+                    }
+
+                    .sf-staff-hero-desc {
+                        font-size: 13.5px;
+                        color: #64748b;
+                        line-height: 1.5;
+                    }
+
+                    .sf-staff-kpi-grid {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        flex-wrap: wrap;
+                    }
+
+                    .sf-staff-kpi-card {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 10px 18px;
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 14px;
+                        transition: all 0.2s ease;
+                    }
+
+                    .sf-staff-kpi-card:hover {
+                        background: #ffffff;
+                        border-color: #cbd5e1;
+                        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+                    }
+
+                    .sf-staff-kpi-icon {
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 18px;
+                    }
+
+                    .sf-staff-kpi-meta {
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .sf-staff-kpi-num {
+                        font-size: 19px;
+                        font-weight: 800;
+                        line-height: 1.1;
+                        color: #0f172a;
+                    }
+
+                    .sf-staff-kpi-label {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #64748b;
+                        margin-top: 2px;
+                    }
+
+                    .sf-staff-toolbar {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        gap: 16px;
+                        margin: 22px 0 24px 0;
+                    }
+
+                    .sf-staff-search-wrapper {
+                        position: relative;
+                        flex: 1;
+                        min-width: 280px;
+                        max-width: 440px;
+                    }
+
+                    .sf-staff-search-input {
+                        width: 100%;
+                        padding: 10px 38px 10px 40px;
+                        border: 1.5px solid #cbd5e1;
+                        border-radius: 12px;
+                        font-size: 13px;
+                        background: #f8fafc;
+                        color: #0f172a;
+                        transition: all 0.2s ease;
+                    }
+
+                    .sf-staff-search-input:focus {
+                        outline: none;
+                        background: #ffffff;
+                        border-color: #0284c7;
+                        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+                    }
+
+                    .sf-staff-search-icon {
+                        position: absolute;
+                        left: 14px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #94a3b8;
+                        pointer-events: none;
+                    }
+
+                    .sf-staff-search-clear {
+                        position: absolute;
+                        right: 12px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background: #e2e8f0;
+                        border: none;
+                        border-radius: 50%;
+                        width: 22px;
+                        height: 22px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 13px;
+                        color: #475569;
+                        cursor: pointer;
+                    }
+
+                    .sf-staff-filter-pills {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        background: #f1f5f9;
+                        padding: 4px;
+                        border-radius: 12px;
+                        border: 1px solid #e2e8f0;
+                    }
+
+                    .sf-staff-pill {
+                        padding: 6px 14px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-radius: 8px;
+                        border: none;
+                        background: transparent;
+                        color: #64748b;
+                        cursor: pointer;
+                        transition: all 0.18s ease;
+                    }
+
+                    .sf-staff-pill:hover {
+                        color: #0f172a;
+                    }
+
+                    .sf-staff-pill.active {
+                        background: #ffffff;
+                        color: #0284c7;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+                    }
+
+                    .sf-staff-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+                        gap: 20px;
+                    }
+
+                    .sf-staff-card {
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 16px;
+                        padding: 20px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                        position: relative;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+                    }
+
+                    .sf-staff-card:hover {
+                        transform: translateY(-3px);
+                        border-color: #38bdf8;
+                        box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.12);
+                    }
+
+                    .sf-staff-card-top {
+                        display: flex;
+                        align-items: center;
+                        gap: 14px;
+                    }
+
+                    .sf-staff-avatar-wrap {
+                        position: relative;
+                        width: 52px;
+                        height: 52px;
+                        min-width: 52px;
+                        flex-shrink: 0;
+                    }
+
+                    .sf-staff-avatar {
+                        width: 52px;
+                        height: 52px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 2px solid #e2e8f0;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+                        display: block;
+                    }
+
+                    .sf-staff-status-dot {
+                        position: absolute;
+                        bottom: 0;
+                        right: 0;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        border: 2.5px solid #ffffff;
+                    }
+
+                    .sf-staff-status-dot.admin-dot { background: #f59e0b; }
+                    .sf-staff-status-dot.manager-dot { background: #0284c7; }
+                    .sf-staff-status-dot.staff-dot { background: #10b981; }
+
+                    .sf-staff-meta {
+                        flex: 1;
+                        min-width: 0;
+                    }
+
+                    .sf-staff-name-row {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 8px;
+                    }
+
+                    .sf-staff-name {
+                        font-size: 15px;
+                        font-weight: 700;
+                        color: #0f172a;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .sf-role-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 4px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        padding: 3px 9px;
+                        border-radius: 20px;
+                        flex-shrink: 0;
+                    }
+
+                    .sf-role-badge-admin {
+                        background: #fef3c7;
+                        color: #92400e;
+                        border: 1px solid #fde68a;
+                    }
+
+                    .sf-role-badge-manager {
+                        background: #e0f2fe;
+                        color: #0369a1;
+                        border: 1px solid #bae6fd;
+                    }
+
+                    .sf-role-badge-staff {
+                        background: #dcfce7;
+                        color: #15803d;
+                        border: 1px solid #bbf7d0;
+                    }
+
+                    .sf-staff-email {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        font-size: 12px;
+                        color: #64748b;
+                        margin-top: 4px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .sf-staff-work-block {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 12px;
+                        padding: 12px 14px;
+                    }
+
+                    .sf-staff-work-hd {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: 12px;
+                        color: #475569;
+                        margin-bottom: 8px;
+                    }
+
+                    .sf-staff-work-val strong {
+                        color: #0284c7;
+                    }
+
+                    .sf-staff-prog-bar {
+                        height: 6px;
+                        background: #e2e8f0;
+                        border-radius: 6px;
+                        overflow: hidden;
+                    }
+
+                    .sf-staff-prog-fill {
+                        height: 100%;
+                        background: linear-gradient(90deg, #0284c7, #10b981);
+                        border-radius: 6px;
+                        transition: width 0.3s ease;
+                    }
+
+                    .sf-staff-actions {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-top: auto;
+                        padding-top: 12px;
+                        border-top: 1px solid #f1f5f9;
+                    }
+
+                    .sf-btn-staff {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        padding: 8px 14px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-radius: 10px;
+                        border: none;
+                        cursor: pointer;
+                        transition: all 0.18s ease;
+                    }
+
+                    .sf-btn-staff-assign {
+                        background: #f0fdf4;
+                        color: #15803d;
+                        border: 1px solid #bbf7d0;
+                        flex: 1;
+                    }
+
+                    .sf-btn-staff-assign:hover {
+                        background: #16a34a;
+                        color: #ffffff;
+                        border-color: #16a34a;
+                        box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2);
+                    }
+
+                    .sf-staff-role-select-wrap {
+                        flex: 1;
+                    }
+
+                    .sf-staff-role-select {
+                        width: 100%;
+                        padding: 7px 10px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border: 1.5px solid #cbd5e1;
+                        border-radius: 10px;
+                        background: #ffffff;
+                        color: #334155;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                    }
+
+                    .sf-staff-role-select:focus {
+                        outline: none;
+                        border-color: #0284c7;
+                        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.12);
+                    }
+
+                    .sf-staff-role-lock {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        flex: 1;
+                        padding: 7px 10px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        background: #f1f5f9;
+                        color: #64748b;
+                        border-radius: 10px;
+                        border: 1px dashed #cbd5e1;
+                    }
+
+                    /* Dark mode for Staff Management */
+                    html.sf-dark-mode .sf-staff-mgmt-card,
+                    body.sf-dark-mode .sf-staff-mgmt-card {
+                        background: #1e293b !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-hero,
+                    body.sf-dark-mode .sf-staff-hero {
+                        border-bottom-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-hero-title,
+                    body.sf-dark-mode .sf-staff-hero-title,
+                    html.sf-dark-mode .sf-staff-kpi-num,
+                    body.sf-dark-mode .sf-staff-kpi-num {
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-kpi-card,
+                    body.sf-dark-mode .sf-staff-kpi-card {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-search-input,
+                    body.sf-dark-mode .sf-staff-search-input {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-filter-pills,
+                    body.sf-dark-mode .sf-staff-filter-pills {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-pill.active,
+                    body.sf-dark-mode .sf-staff-pill.active {
+                        background: #1e293b !important;
+                        color: #38bdf8 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-card,
+                    body.sf-dark-mode .sf-staff-card {
+                        background: #1e293b !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-card:hover,
+                    body.sf-dark-mode .sf-staff-card:hover {
+                        border-color: #38bdf8 !important;
+                        box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.4) !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-name,
+                    body.sf-dark-mode .sf-staff-name {
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-work-block,
+                    body.sf-dark-mode .sf-staff-work-block {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-actions,
+                    body.sf-dark-mode .sf-staff-actions {
+                        border-top-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-role-select,
+                    body.sf-dark-mode .sf-staff-role-select {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-role-lock,
+                    body.sf-dark-mode .sf-staff-role-lock {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                        color: #94a3b8 !important;
                     }
                 ]]></style>
             </head>
@@ -1869,61 +2390,82 @@
 
                         <!-- Tab: Quản lý Nhân sự (Chỉ dành cho Admin & Manager) -->
                         <div id="tab-staff" class="sf-tab-content" style="display:none;">
-                            <div class="sf-card sf-staff-mgmt-card">
-                                <!-- Header Toolbar -->
-                                <div class="sf-staff-header">
-                                    <div class="sf-staff-header-left">
-                                        <h2 class="sf-staff-title">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#0284c7;">
-                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                                <circle cx="9" cy="7" r="4"></circle>
-                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                            </svg>
+                            <div class="sf-card sf-staff-mgmt-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; padding:26px; box-shadow:0 4px 20px -2px rgba(15,23,42,0.05); margin-bottom:24px;">
+                                <!-- Hero Header & Stats -->
+                                <div class="sf-staff-hero" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; padding-bottom:22px; border-bottom:1px solid #f1f5f9;">
+                                    <div class="sf-staff-hero-left" style="max-width:540px;">
+                                        <h2 class="sf-staff-hero-title" style="display:flex; align-items:center; gap:12px; font-size:20px; font-weight:800; color:#0f172a; margin:0 0 6px 0;">
+                                            <span class="sf-staff-hero-icon" style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #e0f2fe, #bae6fd); color:#0284c7; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(2,132,199,0.15);">
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="9" cy="7" r="4"></circle>
+                                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                                </svg>
+                                            </span>
                                             Đội ngũ &amp; Quản lý nhân sự nông trại
                                         </h2>
-                                        <div class="sf-staff-desc">
-                                            Theo dõi danh sách thành viên nông trường, phân công nhiệm vụ sản xuất và thiết lập vai trò tài khoản.
+                                        <div class="sf-staff-hero-desc" style="font-size:13px; color:#64748b; line-height:1.5;">
+                                            Theo dõi danh sách thành viên nông trường, phân công nhiệm vụ sản xuất và thiết lập vai trò tài khoản theo phân quyền đa tầng.
                                         </div>
                                     </div>
-                                    <div class="sf-staff-header-stats">
-                                        <div class="sf-staff-stat-pill">
-                                            <span class="sf-ssp-num"><t t-esc="staff_count"/></span>
-                                            <span class="sf-ssp-label">Tổng nhân sự</span>
+
+                                    <!-- 3 KPI Cards -->
+                                    <div class="sf-staff-kpi-grid" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                        <div class="sf-staff-kpi-card" style="display:flex; align-items:center; gap:12px; padding:10px 18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px;">
+                                            <div class="sf-staff-kpi-icon" style="width:38px; height:38px; border-radius:10px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                👥
+                                            </div>
+                                            <div class="sf-staff-kpi-meta" style="display:flex; flex-direction:column;">
+                                                <span class="sf-staff-kpi-num" style="font-size:19px; font-weight:800; line-height:1.1; color:#0f172a;"><t t-esc="staff_count"/></span>
+                                                <span class="sf-staff-kpi-label" style="font-size:11px; font-weight:600; color:#64748b; margin-top:2px;">Tổng nhân sự</span>
+                                            </div>
                                         </div>
-                                        <div class="sf-staff-stat-pill" style="border-left: 1px solid #e2e8f0; padding-left: 14px;">
-                                            <span class="sf-ssp-num" style="color:#0284c7;"><t t-esc="manager_count"/></span>
-                                            <span class="sf-ssp-label">Quản lý</span>
+
+                                        <div class="sf-staff-kpi-card" style="display:flex; align-items:center; gap:12px; padding:10px 18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px;">
+                                            <div class="sf-staff-kpi-icon" style="width:38px; height:38px; border-radius:10px; background:#f0fdf4; color:#16a34a; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                🛡️
+                                            </div>
+                                            <div class="sf-staff-kpi-meta" style="display:flex; flex-direction:column;">
+                                                <span class="sf-staff-kpi-num" style="font-size:19px; font-weight:800; line-height:1.1; color:#16a34a;"><t t-esc="manager_count"/></span>
+                                                <span class="sf-staff-kpi-label" style="font-size:11px; font-weight:600; color:#64748b; margin-top:2px;">Ban Quản lý</span>
+                                            </div>
                                         </div>
-                                        <div class="sf-staff-stat-pill" style="border-left: 1px solid #e2e8f0; padding-left: 14px;">
-                                            <span class="sf-ssp-num" style="color:#16a34a;"><t t-esc="employee_count"/></span>
-                                            <span class="sf-ssp-label">Nhân viên</span>
+
+                                        <div class="sf-staff-kpi-card" style="display:flex; align-items:center; gap:12px; padding:10px 18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px;">
+                                            <div class="sf-staff-kpi-icon" style="width:38px; height:38px; border-radius:10px; background:#fef9c3; color:#ca8a04; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                🌾
+                                            </div>
+                                            <div class="sf-staff-kpi-meta" style="display:flex; flex-direction:column;">
+                                                <span class="sf-staff-kpi-num" style="font-size:19px; font-weight:800; line-height:1.1; color:#ca8a04;"><t t-esc="employee_count"/></span>
+                                                <span class="sf-staff-kpi-label" style="font-size:11px; font-weight:600; color:#64748b; margin-top:2px;">Nhân viên</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Filter Toolbar -->
-                                <div class="sf-staff-toolbar">
-                                    <div class="sf-staff-search-wrapper">
-                                        <svg class="sf-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <div class="sf-staff-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin:22px 0 24px 0;">
+                                    <div class="sf-staff-search-wrapper" style="position:relative; flex:1; min-width:280px; max-width:440px;">
+                                        <svg class="sf-staff-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;">
                                             <circle cx="11" cy="11" r="8"></circle>
                                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                         </svg>
-                                        <input type="text" id="sf-staff-search-input" class="sf-staff-search-input" placeholder="Tìm kiếm nhân viên theo tên, email..." oninput="sfFilterStaff()"/>
-                                        <button type="button" id="sf-staff-search-clear" class="sf-search-clear" onclick="sfClearStaffSearch()" style="display:none;" title="Xóa tìm kiếm">×</button>
+                                        <input type="text" id="sf-staff-search-input" class="sf-staff-search-input" placeholder="Tìm kiếm nhân viên theo tên, email..." oninput="sfFilterStaff()" style="width:100%; padding:10px 38px 10px 40px; border:1.5px solid #cbd5e1; border-radius:12px; font-size:13px; background:#f8fafc; color:#0f172a;"/>
+                                        <button type="button" id="sf-staff-search-clear" class="sf-staff-search-clear" onclick="sfClearStaffSearch()" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); background:#e2e8f0; border:none; border-radius:50%; width:22px; height:22px; align-items:center; justify-content:center; font-size:13px; color:#475569; cursor:pointer;" title="Xóa tìm kiếm">×</button>
                                     </div>
 
                                     <div class="sf-staff-filter-group">
-                                        <div class="sf-filter-pills" id="sf-staff-role-filter-pills">
-                                            <button type="button" class="sf-filter-pill active" data-role="all" onclick="sfSetStaffRoleFilter('all', this)">Tất cả (<t t-esc="staff_count"/>)</button>
-                                            <button type="button" class="sf-filter-pill" data-role="manager" onclick="sfSetStaffRoleFilter('manager', this)">Quản lý (<t t-esc="manager_count"/>)</button>
-                                            <button type="button" class="sf-filter-pill" data-role="staff" onclick="sfSetStaffRoleFilter('staff', this)">Nhân viên (<t t-esc="employee_count"/>)</button>
+                                        <div class="sf-staff-filter-pills" id="sf-staff-role-filter-pills" style="display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; padding:4px; border-radius:12px; border:1px solid #e2e8f0;">
+                                            <button type="button" class="sf-staff-pill active" data-role="all" onclick="sfSetStaffRoleFilter('all', this)" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; border:none; cursor:pointer;">Tất cả (<t t-esc="staff_count"/>)</button>
+                                            <button type="button" class="sf-staff-pill" data-role="manager" onclick="sfSetStaffRoleFilter('manager', this)" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; border:none; cursor:pointer;">Quản lý (<t t-esc="manager_count"/>)</button>
+                                            <button type="button" class="sf-staff-pill" data-role="staff" onclick="sfSetStaffRoleFilter('staff', this)" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; border:none; cursor:pointer;">Nhân viên (<t t-esc="employee_count"/>)</button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Staff Grid -->
-                                <div class="sf-staff-grid" id="sf-staff-grid">
+                                <div class="sf-staff-grid" id="sf-staff-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:20px;">
                                     <t t-if="staff_members">
                                         <t t-foreach="staff_members" t-as="m">
                                             <div class="sf-staff-card"
@@ -1931,24 +2473,30 @@
                                                  t-att-data-user-id="m['id']"
                                                  t-att-data-name="m['name']"
                                                  t-att-data-email="m['email']"
-                                                 t-att-data-role="m['role']">
+                                                 t-att-data-role="m['role']"
+                                                 style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.03); position:relative;">
                                                 
-                                                <div class="sf-staff-card-top">
-                                                    <div class="sf-staff-avatar-wrap">
+                                                <div class="sf-staff-card-top" style="display:flex; align-items:center; gap:14px;">
+                                                    <div class="sf-staff-avatar-wrap" style="position:relative; width:52px; height:52px; min-width:52px; flex-shrink:0;">
                                                         <img t-attf-src="/web/image?model=res.users&amp;id=#{m['id']}&amp;field=avatar_128"
                                                              class="sf-staff-avatar"
                                                              alt="Avatar"
+                                                             style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; display:block;"
                                                              t-attf-onerror="'this.src=\'https://ui-avatars.com/api/?name=' + m['name'] + '&amp;background=0284c7&amp;color=fff\''"/>
-                                                        <span t-attf-class="sf-staff-status-dot #{'admin-dot' if m['role'] == 'admin' else ('manager-dot' if m['role'] == 'manager' else 'staff-dot')}"></span>
+                                                        <span t-attf-class="sf-staff-status-dot #{'admin-dot' if m['role'] == 'admin' else ('manager-dot' if m['role'] == 'manager' else 'staff-dot')}"
+                                                              style="position:absolute; bottom:0; right:0; width:14px; height:14px; border-radius:50%; border:2.5px solid #ffffff;"></span>
                                                     </div>
-                                                    <div class="sf-staff-meta">
-                                                        <div class="sf-staff-name-row">
-                                                            <div class="sf-staff-name" t-att-title="m['name']"><t t-esc="m['name']"/></div>
-                                                            <span t-attf-class="sf-role-badge sf-role-badge-#{m['role']}">
+                                                    <div class="sf-staff-meta" style="flex:1; min-width:0;">
+                                                        <div class="sf-staff-name-row" style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                                            <div class="sf-staff-name" t-att-title="m['name']" style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><t t-esc="m['name']"/></div>
+                                                            <span t-attf-class="sf-role-badge sf-role-badge-#{m['role']}" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; flex-shrink:0;">
+                                                                <t t-if="m['role'] == 'admin'">👑 </t>
+                                                                <t t-elif="m['role'] == 'manager'">🛡️ </t>
+                                                                <t t-else="">🌾 </t>
                                                                 <t t-esc="m['role_name']"/>
                                                             </span>
                                                         </div>
-                                                        <div class="sf-staff-email" t-att-title="m['email']">
+                                                        <div class="sf-staff-email" t-att-title="m['email']" style="display:flex; align-items:center; gap:6px; font-size:12px; color:#64748b; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                                                 <polyline points="22,6 12,13 2,6"></polyline>
@@ -1959,26 +2507,27 @@
                                                 </div>
 
                                                 <!-- Work Progress Info -->
-                                                <div class="sf-staff-work-block">
-                                                    <div class="sf-staff-work-hd">
+                                                <div class="sf-staff-work-block" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px;">
+                                                    <div class="sf-staff-work-hd" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#475569; margin-bottom:8px;">
                                                         <span class="sf-staff-work-label">Nhiệm vụ nông trại</span>
                                                         <span class="sf-staff-work-val">
-                                                            <strong><t t-esc="m['task_done_count']"/></strong>/<t t-esc="m['task_count']"/> hoàn thành
+                                                            <strong style="color:#0284c7;"><t t-esc="m['task_done_count']"/></strong>/<t t-esc="m['task_count']"/> hoàn thành
                                                         </span>
                                                     </div>
-                                                    <div class="sf-staff-prog-bar">
-                                                        <div class="sf-staff-prog-fill" t-attf-style="width: #{m['task_progress']}%;"></div>
+                                                    <div class="sf-staff-prog-bar" style="height:6px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                                                        <div class="sf-staff-prog-fill" t-attf-style="width: #{m['task_progress']}%; height:100%; background:linear-gradient(90deg, #0284c7, #10b981); border-radius:6px;"></div>
                                                     </div>
                                                 </div>
 
                                                 <!-- Action Buttons Row -->
-                                                <div class="sf-staff-actions">
+                                                <div class="sf-staff-actions" style="display:flex; align-items:center; gap:10px; margin-top:auto; padding-top:12px; border-top:1px solid #f1f5f9;">
                                                     <!-- Giao việc (Available for Admin & Manager) -->
                                                     <button type="button"
                                                             class="sf-btn-staff sf-btn-staff-assign"
                                                             t-att-onclick="'sfAssignTaskToStaff(' + str(m['id']) + ', \'' + m['name'] + '\')'"
-                                                            title="Giao công việc mới cho nhân sự này">
-                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            title="Giao công việc mới cho nhân sự này"
+                                                            style="display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 14px; font-size:12px; font-weight:600; border-radius:10px; border:1px solid #bbf7d0; background:#f0fdf4; color:#15803d; cursor:pointer; flex:1;">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                                             <path d="M12 5v14M5 12h14"></path>
                                                         </svg>
                                                         <span>Giao việc</span>
@@ -1987,7 +2536,7 @@
                                                     <!-- Set Role (ONLY available for Admin) -->
                                                     <t t-if="user_role == 'admin'">
                                                         <t t-if="m['is_super_admin']">
-                                                            <div class="sf-staff-role-lock" title="Quản trị viên tối cao (Không thể đổi vai trò)">
+                                                            <div class="sf-staff-role-lock" title="Quản trị viên tối cao (Không thể đổi vai trò)" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; padding:7px 10px; font-size:11px; font-weight:600; background:#f1f5f9; color:#64748b; border-radius:10px; border:1px dashed #cbd5e1;">
                                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -1996,11 +2545,12 @@
                                                             </div>
                                                         </t>
                                                         <t t-else="">
-                                                            <div class="sf-staff-role-select-wrap">
+                                                            <div class="sf-staff-role-select-wrap" style="flex:1;">
                                                                 <select class="sf-staff-role-select"
                                                                         t-att-id="'sf-role-sel-' + str(m['id'])"
                                                                         t-att-onchange="'sfChangeUserRole(' + str(m['id']) + ', this.value)'"
-                                                                        title="Thiết lập vai trò người dùng">
+                                                                        title="Thiết lập vai trò người dùng"
+                                                                        style="width:100%; padding:7px 10px; font-size:12px; font-weight:600; border:1.5px solid #cbd5e1; border-radius:10px; background:#ffffff; color:#334155; cursor:pointer;">
                                                                     <option value="staff" t-att-selected="'selected' if m['role'] == 'staff' else None">Nhân viên</option>
                                                                     <option value="manager" t-att-selected="'selected' if m['role'] == 'manager' else None">Quản lý</option>
                                                                     <option value="admin" t-att-selected="'selected' if m['role'] == 'admin' else None">Quản trị viên</option>
@@ -2016,13 +2566,13 @@
                                 </div>
 
                                 <!-- Empty Search state -->
-                                <div id="sf-staff-empty-state" style="display:none;" class="sf-task-empty">
-                                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <div id="sf-staff-empty-state" style="display:none; text-align:center; padding:32px 16px; color:#94a3b8;" class="sf-task-empty">
+                                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px; display:inline-block; color:#cbd5e1;">
                                         <circle cx="11" cy="11" r="8"></circle>
                                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                     </svg>
-                                    <div class="sf-empty-title">Không tìm thấy nhân viên nào phù hợp</div>
-                                    <div class="sf-empty-sub">Hãy thử nhập từ khóa khác hoặc chuyển sang lọc vai trò khác.</div>
+                                    <div class="sf-empty-title" style="font-size:15px; font-weight:700; color:#475569;">Không tìm thấy nhân viên nào phù hợp</div>
+                                    <div class="sf-empty-sub" style="font-size:13px; color:#94a3b8; margin-top:4px;">Hãy thử nhập từ khóa khác hoặc chuyển sang lọc vai trò khác.</div>
                                 </div>
                             </div>
                         </div>
@@ -2652,7 +3202,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=145"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=200"></script>
             </body>
         </html>
     </template>
