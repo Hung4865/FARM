@@ -3,6 +3,7 @@
     <!-- 1. Override web.login_layout to provide full-screen immersive background -->
     <template id="sf_login_layout" inherit_id="web.login_layout" name="Smart Farm Login Layout">
         <xpath expr="//div[hasclass('container')]" position="replace">
+            <link rel="stylesheet" href="/smart_farm/static/src/css/login.css"/>
             <div class="sf-auth-page-wrapper">
                 <!-- Background decorative shapes matching the reference images -->
                 <div class="sf-bg-shape sf-bg-shape-top-right"></div>

@@ -16,10 +16,10 @@
 ---
 
 ### Subtask 2: Hệ Thống CSS & Hiệu Ứng Chuyển Động Trượt Kép
-- [ ] **T005** `[odoo-frontend-styler]` Xây dựng tệp CSS `smart_farm/static/src/css/login.css`: thiết lập bộ màu gradient xanh ngọc nông nghiệp sinh thái (`#10b981` -> `#059669` -> `#0d9488`), các khối hình học nền accent, thiết kế form dạng pill bo tròn cao cấp, và xây dựng động cơ keyframes/transitions trượt ngang mượt mà 0.6s (`.right-panel-active`, `@keyframes sfShow`, Parallax shift) tương ứng hoàn hảo với 2 ảnh mẫu.
-- [ ] **T006** `[odoo-code-reviewer]` Soi diff `login.css`, kiểm tra các thuộc tính CSS animation, flexbox/absolute layout, box-shadows, z-index layering và độ mượt khi chuyển đổi trạng thái giữa 2 form.
-- [ ] **T007** Lập trình viên nghiệm thu (F5 trang `/web/login`), xác nhận giao diện tĩnh hiển thị sắc nét chuẩn xác theo ảnh mẫu số 2 (Sign In Mode).
-- [ ] **T008** Commit: `feat(smart_farm): subtask 2 - design sliding login animation and modern styles`
+- [x] **T005** `[odoo-frontend-styler]` Xây dựng tệp CSS `smart_farm/static/src/css/login.css`: thiết lập bộ màu gradient xanh ngọc nông nghiệp sinh thái (`#10b981` -> `#059669` -> `#0d9488`), các khối hình học nền accent, thiết kế form dạng pill bo tròn cao cấp, và xây dựng động cơ keyframes/transitions trượt ngang mượt mà 0.6s (`.right-panel-active`, `@keyframes sfShow`, Parallax shift) tương ứng hoàn hảo với 2 ảnh mẫu.
+- [x] **T006** `[odoo-code-reviewer]` Soi diff `login.css`, kiểm tra các thuộc tính CSS animation, flexbox/absolute layout, box-shadows, z-index layering và độ mượt khi chuyển đổi trạng thái giữa 2 form.
+- [x] **T007** Lập trình viên nghiệm thu (F5 trang `/web/login`), xác nhận giao diện tĩnh hiển thị sắc nét chuẩn xác theo ảnh mẫu số 2 (Sign In Mode).
+- [x] **T008** Commit: `feat(smart_farm): subtask 2 - design sliding login animation and modern styles`
 
 ---
 
