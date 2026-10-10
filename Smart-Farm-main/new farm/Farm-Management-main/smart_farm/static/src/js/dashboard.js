@@ -777,6 +777,132 @@ window.sfDeleteTask = function(taskId) {
     });
 };
 
+// Task Detail Drawer / Modal for Staff and All Roles
+window.sfCurrentDetailTaskId = null;
+
+window.sfOpenTaskDetailDrawer = function(taskId) {
+    if (!taskId) return;
+    var card = document.getElementById('sf-mgmt-task-' + taskId);
+    if (!card) return;
+
+    window.sfCurrentDetailTaskId = taskId;
+    var modal = document.getElementById('sf-task-detail-modal');
+    if (!modal) return;
+
+    var name = card.dataset.name || '';
+    var date = card.dataset.date || '';
+    var type = card.dataset.type || 'irrigation';
+    var notes = card.dataset.notes || '';
+    var userName = card.dataset.userName || 'Farm Admin';
+    var isDone = card.dataset.status === 'done';
+
+    var nameEl = document.getElementById('sf-td-name');
+    var dateEl = document.getElementById('sf-td-date');
+    var assigneeEl = document.getElementById('sf-td-assignee');
+    var notesEl = document.getElementById('sf-td-notes');
+    var typeBadge = document.getElementById('sf-td-type-badge');
+    var statusPill = document.getElementById('sf-td-status-pill');
+    var toggleBtn = document.getElementById('sf-td-toggle-btn');
+    var toggleIcon = document.getElementById('sf-td-toggle-icon');
+    var toggleText = document.getElementById('sf-td-toggle-text');
+
+    if (nameEl) nameEl.textContent = name;
+    if (dateEl) dateEl.textContent = date;
+    if (assigneeEl) assigneeEl.textContent = userName;
+    if (notesEl) notesEl.textContent = notes ? notes : 'Không có ghi chú thêm cho nhiệm vụ này.';
+
+    // Type badge label & color
+    var typeLabels = {
+        'irrigation': { text: 'Tưới tiêu', cls: 'tag-blue' },
+        'sensor': { text: 'Cảm biến', cls: 'tag-green' },
+        'gps': { text: 'GPS', cls: 'tag-green' },
+        'season': { text: 'Mùa vụ', cls: 'tag-amber' },
+        'inventory': { text: 'Kho & Vật tư', cls: 'tag-amber' },
+        'report': { text: 'Báo cáo', cls: 'tag-blue' }
+    };
+    var tInfo = typeLabels[type] || { text: 'Công việc', cls: 'tag-blue' };
+    if (typeBadge) {
+        typeBadge.className = 'sf-tag ' + tInfo.cls;
+        typeBadge.textContent = tInfo.text;
+    }
+
+    // Status pill
+    if (statusPill) {
+        if (isDone) {
+            statusPill.className = 'sf-td-status-pill done';
+            statusPill.textContent = '✓ Đã hoàn thành';
+        } else {
+            statusPill.className = 'sf-td-status-pill';
+            statusPill.textContent = 'Đang thực hiện';
+        }
+    }
+
+    // Toggle button in drawer
+    if (toggleBtn) {
+        if (isDone) {
+            toggleBtn.className = 'sf-btn sf-btn-light';
+            if (toggleIcon) toggleIcon.textContent = '↺';
+            if (toggleText) toggleText.textContent = 'Đánh dấu chưa xong';
+        } else {
+            toggleBtn.className = 'sf-btn sf-btn-emerald';
+            if (toggleIcon) toggleIcon.textContent = '✓';
+            if (toggleText) toggleText.textContent = 'Đánh dấu hoàn thành';
+        }
+    }
+
+    modal.style.display = 'flex';
+};
+
+window.sfCloseTaskDetailModal = function(e) {
+    if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('sf-modal-close')) {
+        return;
+    }
+    var modal = document.getElementById('sf-task-detail-modal');
+    if (modal) modal.style.display = 'none';
+    window.sfCurrentDetailTaskId = null;
+};
+
+window.sfToggleTaskFromDetail = function() {
+    if (!window.sfCurrentDetailTaskId) return;
+    var taskId = window.sfCurrentDetailTaskId;
+    
+    // Gọi hàm toggle
+    window.sfToggleMgmtTask(taskId);
+
+    // Cập nhật lại UI trong drawer sau một chút
+    setTimeout(function() {
+        var card = document.getElementById('sf-mgmt-task-' + taskId);
+        if (!card) return;
+        var isDone = card.dataset.status === 'done';
+        var statusPill = document.getElementById('sf-td-status-pill');
+        var toggleBtn = document.getElementById('sf-td-toggle-btn');
+        var toggleIcon = document.getElementById('sf-td-toggle-icon');
+        var toggleText = document.getElementById('sf-td-toggle-text');
+
+        if (statusPill) {
+            if (isDone) {
+                statusPill.className = 'sf-td-status-pill done';
+                statusPill.textContent = '✓ Đã hoàn thành';
+            } else {
+                statusPill.className = 'sf-td-status-pill';
+                statusPill.textContent = 'Đang thực hiện';
+            }
+        }
+
+        if (toggleBtn) {
+            if (isDone) {
+                toggleBtn.className = 'sf-btn sf-btn-light';
+                if (toggleIcon) toggleIcon.textContent = '↺';
+                if (toggleText) toggleText.textContent = 'Đánh dấu chưa xong';
+            } else {
+                toggleBtn.className = 'sf-btn sf-btn-emerald';
+                if (toggleIcon) toggleIcon.textContent = '✓';
+                if (toggleText) toggleText.textContent = 'Đánh dấu hoàn thành';
+            }
+        }
+    }, 200);
+};
+
 // Drag and Drop implementation
 window.sfInitTaskDragAndDrop = function() {
     var container = document.getElementById('sf-task-mgmt-list');
@@ -786,7 +912,7 @@ window.sfInitTaskDragAndDrop = function() {
 
     container.addEventListener('dragstart', function(e) {
         var card = e.target.closest('.sf-task-card');
-        if (!card) return;
+        if (!card || card.getAttribute('draggable') === 'false') return;
         draggingElement = card;
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';

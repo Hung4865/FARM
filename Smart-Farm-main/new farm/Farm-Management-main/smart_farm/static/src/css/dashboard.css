@@ -5070,6 +5070,167 @@ body.sf-dark-mode .sf-staff-role-lock {
     color: #94a3b8 !important;
 }
 
+/* ==========================================================================
+   FEATURE 010: TASK DETAIL MODAL & STAFF ACTION CONTROLS
+   ========================================================================== */
+.sf-btn-detail {
+    background: #f1f5f9;
+    color: #0284c7;
+    border-color: #cbd5e1;
+}
+
+.sf-btn-detail:hover {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #7dd3fc;
+}
+
+.sf-td-info-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+}
+
+.sf-td-task-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.4;
+}
+
+.sf-td-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.sf-td-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 12px;
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.sf-td-status-pill.done {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.sf-td-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+    .sf-td-details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sf-td-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+.sf-td-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sf-td-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 4px;
+}
+
+.sf-td-notes-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.sf-td-notes-hd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.sf-td-notes-content {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #334155;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Dark mode styles for Task Details */
+html.sf-dark-mode .sf-td-info-card,
+body.sf-dark-mode .sf-td-info-card,
+html.sf-dark-mode .sf-td-item,
+body.sf-dark-mode .sf-td-item,
+html.sf-dark-mode .sf-td-notes-box,
+body.sf-dark-mode .sf-td-notes-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-td-task-name,
+body.sf-dark-mode .sf-td-task-name {
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-td-val,
+body.sf-dark-mode .sf-td-val {
+    color: #e2e8f0 !important;
+}
+
+html.sf-dark-mode .sf-td-notes-hd,
+body.sf-dark-mode .sf-td-notes-hd {
+    color: #94a3b8 !important;
+}
+
+html.sf-dark-mode .sf-td-notes-content,
+body.sf-dark-mode .sf-td-notes-content {
+    color: #cbd5e1 !important;
+}
+
+html.sf-dark-mode .sf-btn-detail,
+body.sf-dark-mode .sf-btn-detail {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #38bdf8 !important;
+}
+
+html.sf-dark-mode .sf-btn-detail:hover,
+body.sf-dark-mode .sf-btn-detail:hover {
+    background: #0f172a !important;
+    border-color: #38bdf8 !important;
+}
+
+
 
 
 

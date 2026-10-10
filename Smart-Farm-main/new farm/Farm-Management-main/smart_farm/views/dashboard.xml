@@ -1141,13 +1141,15 @@
                                         Lập kế hoạch công việc nông trại, phân loại, tìm kiếm và kéo thả sắp xếp thứ tự ưu tiên.
                                     </div>
                                 </div>
-                                <button type="button" class="sf-btn sf-btn-emerald" onclick="sfOpenTaskModal()" title="Thêm công việc mới">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    <span>Thêm công việc</span>
-                                </button>
+                                <t t-if="user_role in ['admin', 'manager']">
+                                    <button type="button" class="sf-btn sf-btn-emerald" onclick="sfOpenTaskModal()" title="Thêm công việc mới">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                        <span>Thêm công việc</span>
+                                    </button>
+                                </t>
                             </div>
 
                             <!-- Filter & Search Toolbar -->
@@ -1191,17 +1193,19 @@
                                     <span class="sf-count-sep">·</span>
                                     <span class="sf-count-done-badge" id="sf-count-done-text">✓ <t t-esc="len(all_tasks.filtered(lambda t: t.is_done))"/> hoàn thành</span>
                                 </div>
-                                <div class="sf-drag-hint">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.7;">
-                                        <circle cx="9" cy="5" r="1.8"></circle>
-                                        <circle cx="15" cy="5" r="1.8"></circle>
-                                        <circle cx="9" cy="12" r="1.8"></circle>
-                                        <circle cx="15" cy="12" r="1.8"></circle>
-                                        <circle cx="9" cy="19" r="1.8"></circle>
-                                        <circle cx="15" cy="19" r="1.8"></circle>
-                                    </svg>
-                                    Kéo thả biểu tượng ⋮⋮ để sắp xếp thứ tự công việc
-                                </div>
+                                <t t-if="user_role in ['admin', 'manager']">
+                                    <div class="sf-drag-hint">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.7;">
+                                            <circle cx="9" cy="5" r="1.8"></circle>
+                                            <circle cx="15" cy="5" r="1.8"></circle>
+                                            <circle cx="9" cy="12" r="1.8"></circle>
+                                            <circle cx="15" cy="12" r="1.8"></circle>
+                                            <circle cx="9" cy="19" r="1.8"></circle>
+                                            <circle cx="15" cy="19" r="1.8"></circle>
+                                        </svg>
+                                        Kéo thả biểu tượng ⋮⋮ để sắp xếp thứ tự công việc
+                                    </div>
+                                </t>
                             </div>
 
                             <!-- Task List / Items -->
@@ -1218,21 +1222,23 @@
                                              t-att-data-notes="t.notes or ''"
                                              t-att-data-user-id="t.user_id.id if t.user_id else ''"
                                              t-att-data-user-name="t.user_id.name or 'Farm Admin'"
-                                             draggable="true">
+                                             t-att-draggable="'true' if user_role in ['admin', 'manager'] else 'false'">
                                             
-                                            <!-- Drag Handle -->
-                                            <div class="sf-drag-handle" title="Kéo để đổi thứ tự công việc">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                    <circle cx="9" cy="5" r="1.8"></circle>
-                                                    <circle cx="15" cy="5" r="1.8"></circle>
-                                                    <circle cx="9" cy="12" r="1.8"></circle>
-                                                    <circle cx="15" cy="12" r="1.8"></circle>
-                                                    <circle cx="9" cy="19" r="1.8"></circle>
-                                                    <circle cx="15" cy="19" r="1.8"></circle>
-                                                </svg>
-                                            </div>
+                                            <!-- Drag Handle (Only for Admin & Manager) -->
+                                            <t t-if="user_role in ['admin', 'manager']">
+                                                <div class="sf-drag-handle" title="Kéo để đổi thứ tự công việc">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                        <circle cx="9" cy="5" r="1.8"></circle>
+                                                        <circle cx="15" cy="5" r="1.8"></circle>
+                                                        <circle cx="9" cy="12" r="1.8"></circle>
+                                                        <circle cx="15" cy="12" r="1.8"></circle>
+                                                        <circle cx="9" cy="19" r="1.8"></circle>
+                                                        <circle cx="15" cy="19" r="1.8"></circle>
+                                                    </svg>
+                                                </div>
+                                            </t>
 
-                                            <!-- Checkbox -->
+                                            <!-- Checkbox (For all roles to complete task) -->
                                             <div t-attf-class="sf-check #{'done' if t.is_done else ''}"
                                                  t-att-onclick="'sfToggleMgmtTask(' + str(t.id) + ', this)'"
                                                  title="Đánh dấu hoàn thành">
@@ -1242,10 +1248,20 @@
                                             <!-- Main content -->
                                             <div class="sf-task-content-block">
                                                 <div class="sf-task-row-top">
-                                                    <div t-attf-class="sf-task-title-text #{'done' if t.is_done else ''}"
-                                                         t-att-onclick="'sfToggleMgmtTask(' + str(t.id) + ', this)'">
-                                                        <t t-esc="t.name"/>
-                                                    </div>
+                                                    <t t-if="user_role in ['admin', 'manager']">
+                                                        <div t-attf-class="sf-task-title-text #{'done' if t.is_done else ''}"
+                                                             t-att-onclick="'sfToggleMgmtTask(' + str(t.id) + ', this)'">
+                                                            <t t-esc="t.name"/>
+                                                        </div>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div t-attf-class="sf-task-title-text #{'done' if t.is_done else ''}"
+                                                             t-att-onclick="'sfOpenTaskDetailDrawer(' + str(t.id) + ')'"
+                                                             style="cursor:pointer;"
+                                                             title="Nhấp để xem chi tiết công việc">
+                                                            <t t-esc="t.name"/>
+                                                        </div>
+                                                    </t>
                                                     
                                                     <!-- Badge category -->
                                                     <t t-if="t.task_type == 'irrigation'">
@@ -1298,24 +1314,36 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Actions: Edit & Delete -->
+                                            <!-- Actions: Edit & Delete for Admin/Manager, Detail for Staff -->
                                             <div class="sf-task-action-buttons">
-                                                <button type="button" class="sf-task-btn-action sf-btn-edit" t-att-onclick="'sfOpenTaskModal(' + str(t.id) + ')'" title="Chỉnh sửa công việc">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                    </svg>
-                                                    <span>Sửa</span>
-                                                </button>
-                                                <button type="button" class="sf-task-btn-action sf-btn-delete" t-att-onclick="'sfDeleteTask(' + str(t.id) + ')'" title="Xóa công việc">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                    </svg>
-                                                    <span>Xóa</span>
-                                                </button>
+                                                <t t-if="user_role in ['admin', 'manager']">
+                                                    <button type="button" class="sf-task-btn-action sf-btn-edit" t-att-onclick="'sfOpenTaskModal(' + str(t.id) + ')'" title="Chỉnh sửa công việc">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                        </svg>
+                                                        <span>Sửa</span>
+                                                    </button>
+                                                    <button type="button" class="sf-task-btn-action sf-btn-delete" t-att-onclick="'sfDeleteTask(' + str(t.id) + ')'" title="Xóa công việc">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                        </svg>
+                                                        <span>Xóa</span>
+                                                    </button>
+                                                </t>
+                                                <t t-else="">
+                                                    <button type="button" class="sf-task-btn-action sf-btn-detail" t-att-onclick="'sfOpenTaskDetailDrawer(' + str(t.id) + ')'" title="Xem chi tiết nhiệm vụ">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10"></circle>
+                                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                                        </svg>
+                                                        <span>Chi tiết</span>
+                                                    </button>
+                                                </t>
                                             </div>
                                         </div>
                                     </t>
@@ -2157,6 +2185,89 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Task Detail Drawer / Modal (Dành cho Nhân viên và các vai trò xem chi tiết công việc) -->
+                <div id="sf-task-detail-modal" class="sf-modal-backdrop" style="display:none;" onclick="sfCloseTaskDetailModal(event)">
+                    <div class="sf-modal-card" onclick="event.stopPropagation()">
+                        <div class="sf-modal-header">
+                            <div class="sf-modal-title-group">
+                                <div class="sf-modal-badge" id="sf-td-badge-icon" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="sf-modal-title" id="sf-td-title">Chi tiết công việc nông trại</h3>
+                                    <p class="sf-modal-subtitle" id="sf-td-sub">Xem phân công nhiệm vụ và hướng dẫn thực hiện</p>
+                                </div>
+                            </div>
+                            <button type="button" class="sf-modal-close" onclick="sfCloseTaskDetailModal()" title="Đóng">×</button>
+                        </div>
+
+                        <div class="sf-modal-body">
+                            <div class="sf-td-info-card">
+                                <div class="sf-td-task-name" id="sf-td-name">Tên nhiệm vụ</div>
+                                <div class="sf-td-status-row">
+                                    <span class="sf-tag" id="sf-td-type-badge">Tưới tiêu</span>
+                                    <span class="sf-td-status-pill" id="sf-td-status-pill">Đang thực hiện</span>
+                                </div>
+                            </div>
+
+                            <div class="sf-td-details-grid">
+                                <div class="sf-td-item">
+                                    <div class="sf-td-label">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                        </svg>
+                                        Ngày thực hiện
+                                    </div>
+                                    <div class="sf-td-val" id="sf-td-date">--/--/----</div>
+                                </div>
+
+                                <div class="sf-td-item">
+                                    <div class="sf-td-label">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                        Người phụ trách
+                                    </div>
+                                    <div class="sf-td-val" id="sf-td-assignee">Farm Admin</div>
+                                </div>
+                            </div>
+
+                            <div class="sf-td-notes-box">
+                                <div class="sf-td-notes-hd">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                    </svg>
+                                    Hướng dẫn &amp; Ghi chú thực hiện:
+                                </div>
+                                <div class="sf-td-notes-content" id="sf-td-notes">Không có ghi chú thêm cho nhiệm vụ này.</div>
+                            </div>
+                        </div>
+
+                        <div class="sf-modal-footer" style="justify-content: space-between;">
+                            <button type="button" class="sf-btn sf-btn-light" onclick="sfCloseTaskDetailModal()">Đóng</button>
+                            <button type="button" id="sf-td-toggle-btn" class="sf-btn sf-btn-emerald" onclick="sfToggleTaskFromDetail()">
+                                <span id="sf-td-toggle-icon">✓</span>
+                                <span id="sf-td-toggle-text">Đánh dấu hoàn thành</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -70,7 +70,7 @@ Xây dựng giao diện hiển thị danh sách nhân sự thực tế, bộ l�
 ### Subtask 4: Phân Quyền Thao Tác Công Việc (Tasks) & Drawer Chi Tiết Nhiệm Vụ
 Tách biệt thẩm quyền trên danh sách công việc: Staff chỉ xem chi tiết và tích hoàn thành; Admin/Manager toàn quyền CRUD và chọn người phụ trách.
 
-- [ ] **Bước 1: Xử lý code** `[developer]`
+- [x] **Bước 1: Xử lý code** `[developer]`
   - Cập nhật `smart_farm/views/dashboard.xml` ở phân hệ `tab-tasks`:
     - Điều kiện hóa nút `+ Thêm công việc`: Chỉ render cho Admin & Manager (`t-if="user_role in ['admin', 'manager']"`).
     - Điều kiện hóa nút `Sửa` và `Xóa` trên từng thẻ task: Chỉ render cho Admin & Manager.
@@ -79,12 +79,12 @@ Tách biệt thẩm quyền trên danh sách công việc: Staff chỉ xem chi t
     - Giữ nguyên nút tích checkbox `✓` cho phép nhân viên tích hoàn thành việc của mình.
     - Bổ sung trường chọn "Người phụ trách" (`user_id`) trong form modal tạo/sửa công việc dành cho Admin và Manager.
   - Cập nhật JS trong `smart_farm/static/src/js/dashboard.js`: xử lý sự kiện click thẻ task mở drawer chi tiết khi là Staff, gửi `user_id` khi tạo/sửa việc.
-- [ ] **Bước 2: Review diff** `[code-reviewer]`
+- [x] **Bước 2: Review diff** `[code-reviewer]`
   - Soi diff XML, JS và CSS, đảm bảo không có lỗ hổng bypass từ client.
-- [ ] **Bước 3: Lập trình viên nghiệm thu F5 Odoo** `[developer-verify]`
+- [x] **Bước 3: Lập trình viên nghiệm thu F5 Odoo** `[developer-verify]`
   - F5 Odoo, kiểm tra toàn bộ luồng nghiệp vụ của cả 3 vai trò:
     1. Admin: Thấy mọi thứ, đổi role, giao việc, xóa việc.
     2. Manager: Ẩn nút ⚙️, không đổi được role, thêm/sửa việc và giao việc tốt.
     3. Staff: Chỉ thấy 3 tab, ẩn nút ⚙️, ẩn nút thêm/sửa/xóa việc, xem được chi tiết việc và tích hoàn thành việc.
-- [ ] **Bước 4: Commit** `[git-commit]`
+- [x] **Bước 4: Commit** `[git-commit]`
   - Tạo commit với format: `feat(tasks): subtask 4 - staff task execution drawer and role-based action controls`
