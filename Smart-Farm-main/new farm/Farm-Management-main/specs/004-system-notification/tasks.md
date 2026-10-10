@@ -1,7 +1,7 @@
 # Tasks: Hệ thống Thông báo Kích hoạt theo Sự kiện Demo (Event-Driven Notification System)
 
 **Input**: Kế hoạch từ [`plan.md`](./plan.md) và đặc tả từ [`spec.md`](./spec.md)  
-**Status**: Complete (Hoàn tất 100% 4/4 Subtasks)
+**Status**: Complete (Hoàn tất 100% 5/5 Subtasks)
 
 ---
 
@@ -36,3 +36,11 @@
 - [x] **T014** `[odoo-code-reviewer]` Soi diff toàn bộ các file đã thay đổi, kiểm tra tính nhất quán mã nguồn và tài liệu kỹ thuật.
 - [x] **T015** Lập trình viên nghiệm thu (F5 Odoo, kiểm tra tổng thể toàn bộ các kịch bản demo: bật/tắt thiết bị, tạo việc, xử lý 1-chạm, xử lý tất cả), xác nhận 0 visual regression.
 - [x] **T016** Commit: `feat(smart_farm): subtask 4 - simulated sensor alerts and comprehensive verification`
+
+---
+
+### Subtask 5: Tinh chỉnh Giao diện Header Dropdown Thông báo (Khoảng cách Badge & Nút Xử lý tất cả)
+- [x] **T017** `[odoo-frontend-styler]` Cập nhật CSS trong `smart_farm/static/src/css/dashboard.css`: mở rộng chiều rộng dropdown `.sf-notif-dropdown` lên 380px, thêm `gap: 12px;` cho `.sf-notif-header`, thiết lập `margin-left: 10px; flex-shrink: 0; white-space: nowrap;` cho nút `.sf-btn-resolve-all` và `margin-left: 4px; flex-shrink: 0;` cho huy hiệu `.sf-notif-pill` để các phần tử tách biệt rõ ràng, không bị dính sát vào nhau.
+- [x] **T018** `[odoo-code-reviewer]` Soi diff `dashboard.css`, kiểm tra cú pháp CSS, độ tương thích giao diện trên cả Light Mode và Dark Mode.
+- [x] **T019** Lập trình viên nghiệm thu (F5 Odoo, mở dropdown Quả chuông trên Navbar), xác nhận huy hiệu "N chưa xử lý" và nút "Xử lý tất cả" có khoảng cách đẹp mắt, không dính sát.
+- [x] **T020** Commit: `style(smart_farm): subtask 5 - add spacing between notification pill and resolve-all button`
