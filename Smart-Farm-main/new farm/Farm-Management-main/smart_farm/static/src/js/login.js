@@ -50,6 +50,18 @@
         if (urlParams.get('mode') === 'signup' || window.location.hash === '#signup') {
             container.classList.add('right-panel-active');
         }
+
+        // 4. Prevent double submission on login form
+        var signInForm = document.querySelector('.oe_login_form');
+        if (signInForm) {
+            signInForm.addEventListener('submit', function () {
+                var btn = document.getElementById('sf-btn-signin-submit');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Đang đăng nhập...';
+                }
+            });
+        }
     }
 
     // Real Smart Farm Sign Up handler
@@ -119,42 +131,17 @@
         .then(function (resData) {
             var result = resData.result || {};
             if (result.success) {
-                showAlert('Đăng ký thành công! Đang chuyển sang đăng nhập...', 'success');
-
-                // Tự động điền email và password vào form Sign In
-                var loginInput = document.getElementById('login');
-                var passInput = document.getElementById('password');
-                if (loginInput) loginInput.value = email;
-                if (passInput) passInput.value = password;
+                showAlert('Đăng ký thành công! Đang chuyển hướng vào trang quản lý nông trại...', 'success');
 
                 // Xóa trống form đăng ký
                 nameInput.value = '';
                 emailInput.value = '';
                 passwordInput.value = '';
 
+                // Chuyển hướng trực tiếp vì backend đã tự động xác thực phiên đăng nhập
                 setTimeout(function () {
-                    // Trượt panel về bên Sign In
-                    if (container) {
-                        container.classList.remove('right-panel-active');
-                    }
-                    if (alertBox) {
-                        alertBox.style.display = 'none';
-                    }
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = 'SIGN UP';
-                    }
-
-                    // Tự động submit form đăng nhập để vào thẳng Dashboard
-                    var signInForm = document.querySelector('.oe_login_form');
-                    var signInBtn = document.getElementById('sf-btn-signin-submit');
-                    if (signInBtn) {
-                        signInBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Đang đăng nhập...';
-                    }
-                    if (signInForm) {
-                        signInForm.submit();
-                    }
-                }, 1000);
+                    window.location.href = result.redirect || '/smart_farm/dashboard';
+                }, 500);
             } else {
                 showAlert(result.error || 'Đăng ký không thành công. Vui lòng thử lại!', 'danger');
                 if (submitBtn) {

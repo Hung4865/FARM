@@ -20,6 +20,10 @@ class SmartFarmHome(Home):
             return request.redirect('/smart_farm/dashboard')
         return request.redirect('/web/login?redirect=/smart_farm/dashboard')
 
+    @http.route('/web/login', type='http', auth="none", readonly=False, csrf=False)
+    def web_login(self, redirect=None, **kw):
+        return super().web_login(redirect=redirect, **kw)
+
     @http.route('/smart_farm/api/auth/signup', type='json', auth="public", methods=['POST'], csrf=False)
     def api_signup(self, name=None, email=None, password=None, **kw):
         """API tạo tài khoản người dùng thực tế trên hệ thống Smart Farm"""
@@ -66,11 +70,20 @@ class SmartFarmHome(Home):
             new_user = request.env['res.users'].sudo().with_context(no_reset_password=True).create(user_vals)
             request.env.cr.commit()
 
+            # Tự động xác thực phiên đăng nhập cho user ngay sau khi đăng ký
+            try:
+                db_name = request.db or 'Farm'
+                credential = {'login': email, 'password': password, 'type': 'password'}
+                request.session.authenticate(db_name, credential)
+            except Exception:
+                pass
+
             return {
                 'success': True,
-                'message': 'Đăng ký tài khoản thành công! Đang tự động đăng nhập...',
+                'message': 'Đăng ký tài khoản thành công! Đang chuyển đến nông trại...',
                 'user_id': new_user.id,
                 'email': email,
+                'redirect': '/smart_farm/dashboard',
             }
         except Exception as e:
             return {
