@@ -4,6 +4,25 @@
 
 ---
 
+## [2026-10-15] – Đồng Bộ Toàn Diện Giao Diện Tối Sleek Slate, Sửa Triệt Để Lỗi Tương Phản & Thích Ứng Chart.js (Feature 006)
+* **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
+* **1. Khắc phục Triệt để Lỗi Chữ Đen Trên Nền Tối:**
+  * Sửa lỗi thẻ Thời tiết Hà Nội: Thông số gió, độ ẩm, vị trí (`.sf-weather-info span`) trước đây bị màu đen `#0f172a` nay được chuyển sang trắng sáng `#f8fafc !important`.
+  * Sửa lỗi thanh trạng thái an toàn nông trại: Con số hoàn thành trong `.sf-asb-stats b` chuyển sang `#f8fafc !important`.
+* **2. Khắc phục Triệt để Lỗi Nền Trắng Chữ Trắng & Nền Trắng Lạc Quẻ:**
+  * Sửa toàn diện danh sách Cảnh báo (`.sf-alert-item`): Hàng chẵn mang nền `#1e293b !important` (không còn kế thừa `#ffffff`), hàng lẻ mang nền `#273549 !important`, hover `#334155 !important`. Cảnh báo đã xong (`.sf-resolved`) mang màu xám `#64748b` gạch ngang nhẹ nhàng và tag `Đã xong` mang màu `#94a3b8 !important`.
+* **3. Tinh Chỉnh Thanh Cuộn Sleek Slate Scrollbars:**
+  * Kích hoạt `color-scheme: dark;` trên `html.sf-dark-mode` và tùy biến thanh cuộn với track `#0f172a`, thumb `#334155` bo tròn tinh tế, xóa bỏ thanh cuộn trắng của trình duyệt.
+* **4. Đồng Bộ 100% Giao Diện Tối Cho 5 Tab, Drawers & Modals:**
+  * Toàn bộ Tab Công việc (`tab-tasks`), Tab Bản đồ (`tab-map`), Tab Nhân sự (`tab-staff`), Modal Thêm việc (`#sf-task-modal`), Modal Hồ sơ (`#sf-profile-modal`), Zone Drawer và Plant Drawer đều chuyển sang tông Dark Slate thống nhất, loại bỏ hoàn toàn các mảng trắng xung đột.
+* **5. Thích Ứng Động Biểu Đồ Môi Trường 24h (`Chart.js`):**
+* **6. Phá Bộ Nhớ Đệm Trình Duyệt (Cache Busting v=205) & Inlined Critical CSS:**
+  * Bumping query parameters lên `dashboard.css?v=205` và `dashboard.js?v=205` tại `views/dashboard.xml` để vô hiệu hóa cache 7 ngày (`max-age=604800`) của trình duyệt trên Odoo.
+  * Nhúng trực tiếp khối CSS Dark Mode cốt lõi (`Critical Inlined Dark Mode Contrast Fixes`) vào thẻ `<style>` của template QWeb, đảm bảo khi người dùng tải lại trang (F5/Reload) sẽ áp dụng ngay lập tức mà không phụ thuộc vào chu kỳ cập nhật asset cache của trình duyệt.
+  * Bổ sung quy tắc selector tường minh `:nth-child(even)` cho `.sf-alert-item` và tùy biến thanh cuộn cho `#sf-task-list`.
+
+---
+
 ## [2026-09-26] – Hoàn Thiện Tương Tác Click Cây 3D, Diễn Hoạt Các Hệ Thống Tưới Tiêu 3D & Khắc Phục Lỗi Xoay Sơ Đồ Khu A (Feature 003.4)
 * **File cập nhật:** [`views/dashboard.xml`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/views/dashboard.xml), [`static/src/css/dashboard.css`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/css/dashboard.css), [`static/src/js/dashboard.js`](file:///home/tom/projects/FARM/Smart-Farm-main/new%20farm/Farm-Management-main/smart_farm/static/src/js/dashboard.js)
 * **1. Khắc phục Triệt để Lỗi Không Mở Bảng Cây (`#sf-plant-drawer`) Khi Nhấp Vào Cây Trong 3D:**

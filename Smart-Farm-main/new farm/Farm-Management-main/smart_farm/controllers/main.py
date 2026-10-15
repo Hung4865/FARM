@@ -1,8 +1,107 @@
 from odoo import http, fields
 from odoo.http import request
+from odoo.addons.web.controllers.home import Home
 from datetime import datetime
 import json
 import requests as req_lib
+
+
+class SmartFarmHome(Home):
+    """Ghi đè điều hướng đăng nhập: luôn ưu tiên mở Dashboard Smart Farm thay vì Odoo backend Discuss"""
+
+    def _login_redirect(self, uid, redirect=None):
+        if not redirect or redirect.startswith('/odoo') or redirect.startswith('/web'):
+            redirect = '/smart_farm/dashboard'
+        return super()._login_redirect(uid, redirect=redirect)
+
+    @http.route('/', type='http', auth="none")
+    def index(self, s_action=None, db=None, **kw):
+        if request.db and request.session.uid:
+            return request.redirect('/smart_farm/dashboard')
+        return request.redirect('/web/login?redirect=/smart_farm/dashboard')
+
+    @http.route('/web/login', type='http', auth="none", readonly=False, csrf=False)
+    def web_login(self, redirect=None, **kw):
+        return super().web_login(redirect=redirect, **kw)
+
+    @http.route('/smart_farm/api/auth/signup', type='json', auth="public", methods=['POST'], csrf=False)
+    def api_signup(self, name=None, email=None, password=None, **kw):
+        """API tạo tài khoản người dùng thực tế trên hệ thống Smart Farm"""
+        if not name or not name.strip():
+            return {'success': False, 'error': 'Vui lòng nhập họ và tên của bạn!'}
+        if not email or not email.strip():
+            return {'success': False, 'error': 'Vui lòng nhập địa chỉ email hợp lệ!'}
+        if not password or len(password) < 6:
+            return {'success': False, 'error': 'Mật khẩu phải có độ dài tối thiểu 6 ký tự!'}
+
+        name = name.strip()
+        email = email.strip().lower()
+
+        # Kiểm tra trùng lặp email / login
+        existing_user = request.env['res.users'].sudo().search([
+            '|', ('login', '=', email), ('email', '=', email)
+        ], limit=1)
+        if existing_user:
+            return {
+                'success': False,
+                'error': f'Tài khoản với email "{email}" đã tồn tại trên hệ thống. Vui lòng đăng nhập hoặc dùng email khác!'
+            }
+
+        try:
+            g_sf_user = request.env.ref('smart_farm.group_smart_farm_user', raise_if_not_found=False)
+            g_user = request.env.ref('base.group_user', raise_if_not_found=False)
+
+            groups = []
+            if g_sf_user:
+                groups.append(g_sf_user.id)
+            if g_user:
+                groups.append(g_user.id)
+
+            user_vals = {
+                'name': name,
+                'login': email,
+                'email': email,
+                'password': password,
+                'smart_farm_role': 'staff',  # Mặc định tài khoản tự đăng ký là Nhân viên
+            }
+            if groups:
+                user_vals['groups_id'] = [(6, 0, groups)]
+
+            new_user = request.env['res.users'].sudo().with_context(no_reset_password=True).create(user_vals)
+            request.env.cr.commit()
+
+            # Tự động xác thực phiên đăng nhập cho user ngay sau khi đăng ký
+            try:
+                db_name = request.db or 'Farm'
+                credential = {'login': email, 'password': password, 'type': 'password'}
+                request.session.authenticate(db_name, credential)
+            except Exception:
+                pass
+
+            return {
+                'success': True,
+                'message': 'Đăng ký tài khoản thành công! Đang chuyển đến nông trại...',
+                'user_id': new_user.id,
+                'email': email,
+                'redirect': '/smart_farm/dashboard',
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Không thể tạo tài khoản: {str(e)}'
+            }
+
+
+def get_user_farm_role(user):
+    """Xác định vai trò của người dùng trên hệ thống Smart Farm (admin, manager, staff)"""
+    if not user:
+        return 'staff'
+    if user.has_group('base.group_system') or user.id == 2 or getattr(user, 'smart_farm_role', False) == 'admin':
+        return 'admin'
+    elif getattr(user, 'smart_farm_role', False) == 'manager':
+        return 'manager'
+    return 'staff'
+
 
 
 def map_weather_code(code):
@@ -283,6 +382,57 @@ class SmartFarmDashboard(http.Controller):
         if not tractor_gps and gps_records:
             tractor_gps = gps_records[0]
 
+        # Phân quyền 3 cấp (Admin, Manager, Staff)
+        current_user = env.user
+        if current_user.has_group('base.group_system') or current_user.id == 2 or getattr(current_user, 'smart_farm_role', False) == 'admin':
+            user_role = 'admin'
+        elif getattr(current_user, 'smart_farm_role', False) == 'manager':
+            user_role = 'manager'
+        else:
+            user_role = 'staff'
+
+        is_admin = (user_role == 'admin')
+        is_manager = (user_role == 'manager')
+        is_staff = (user_role == 'staff')
+
+        # Danh sách người dùng hệ thống (Nhân sự)
+        all_users = env['res.users'].sudo().search([('share', '=', False)], order='name asc')
+        staff_members = []
+        for u in all_users:
+            if u.has_group('base.group_system') or u.id == 2 or getattr(u, 'smart_farm_role', False) == 'admin':
+                u_role = 'admin'
+                u_role_name = 'Quản trị viên'
+            elif getattr(u, 'smart_farm_role', False) == 'manager':
+                u_role = 'manager'
+                u_role_name = 'Quản lý'
+            else:
+                u_role = 'staff'
+                u_role_name = 'Nhân viên'
+
+            u_tasks = all_tasks.filtered(lambda t: t.user_id.id == u.id)
+            u_t_total = len(u_tasks)
+            u_t_done = len(u_tasks.filtered(lambda t: t.is_done))
+            u_t_pct = int((u_t_done / u_t_total) * 100) if u_t_total > 0 else 0
+
+            staff_members.append({
+                'id': u.id,
+                'name': u.name,
+                'login': u.login,
+                'email': u.email or u.login,
+                'phone': u.phone or '',
+                'role': u_role,
+                'role_name': u_role_name,
+                'task_count': u_t_total,
+                'task_done_count': u_t_done,
+                'task_progress': u_t_pct,
+                'is_super_admin': (u.id == 2 or u.has_group('base.group_system')),
+            })
+
+        staff_count = len(staff_members)
+        manager_count = len([s for s in staff_members if s['role'] == 'manager'])
+        employee_count = len([s for s in staff_members if s['role'] == 'staff'])
+        admin_count = len([s for s in staff_members if s['role'] == 'admin'])
+
         values = {
             'gps_records': gps_records,
             'tractor_gps': tractor_gps,
@@ -294,6 +444,16 @@ class SmartFarmDashboard(http.Controller):
             'now': datetime.now(),
             'chart_data_json': chart_data_json,
             'user': env.user,
+            'user_role': user_role,
+            'is_admin': is_admin,
+            'is_manager': is_manager,
+            'is_staff': is_staff,
+            'staff_members': staff_members,
+            'staff_count': staff_count,
+            'manager_count': manager_count,
+            'employee_count': employee_count,
+            'admin_count': admin_count,
+            'all_users': all_users,
             'tasks': tasks,
             'all_tasks': all_tasks,
             'today': today,
@@ -468,8 +628,16 @@ class SmartFarmDashboard(http.Controller):
 
     @http.route('/smart_farm/api/task/create', type='http', auth='user', methods=['POST'], csrf=False)
     def create_task(self, **kwargs):
-        """API tạo công việc mới"""
+        """API tạo công việc mới (Chỉ dành cho Admin & Manager)"""
         try:
+            caller_role = get_user_farm_role(request.env.user)
+            if caller_role == 'staff':
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Nhân viên không có quyền thêm công việc.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=403
+                )
+
             raw_data = request.httprequest.data.decode('utf-8')
             data = json.loads(raw_data) if raw_data else request.params
             name = (data.get('name') or '').strip()
@@ -483,6 +651,16 @@ class SmartFarmDashboard(http.Controller):
             date_str = data.get('date') or str(fields.Date.today())
             notes = (data.get('notes') or '').strip()
 
+            # Xác định người phụ trách được giao
+            assigned_uid = request.env.user.id
+            if data.get('user_id'):
+                try:
+                    target_u = request.env['res.users'].sudo().browse(int(data.get('user_id')))
+                    if target_u.exists():
+                        assigned_uid = target_u.id
+                except Exception:
+                    pass
+
             last_task = request.env['smart.farm.task'].search([], order='sequence desc', limit=1)
             next_seq = (last_task.sequence + 10) if last_task else 10
 
@@ -492,7 +670,7 @@ class SmartFarmDashboard(http.Controller):
                 'date': date_str,
                 'notes': notes,
                 'sequence': next_seq,
-                'user_id': request.env.user.id,
+                'user_id': assigned_uid,
                 'is_done': False,
             })
 
@@ -508,7 +686,7 @@ class SmartFarmDashboard(http.Controller):
 
             created_alert = request.env['smart.farm.alert'].create({
                 'name': f"Việc mới: {task.name}",
-                'content': f"Đã giao việc '{task.name}' ({task_type_label}).",
+                'content': f"Đã giao việc '{task.name}' ({task_type_label}) cho {task.user_id.name or 'Nhân sự'}.",
                 'alert_type': 'info',
                 'area': 'Lịch làm việc',
                 'is_resolved': False,
@@ -526,6 +704,7 @@ class SmartFarmDashboard(http.Controller):
                         'task_type_label': task_type_label,
                         'date': str(task.date),
                         'is_done': task.is_done,
+                        'user_id': task.user_id.id,
                         'user_name': task.user_id.name or 'Farm Admin',
                         'notes': task.notes or '',
                         'sequence': task.sequence,
@@ -553,8 +732,16 @@ class SmartFarmDashboard(http.Controller):
 
     @http.route('/smart_farm/api/task/update', type='http', auth='user', methods=['POST'], csrf=False)
     def update_task(self, **kwargs):
-        """API cập nhật công việc"""
+        """API cập nhật công việc (Chỉ dành cho Admin & Manager)"""
         try:
+            caller_role = get_user_farm_role(request.env.user)
+            if caller_role == 'staff':
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Nhân viên không có quyền chỉnh sửa công việc.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=403
+                )
+
             raw_data = request.httprequest.data.decode('utf-8')
             data = json.loads(raw_data) if raw_data else request.params
             task_id = data.get('task_id')
@@ -582,12 +769,21 @@ class SmartFarmDashboard(http.Controller):
             date_str = data.get('date') or str(task.date)
             notes = (data.get('notes') or '').strip()
 
-            task.write({
+            write_vals = {
                 'name': name,
                 'task_type': task_type,
                 'date': date_str,
                 'notes': notes,
-            })
+            }
+            if 'user_id' in data and data.get('user_id'):
+                try:
+                    target_u = request.env['res.users'].sudo().browse(int(data.get('user_id')))
+                    if target_u.exists():
+                        write_vals['user_id'] = target_u.id
+                except Exception:
+                    pass
+
+            task.write(write_vals)
 
             type_labels = {
                 'irrigation': 'Tưới tiêu',
@@ -609,6 +805,7 @@ class SmartFarmDashboard(http.Controller):
                         'task_type_label': type_labels.get(task.task_type, 'Khác'),
                         'date': str(task.date),
                         'is_done': task.is_done,
+                        'user_id': task.user_id.id,
                         'user_name': task.user_id.name or 'Farm Admin',
                         'notes': task.notes or '',
                         'sequence': task.sequence,
@@ -626,8 +823,16 @@ class SmartFarmDashboard(http.Controller):
 
     @http.route('/smart_farm/api/task/delete', type='http', auth='user', methods=['POST'], csrf=False)
     def delete_task(self, **kwargs):
-        """API xóa công việc"""
+        """API xóa công việc (Chỉ dành cho Admin & Manager)"""
         try:
+            caller_role = get_user_farm_role(request.env.user)
+            if caller_role == 'staff':
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Nhân viên không có quyền xóa công việc.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=403
+                )
+
             raw_data = request.httprequest.data.decode('utf-8')
             data = json.loads(raw_data) if raw_data else request.params
             task_id = data.get('task_id')
@@ -662,8 +867,16 @@ class SmartFarmDashboard(http.Controller):
 
     @http.route('/smart_farm/api/task/reorder', type='http', auth='user', methods=['POST'], csrf=False)
     def reorder_tasks(self, **kwargs):
-        """API sắp xếp thứ tự công việc (kéo thả)"""
+        """API sắp xếp thứ tự công việc kéo thả (Chỉ dành cho Admin & Manager)"""
         try:
+            caller_role = get_user_farm_role(request.env.user)
+            if caller_role == 'staff':
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Nhân viên không có quyền thay đổi thứ tự công việc.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=403
+                )
+
             raw_data = request.httprequest.data.decode('utf-8')
             data = json.loads(raw_data) if raw_data else request.params
             task_ids = data.get('task_ids', [])
@@ -688,6 +901,78 @@ class SmartFarmDashboard(http.Controller):
         except Exception as e:
             return request.make_response(
                 json.dumps({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}),
+                headers={'Content-Type': 'application/json'},
+                status=500
+            )
+
+    @http.route('/smart_farm/api/user/set_role', type='http', auth='user', methods=['POST'], csrf=False)
+    def set_user_role(self, **kwargs):
+        """API phân quyền: chỉ Quản trị viên (Admin) mới có quyền gán vai trò người dùng"""
+        try:
+            caller_role = get_user_farm_role(request.env.user)
+            if caller_role != 'admin':
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Chỉ Quản trị viên (Admin) mới có quyền thiết lập vai trò.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=403
+                )
+
+            raw_data = request.httprequest.data.decode('utf-8')
+            data = json.loads(raw_data) if raw_data else request.params
+            target_user_id = data.get('user_id')
+            target_role = (data.get('role') or '').strip().lower()
+
+            if not target_user_id or not target_role:
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Thiếu ID người dùng hoặc vai trò cần gán.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+
+            if target_role not in ('admin', 'manager', 'staff'):
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Vai trò không hợp lệ (hỗ trợ admin, manager, staff).'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+
+            target_user = request.env['res.users'].sudo().browse(int(target_user_id))
+            if not target_user.exists():
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Không tìm thấy người dùng trong hệ thống.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=404
+                )
+
+            # Bảo vệ tài khoản Superuser ID 2 không bị hạ quyền
+            if target_user.id == 2 and target_role != 'admin':
+                return request.make_response(
+                    json.dumps({'success': False, 'message': 'Không thể thay đổi quyền của Quản trị viên hệ thống gốc (Superuser ID 2).'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
+
+            target_user.sudo().write({'smart_farm_role': target_role})
+
+            role_names = {
+                'admin': 'Quản trị viên',
+                'manager': 'Quản lý',
+                'staff': 'Nhân viên'
+            }
+            return request.make_response(
+                json.dumps({
+                    'success': True,
+                    'message': f"Đã cập nhật vai trò của {target_user.name} thành {role_names.get(target_role)} thành công!",
+                    'user_id': target_user.id,
+                    'role': target_role,
+                    'role_name': role_names.get(target_role)
+                }),
+                headers={'Content-Type': 'application/json'},
+                status=200
+            )
+        except Exception as e:
+            return request.make_response(
+                json.dumps({'success': False, 'message': f'Lỗi phân quyền: {str(e)}'}),
                 headers={'Content-Type': 'application/json'},
                 status=500
             )

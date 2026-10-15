@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Override web.login_layout to provide full-screen immersive background -->
+    <template id="sf_login_layout" inherit_id="web.login_layout" name="Smart Farm Login Layout">
+        <xpath expr="//div[hasclass('container')]" position="replace">
+            <link rel="stylesheet" href="/smart_farm/static/src/css/login.css"/>
+            <script type="text/javascript" src="/smart_farm/static/src/js/login.js"></script>
+            <div class="sf-auth-page-wrapper">
+                <!-- Background decorative shapes matching the reference images -->
+                <div class="sf-bg-shape sf-bg-shape-top-right"></div>
+                <div class="sf-bg-shape sf-bg-shape-bottom-left"></div>
+
+                <div class="sf-auth-main-content">
+                    <t t-out="0"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- 2. Override web.login to provide double sliding auth panels -->
+    <template id="sf_login" inherit_id="web.login" name="Smart Farm Sliding Login">
+        <xpath expr="//owl-component" position="replace"/>
+        <xpath expr="//form" position="replace">
+            <div class="sf-auth-container" id="sf-auth-container">
+                <!-- ==================== SIGN UP FORM (RIGHT ON ACTIVE) ==================== -->
+                <div class="sf-form-container sf-sign-up-container">
+                    <form action="#" method="post" class="sf-auth-form" id="sf-signup-form" onsubmit="event.preventDefault(); sfHandleSignUp();">
+                        <div class="sf-mobile-brand d-md-none">
+                            <span class="sf-brand-icon">🌱</span>
+                            <span class="sf-brand-text">Smart Farm</span>
+                        </div>
+                        <h2 class="sf-auth-title">Create Account</h2>
+                        
+                        <div class="sf-social-container">
+                            <a href="javascript:void(0)" class="sf-social-btn" title="Facebook"><i class="fa fa-facebook"></i></a>
+                            <a href="javascript:void(0)" class="sf-social-btn" title="Google"><i class="fa fa-google-plus"></i></a>
+                            <a href="javascript:void(0)" class="sf-social-btn" title="LinkedIn"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                        
+                        <span class="sf-auth-subtext">or use your email for registration:</span>
+
+                        <div id="sf-signup-alert" class="sf-auth-alert sf-alert-info" style="display: none;"></div>
+                        
+                        <div class="sf-input-group">
+                            <i class="fa fa-user sf-input-icon"></i>
+                            <input type="text" id="sf-signup-name" placeholder="Name" class="sf-auth-input" required="required" autocomplete="name"/>
+                        </div>
+                        <div class="sf-input-group">
+                            <i class="fa fa-envelope sf-input-icon"></i>
+                            <input type="email" id="sf-signup-email" placeholder="Email" class="sf-auth-input" required="required" autocomplete="email"/>
+                        </div>
+                        <div class="sf-input-group">
+                            <i class="fa fa-lock sf-input-icon"></i>
+                            <input type="password" id="sf-signup-password" placeholder="Password" class="sf-auth-input" required="required" autocomplete="new-password"/>
+                        </div>
+                        
+                        <button type="submit" class="sf-btn-solid sf-btn-green" id="sf-btn-signup-submit">SIGN UP</button>
+
+                        <div class="sf-mobile-switch d-md-none">
+                            <span>Đã có tài khoản? </span>
+                            <a href="javascript:void(0)" id="sf-mobile-to-signin">Đăng nhập ngay</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ==================== SIGN IN FORM (LEFT ON DEFAULT) ==================== -->
+                <div class="sf-form-container sf-sign-in-container">
+                    <form class="sf-auth-form oe_login_form" role="form" t-attf-action="/web/login" method="post" onsubmit="this.action = '/web/login' + location.hash">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input type="hidden" name="type" value="password"/>
+                        <input type="hidden" name="redirect" t-att-value="'/smart_farm/dashboard' if (not redirect or redirect in ['/odoo', '/odoo/', '/web', '/web/', '/odoo/discuss']) else redirect"/>
+
+                        <div class="sf-brand-header">
+                            <div class="sf-brand-badge">
+                                <span class="sf-brand-logo-icon">🌿</span>
+                                <span class="sf-brand-title">Smart Farm</span>
+                            </div>
+                        </div>
+
+                        <h2 class="sf-auth-title">Sign in to Smart Farm</h2>
+                        
+                        <div class="sf-social-container">
+                            <a href="javascript:void(0)" class="sf-social-btn" title="Facebook"><i class="fa fa-facebook"></i></a>
+                            <a href="javascript:void(0)" class="sf-social-btn" title="Google"><i class="fa fa-google-plus"></i></a>
+                            <a href="javascript:void(0)" class="sf-social-btn" title="LinkedIn"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                        
+                        <span class="sf-auth-subtext">or use your email account:</span>
+
+                        <!-- Odoo Auth Alerts -->
+                        <div class="sf-auth-alert sf-alert-danger" t-if="error" role="alert">
+                            <i class="fa fa-exclamation-circle me-1"></i>
+                            <t t-esc="error"/>
+                        </div>
+                        <div class="sf-auth-alert sf-alert-success" t-if="message" role="status">
+                            <i class="fa fa-check-circle me-1"></i>
+                            <t t-esc="message"/>
+                        </div>
+
+                        <!-- Multi-Database Selector if needed -->
+                        <div class="sf-db-box mb-2" t-if="databases and len(databases) &gt; 1">
+                            <div class="sf-input-group">
+                                <i class="fa fa-database sf-input-icon"></i>
+                                <input type="text" name="db" t-att-value="request.db" id="db" class="sf-auth-input" required="required" readonly="readonly"/>
+                            </div>
+                        </div>
+
+                        <div class="sf-input-group">
+                            <i class="fa fa-envelope sf-input-icon"></i>
+                            <input type="text" placeholder="Email" name="login" t-att-value="login" id="login" class="sf-auth-input" required="required" autocapitalize="off" autocomplete="username"/>
+                        </div>
+
+                        <div class="sf-input-group">
+                            <i class="fa fa-lock sf-input-icon"></i>
+                            <input type="password" placeholder="Password" name="password" id="password" class="sf-auth-input" required="required" autocomplete="current-password" t-att-autofocus="'autofocus' if login else None" maxlength="4096"/>
+                        </div>
+
+                        <a href="javascript:void(0)" onclick="sfShowForgotPasswordModal()" class="sf-forgot-link">Forgot your password?</a>
+
+                        <button type="submit" class="sf-btn-solid sf-btn-green" id="sf-btn-signin-submit">SIGN IN</button>
+
+                        <div class="sf-mobile-switch d-md-none">
+                            <span>Chưa có tài khoản? </span>
+                            <a href="javascript:void(0)" id="sf-mobile-to-signup">Đăng ký ngay</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ==================== OVERLAY CONTAINER (SLIDING PANEL) ==================== -->
+                <div class="sf-overlay-container">
+                    <div class="sf-overlay">
+                        <!-- Left Overlay Panel (Shown when Sign Up mode active) -->
+                        <div class="sf-overlay-panel sf-overlay-left">
+                            <div class="sf-overlay-brand">
+                                <span class="sf-brand-logo-icon-white">🌿</span>
+                                <span class="sf-brand-title-white">Smart Farm</span>
+                            </div>
+                            <h2 class="sf-overlay-heading">Welcome Back!</h2>
+                            <p class="sf-overlay-desc">To keep connected with us please login with your personal info</p>
+                            <button type="button" class="sf-btn-ghost" id="sf-btn-to-signin">SIGN IN</button>
+                            
+                            <!-- Geometric Accents inside overlay -->
+                            <div class="sf-geom-shape sf-geom-sq-1"></div>
+                            <div class="sf-geom-shape sf-geom-sq-2"></div>
+                            <div class="sf-geom-shape sf-geom-circle"></div>
+                        </div>
+
+                        <!-- Right Overlay Panel (Shown when Sign In mode active) -->
+                        <div class="sf-overlay-panel sf-overlay-right">
+                            <h2 class="sf-overlay-heading">Hello, Friend!</h2>
+                            <p class="sf-overlay-desc">Enter your personal details and start journey with us</p>
+                            <button type="button" class="sf-btn-ghost" id="sf-btn-to-signup">SIGN UP</button>
+
+                            <!-- Geometric Accents inside overlay -->
+                            <div class="sf-geom-shape sf-geom-sq-1"></div>
+                            <div class="sf-geom-shape sf-geom-sq-2"></div>
+                            <div class="sf-geom-shape sf-geom-circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

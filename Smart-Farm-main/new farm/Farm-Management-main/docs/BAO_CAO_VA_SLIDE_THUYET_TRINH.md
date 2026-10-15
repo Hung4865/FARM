@@ -19,11 +19,11 @@
     - 2.2. Ngăn xếp công nghệ nền tảng (Odoo 18, PostgreSQL 15, Docker)
     - 2.3. Công nghệ đồ họa trực quan và tương tác (Three.js WebGL, Chart.js)
     - 2.4. Tích hợp Trí tuệ Nhân tạo thế hệ mới (Google Gemini 1.5 Flash REST API)
-  - **Chương 3: Thiết Kế Cơ Sở Dữ Liệu & Quy Trình Bảo Mật Phân Quyền**
-    - 3.1. Thiết kế các mô hình dữ liệu ORM cốt lõi
+  - **Chương 3: Thiết Kế Cơ Sở Dữ Liệu & Quy Trình Bảo Mật Phân Quyền Đa Tầng**
+    - 3.1. Thiết kế các mô hình dữ liệu ORM cốt lõi & Mở rộng res.users
     - 3.2. Sơ đồ thực thể liên kết và luồng dữ liệu (ERD & Dataflow)
-    - 3.3. Cơ chế kiểm soát truy cập và bảo mật đa tầng (Access Control & Security)
-  - **Chương 4: Chi Tiết 8 Phân Hệ & Tính Năng Cốt Lõi (Core Modules)**
+    - 3.3. Cơ chế kiểm soát truy cập và bảo mật đa tầng RBAC 3 Cấp Độ (Admin, Manager, Staff)
+  - **Chương 4: Chi Tiết 10 Phân Hệ & Tính Năng Cốt Lõi (Core Modules)**
     - 4.1. Phân hệ 1: Dashboard Trung tâm & Điều khiển Tự động Phân khu (Zone Automation)
     - 4.2. Phân hệ 2: Bản đồ Tương tác Mặt bằng Nông trường (Interactive Farm Map)
     - 4.3. Phân hệ 3: Digital Twin 3D Không gian Nhà màng Công nghệ cao (Three.js Engine)
@@ -32,7 +32,9 @@
     - 4.6. Phân hệ 6: Quản lý Công việc Nông vụ Chuẩn Kanban Kéo thả (HTML5 Drag-Drop)
     - 4.7. Phân hệ 7: Widget Bản đồ Mini Giám sát Thiết bị GPS Thực địa (Radar Ping)
     - 4.8. Phân hệ 8: Trợ lý Trí tuệ Nhân tạo Agri-Copilot AI (Google Gemini & Farm Context)
-    - 4.9. Thiết kế Trải nghiệm Người dùng Đỉnh cao & Hệ thống Dual Theme (Light / Dark Slate)
+    - 4.9. Phân hệ 9: Cổng Xác Thực & Đăng Nhập Kép Chuyển Động Hiện Đại (Animated Split-Panel Auth Portal)
+    - 4.10. Phân hệ 10: Phân Hệ Quản Lý Nhân Sự Nông Trại & Phân Quyền Đa Tầng (Staff Management & Multi-Tier RBAC)
+    - 4.11. Thiết kế Trải nghiệm Người dùng Đỉnh cao & Hệ thống Dual Theme (Light / Dark Slate)
   - **Chương 5: Đánh Giá Hiệu Quả Kinh Tế - Kỹ Thuật & Quy Trình Triển Khai**
     - 5.1. Bảng so sánh chỉ số đo lường hiệu quả (KPIs) trước và sau ứng dụng
     - 5.2. Hiệu quả kinh tế và tối ưu chi phí đầu tư hạ tầng phần mềm
@@ -40,10 +42,10 @@
   - **Chương 6: Kết Luận & Định Hướng Phát Triển Mở Rộng (Future Roadmap)**
     - 6.1. Đánh giá mức độ hoàn thành so với mục tiêu đề ra
     - 6.2. Lộ trình mở rộng tương lai (LoRaWAN IoT Gateway, Camera AI, Mobile Native App)
-- **PHẦN B: DÀN Ý & KỊCH BẢN 16 SLIDE THUYẾT TRÌNH (SLIDE DECK / PPTX)**
-  - Đầy đủ 16 Slide với Tiêu đề, Bullets hiển thị, Gợi ý Visual và **Speaker Notes (Lời thoại chi tiết)**
+- **PHẦN B: DÀN Ý & KỊCH BẢN 18 SLIDE THUYẾT TRÌNH (SLIDE DECK / PPTX)**
+  - Đầy đủ 18 Slide với Tiêu đề, Bullets hiển thị, Gợi ý Visual và **Speaker Notes (Lời thoại chi tiết)**
 - **PHẦN C: PHỤ LỤC TRA CỨU NHANH (APPENDIX: SPECS, METRICS & APIS)**
-  - Bảng tổng hợp 8 Specifications của dự án
+  - Bảng tổng hợp 10 Specifications của dự án
   - Bảng thông số cảm biến và ngưỡng vận hành tối ưu
   - Bảng danh mục toàn bộ REST API Endpoints của hệ thống
 
@@ -96,7 +98,7 @@ Dự án được triển khai theo quy trình công nghệ phần mềm chuyên
 - **Bước 3 (Task Breakdown - `tasks.md`):** Phân rã công việc thành các subtask độc lập, tuân thủ chu trình 4 bước con: Lập trình -> Soi Git Diff -> Kiểm thử nghiệm thu -> Git Commit.
 - **Bước 4 (Implementation & Verification):** Thực thi mã nguồn, kiểm thử tự động, tối ưu hóa và ghi nhận nhật ký phát triển.
 
-Hệ thống đã chuẩn hóa và lưu trữ đầy đủ 8 bộ đặc tả kỹ thuật tương ứng với 8 phân hệ tại thư mục `specs/` của dự án (từ `001-farm-task-management` đến `008-gemini-ai-assistant`).
+Hệ thống đã chuẩn hóa và lưu trữ đầy đủ 10 bộ đặc tả kỹ thuật tương ứng với 10 phân hệ tại thư mục `specs/` của dự án (từ `001-farm-task-management` đến `010-staff-management-rbac`).
 
 ---
 
@@ -107,29 +109,34 @@ Hệ thống đã chuẩn hóa và lưu trữ đầy đủ 8 bộ đặc tả k�
 ```mermaid
 graph TD
     subgraph PresentationLayer["1. TẦNG GIAO DIỆN NGƯỜI DÙNG (PRESENTATION LAYER)"]
-        UI_QWeb["QWeb Template Engine (Server-rendered HTML)"]
-        UI_CSS["Custom CSS3 Design System (Glassmorphism & Dual Theme)"]
+        UI_Auth["Cổng Đăng Nhập Kép Chuyển Động (Sliding Split-Panel Auth)"]
+        UI_QWeb["QWeb Template Engine & Dynamic Role Navbar (Admin / Manager / Staff)"]
+        UI_CSS["Custom CSS3 Design System (Glassmorphism, High-Contrast & Dual Theme)"]
+        UI_Staff["Danh Bạ Nhân Sự Nông Trại & Role Selector Dropdown"]
         UI_Three["3D Digital Twin Visualizer (Three.js WebGL)"]
         UI_Chart["Đồ thị Khí tượng 24h (Chart.js Canvas)"]
-        UI_Kanban["Kanban Board tương tác (HTML5 Drag & Drop API)"]
+        UI_Kanban["Kanban Board tương tác & Task Execution Drawer (RBAC Restricted)"]
         UI_AI["Agri-Copilot Floating Widget (FAB 52px + Markdown Renderer)"]
     end
 
     subgraph ControllerLayer["2. TẦNG ĐIỀU HÀNH & REST API (APPLICATION / ROUTING LAYER)"]
-        Route_Dash["/smart_farm/dashboard: Tải giao diện tổng quan"]
+        Route_Auth["/web/login & /web/signup: Xác thực kép & Auto-redirect Dashboard"]
+        Route_Dash["/smart_farm/dashboard: Tải giao diện tổng quan theo Role"]
+        Route_Staff["/smart_farm/api/user/set_role: Admin cập nhật phân quyền nhân sự"]
         Route_Zone["/smart_farm/api/zone/control: Điều khiển thiết bị A/B/C"]
         Route_Weather["/smart_farm/api/weather/refresh: Đồng bộ khí tượng Open-Meteo"]
         Route_Alert["/smart_farm/api/alert/resolve & resolve_all: Xử lý cảnh báo"]
-        Route_Task["/smart_farm/api/task/toggle: Kéo thả cập nhật nhiệm vụ"]
+        Route_Task["/smart_farm/api/task/toggle, create, update, delete, reorder: Thao tác nhiệm vụ"]
         Route_GPS["/smart_farm/api/gps: Truy xuất toạ độ phương tiện"]
         Route_AI["/smart_farm/api/ai/chat, save_key, get_key_status: Điều phối AI"]
     end
 
     subgraph BusinessLayer["3. TẦNG LOGIC NGHIỆP VỤ & ORM (BUSINESS LOGIC LAYER)"]
+        ORM_User["res.users (Kế thừa): Phân quyền 3 cấp (admin, manager, staff)"]
         ORM_Weather["smart.farm.weather: Xử lý lịch sử nhiệt độ, độ ẩm, gió"]
         ORM_Alert["smart.farm.alert: Phân loại sự cố (Danger, Warning, Info)"]
         ORM_GPS["smart.farm.gps: Quản lý thiết bị cơ giới và toạ độ thực tế"]
-        ORM_Task["smart.farm.task: Phân loại công việc, độ ưu tiên, trạng thái"]
+        ORM_Task["smart.farm.task: Phân loại công việc, người phụ trách (user_id), RBAC"]
         ORM_Config["ir.config_parameter: Quản lý Gemini API Key toàn cục"]
         Offline_AI["Offline Farm Reasoning Engine: Động cơ suy luận nội bộ"]
     end
@@ -145,7 +152,7 @@ graph TD
     end
 
     PresentationLayer <-->|Asynchronous Fetch / JSON / DOM Events| ControllerLayer
-    ControllerLayer <-->|Odoo Python Environment / Sudo ORM| BusinessLayer
+    ControllerLayer <-->|Odoo Python Environment / Sudo ORM / RBAC Guard| BusinessLayer
     BusinessLayer <-->|SQL Queries / Connection Pool| DataLayer
     ControllerLayer <-->|HTTPS REST Calls| ExternalServices
 ```
@@ -166,9 +173,9 @@ graph TD
 
 ---
 
-## CHƯƠNG 3: THIẾT KẾ CƠ SỞ DỮ LIỆU & QUY TRÌNH BẢO MẬT
+## CHƯƠNG 3: THIẾT KẾ CƠ SỞ DỮ LIỆU & QUY TRÌNH BẢO MẬT PHÂN QUYỀN ĐA TẦNG
 
-### 3.1. Thiết kế các Mô hình Dữ liệu ORM Cốt lõi
+### 3.1. Thiết kế các Mô hình Dữ liệu ORM Cốt lõi & Mở rộng res.users
 
 #### 1. Mô hình Thời tiết (`smart.farm.weather`)
 - Quản lý lịch sử ghi nhận thời tiết theo toạ độ nông trường.
@@ -206,11 +213,25 @@ graph TD
   - `priority` (Selection: `low`, `normal`, `high`, `urgent`): Mức độ ưu tiên.
   - `is_done` (Boolean): Trạng thái hoàn thành (dùng cho bảng Kanban).
   - `sequence` (Integer): Thứ tự hiển thị kéo thả.
+  - `user_id` (Many2one tới `res.users`): Nhân sự được phân công chịu trách nhiệm chính.
+
+#### 5. Mô hình Mở rộng Tài khoản & Phân quyền Nhân sự (`res.users`)
+- Kế thừa mô hình người dùng gốc của Odoo (`models.Model` kế thừa `res.users`) để tích hợp kiểm soát truy cập Smart Farm.
+- Các trường thông tin và phương thức cốt lõi:
+  - `smart_farm_role` (Selection: `admin`, `manager`, `staff`): Định danh vai trò vận hành trong trang trại. Giá trị mặc định là `staff`.
+  - Phương thức `get_smart_farm_effective_role()`: Tính toán vai trò hiệu dụng. Tự động trả về `admin` nếu người dùng là Superuser hệ thống (`env.is_admin()`) hoặc thuộc nhóm Quản trị viên kỹ thuật Odoo (`base.group_system`), đảm bảo an toàn tuyệt đối cho người vận hành máy chủ.
 
 ### 3.2. Sơ đồ Thực thể Liên kết (ERD)
 
 ```mermaid
 erDiagram
+    RES_USERS {
+        int id PK
+        string name
+        string login
+        string smart_farm_role
+    }
+
     SMART_FARM_WEATHER {
         int id PK
         float temperature
@@ -246,6 +267,7 @@ erDiagram
         string priority
         boolean is_done
         int sequence
+        int user_id FK
     }
 
     IR_CONFIG_PARAMETER {
@@ -254,18 +276,39 @@ erDiagram
         string value
     }
 
+    RES_USERS ||--o{ SMART_FARM_TASK : "chịu trách nhiệm thực hiện (user_id)"
     SMART_FARM_ALERT ||--o{ SMART_FARM_TASK : "kích hoạt nhiệm vụ khắc phục"
 ```
 
-### 3.3. Quy trình Bảo mật & Kiểm soát Truy cập (Security Roles)
-- **Phân cấp Người dùng:**
-  - Nhóm Quản trị viên (`Smart Farm / Manager`): Toàn quyền truy cập bảng điều khiển, cấu hình Gemini API Key, xoá bản ghi, can thiệp điều khiển toàn bộ thiết bị.
-  - Nhóm Nhân viên Vận hành (`Smart Farm / User`): Xem dữ liệu giám sát, đổi trạng thái nhiệm vụ cá nhân, kích hoạt xử lý cảnh báo.
-- **Bảo vệ API Endpoints:** Mọi yêu cầu HTTP POST/GET tác động tới hệ thống đều được kiểm soát qua `auth='user'`. Hệ thống ngăn chặn việc gọi API trái phép từ bên ngoài khi chưa đăng nhập phiên Odoo hợp lệ.
+### 3.3. Cơ chế Kiểm soát Truy cập & Kiến trúc Phân quyền Đa tầng RBAC 3 Cấp Độ (Admin, Manager, Staff)
+
+Hệ thống thiết lập kiến trúc phân quyền dựa trên vai trò (**Role-Based Access Control - RBAC**) chia thành 3 cấp bậc rõ rệt nhằm tối ưu hóa luồng công việc và ngăn ngừa nguy cơ thao tác sai lệch:
+
+| Tính Năng / Quyền Hạn | Quản Trị Viên (Admin) | Quản Lý Nông Trại (Manager) | Nhân Viên Hiện Trường (Staff) |
+| :--- | :---: | :---: | :---: |
+| **Giao diện Tab Điều Hướng (Navbar)** | Toàn quyền xem tất cả Tabs | Xem đầy đủ Tabs (kể cả Nhân sự) | Chỉ xem: **Tổng quan, Công việc, Bản đồ** |
+| **Nút Cài Đặt Hệ Thống (Settings ⚙️)** | **Hiển thị** (Toàn quyền cấu hình) | **Ẩn hoàn toàn** | **Ẩn hoàn toàn** |
+| **Quản Lý API Key Trợ Lý AI Gemini** | Xem, Sửa, Lưu Key toàn cục | Bị khóa quyền đổi Key hệ thống | Bị khóa quyền đổi Key hệ thống |
+| **Xem Danh Bạ Nhân Sự (Staff Directory)** | Đầy đủ thông tin & Thống kê | Đầy đủ thông tin & Thống kê | Bị ẩn hoàn toàn (Không thấy tab) |
+| **Thay Đổi Vai Trò Nhân Sự (Set Role)** | **Cho phép** (Dropdown Role Selector) | **Bị khóa** (Chỉ xem nhãn vai trò) | **Bị khóa hoàn toàn** |
+| **Tạo Mới & Phân Công Nhiệm Vụ** | Cho phép | Cho phép | Bị ẩn nút tạo việc |
+| **Chỉnh Sửa & Xóa Nhiệm Vụ Nông Vụ** | Cho phép | Cho phép | Bị khóa (Không hiển thị nút Edit/Delete) |
+| **Kéo Thả Sắp Xếp Thứ Tự (Reorder)** | Cho phép | Cho phép | Bị vô hiệu hóa kéo thả thay đổi vị trí |
+| **Xem Chi Tiết Nhiệm Vụ & Tích Hoàn Thành** | Cho phép | Cho phép | **Cho phép** (Click mở Task Execution Drawer) |
+| **Điều Khiển Thiết Bị Phân Khu (Bơm, Quạt)** | Cho phép | Cho phép | Giám sát chỉ số môi trường |
+
+#### Cơ Chế Phòng Thủ Đa Tầng (Defense-in-Depth):
+1. **Kiểm Soát Tầng Giao Diện (Presentation Layer Guard):**
+   - JavaScript và QWeb tự động phân giải vai trò từ Session (`smartFarmRole = window.smartFarmUserRole || 'staff'`).
+   - Các phần tử nhạy cảm (tab Nhân sự, nút Settings, nút xóa task, dropdown chọn role) được ẩn triệt để bằng CSS kết hợp logic loại bỏ sự kiện chuột (`event.stopPropagation()`).
+2. **Kiểm Soát Chặt Chẽ Tầng Máy Chủ (Controller Validation & RBAC Guard):**
+   - Mọi API nhạy cảm như `/smart_farm/api/user/set_role` kiểm tra nghiêm ngặt `current_user.get_smart_farm_effective_role() == 'admin'`.
+   - Nếu phát hiện yêu cầu từ tài khoản không phải Admin, máy chủ ngay lập tức từ chối và trả về mã lỗi `{ success: false, error: 'Chỉ Admin mới có quyền thay đổi role nhân sự!' }`.
+   - Ngăn chặn hoàn toàn các hành vi vượt quyền qua can thiệp Inspect Console hoặc Postman.
 
 ---
 
-## CHƯƠNG 4: CHI TIẾT 8 PHÂN HỆ & TÍNH NĂNG CỐT LÕI
+## CHƯƠNG 4: CHI TIẾT 10 PHÂN HỆ & TÍNH NĂNG CỐT LÕI
 
 ### 4.1. Phân hệ 1: Dashboard Trung tâm & Điều khiển Tự động Phân khu (Zone Automation)
 - **Thẻ Thống kê Tổng thể (KPI Stat Cards):**
@@ -358,7 +401,42 @@ sequenceDiagram
 - **Động cơ Phân tích Dự phòng Ngoại tuyến (Offline Farm Reasoning Engine):** Khi người dùng chưa có API Key hoặc mất kết nối mạng ngoài, động cơ nội bộ vẫn tự động bóc tách từ khóa và phân tích dữ liệu đất, thời tiết, an toàn, máy kéo để trả lời chi tiết và chuẩn xác 100%.
 - **5 Chip Gợi ý Nhanh 1 Chạm:** Cho phép kiểm tra ngay: *🌱 Độ ẩm đất & Tưới*, *⚠️ Cảnh báo an toàn*, *🚜 Vị trí máy kéo GPS*, *🌤️ Thời tiết & Nông vụ*, *📋 Tiến độ công việc*.
 
-### 4.9. Thiết kế Trải nghiệm Người dùng Đỉnh cao & Hệ thống Dual Theme
+### 4.9. Phân hệ 9: Cổng Xác Thực & Đăng Nhập Kép Chuyển Động Hiện Đại (Animated Split-Panel Auth Portal)
+- **Vấn đề Thực tiễn & Đột phá Giao diện:** Giao diện đăng nhập mặc định của Odoo đơn điệu, thô sơ và thiếu tính chuyên nghiệp của một nền tảng Nông nghiệp công nghệ cao 4.0. Phân hệ 9 tái cấu trúc toàn diện trang xác thực thành cổng đăng nhập kép tương tác cao (Animated Split-Panel Portal).
+- **Kiến trúc Sliding Overlay Animation 0.6s:**
+  - Khung bao chứa chia 2 phần (Sign In & Sign Up) kèm một tấm nền che phủ động (Overlay Panel) phối dải màu gradient ngọc bích sang trọng (`#10b981` đến `#059669`).
+  - Khi người dùng bấm nút *"Sign In"* hoặc *"Sign Up"*, tấm nền chuyển động trượt êm ái sang bên đối diện với thời gian đáp ứng chuẩn 0.6 giây (`transform: translateX(...)` kết hợp cubic-bezier timing), mang lại hiệu ứng thị giác đẳng cấp quốc tế.
+- **Bộ Form Xác Thực Toàn Diện:**
+  - Form Đăng nhập: Tài khoản/Email, Mật khẩu, nút Ghi nhớ đăng nhập và Quên mật khẩu.
+  - Form Đăng ký: Họ tên, Email, Mật khẩu, Nhập lại mật khẩu và chấp thuận điều khoản bảo mật.
+  - Tích hợp cụm icon đăng nhập mạng xã hội (Google, Facebook, LinkedIn) hỗ trợ mở rộng tương lai.
+- **Cơ chế Chuyển Hướng Thông Minh (Auto-Redirect to Dashboard):**
+  - Tùy biến `LoginRedirectController` kế thừa từ `odoo.addons.web.controllers.home.Home`.
+  - Ngay sau khi người dùng xác thực danh tính thành công, thay vì đưa vào giao diện Odoo backend cồng kềnh (`/web`), hệ thống tự động điều hướng trực tiếp sang `/smart_farm/dashboard`, đưa người quản lý vào thẳng trung tâm điều hành nông trại trong chớp mắt.
+  - Hỗ trợ hiển thị cảnh báo sai mật khẩu trực quan ngay trên form với hiệu ứng rung nhẹ (Shake Animation).
+
+### 4.10. Phân hệ 10: Phân Hệ Quản Lý Nhân Sự Nông Trại & Phân Quyền Đa Tầng (Staff Management & Multi-Tier RBAC)
+- **Giao diện Tab "Nhân sự" Chuyên nghiệp (Enterprise Staff Directory):**
+  - **4 Thẻ KPI Tổng quan Nhân lực:** Thống kê trực quan: *Tổng nhân sự*, *Quản lý trang trại*, *Nhân viên hiện trường*, và *Đang hoạt động*, giúp người điều hành nắm bắt ngay quân số nông trường.
+  - **Tìm kiếm & Bộ lọc Tức thời:** Thanh tìm kiếm theo tên hoặc email hoạt động theo thời gian thực (lọc DOM client-side) kết hợp 3 chip lọc nhanh: *Tất cả*, *Quản lý*, *Nhân viên*.
+  - **Bảng Danh Bạ Nhân Sự Chuẩn Enterprise:** Hiển thị avatar tròn mang chữ cái viết tắt của nhân sự, họ tên, email, nhãn vai trò đa sắc (Admin - Tím, Manager - Xanh ngọc, Staff - Xanh lá) và chấm tròn trạng thái trực tuyến.
+- **Bộ Chọn Phân Quyền Động (Dynamic Role Selector):**
+  - Đối với Quản trị viên (Admin): Cột thao tác hiển thị một dropdown chọn vai trò (`Admin`, `Manager`, `Staff`). Khi thay đổi, hệ thống gọi API `/smart_farm/api/user/set_role` cập nhật tức thì vào cơ sở dữ liệu Odoo kèm Toast thông báo thành công.
+  - Đối với Quản lý (Manager) & Nhân viên (Staff): Chức năng này bị khóa hoàn toàn. Manager chỉ thấy nhãn vai trò ở dạng tĩnh (Static Badge), không thể tự ý nâng hạ quyền hạn.
+- **Điều Phối Hiển Thị Thanh Điều Hướng (Navbar RBAC Guard):**
+  - Hệ thống tự động ẩn/hiện các tab dựa trên vai trò người đăng nhập:
+    - *Nhân viên (Staff):* Chỉ thấy 3 tab cốt lõi phục vụ canh tác thực địa: **Tổng quan**, **Công việc**, và **Bản đồ**. Bị ẩn tab Nhân sự và Lịch sử để tối ưu hóa không gian làm việc.
+    - *Quản lý (Manager):* Hiển thị thêm tab **Nhân sự** để theo dõi danh bạ và giao việc.
+    - *Quản trị viên (Admin):* Toàn quyền truy cập mọi tab chức năng.
+  - **Kiểm Soát Nút Cài Đặt Hệ Thống (Settings ⚙️):** Chỉ Admin mới nhìn thấy icon bánh răng trên Navbar để cấu hình Gemini API Key và tham số toàn cục. Nút này được ẩn hoàn toàn đối với Manager và Staff nhằm bảo vệ an toàn tuyệt đối các bí mật hệ thống.
+- **Phân Quyền Thao Tác Nhiệm Vụ & Ngăn Kéo Thi Hành (Task Execution Drawer):**
+  - **Bảo Vệ Tính Toàn Vẹn Của Kế Hoạch Nông Vụ:** Nhân viên (Staff) bị ẩn nút *"Thêm việc mới"*, ẩn nút Sửa, ẩn nút Xóa và vô hiệu hóa kéo thả sắp xếp (Reorder) nhằm tránh làm sai lệch kế hoạch sản xuất của ban quản lý.
+  - **Ngăn Kéo Thi Hành Công Việc Của Nhân Viên (Task Execution Drawer):** Khi nhân viên Staff bấm vào thẻ nhiệm vụ, một ngăn kéo thanh lịch (Drawer) sẽ trượt ra từ mép phải màn hình, hiển thị rõ ràng:
+    - Tiêu đề, mô tả công việc, mức độ ưu tiên và tên người phụ trách.
+    - Checkbox tích chọn hoàn thành cỡ lớn (Touch-friendly), giúp công nhân dễ dàng thao tác bằng một tay ngay trên điện thoại hoặc máy tính bảng ngoài đồng ruộng.
+  - **Quyền Hạn Toàn Phần Của Manager & Admin:** Toàn quyền Thêm việc mới, phân công nhân viên phụ trách (`user_id`), Sửa, Xóa và tự do kéo thả nhiệm vụ giữa hai cột "Cần làm" và "Đã xong".
+
+### 4.11. Thiết kế Trải nghiệm Người dùng Đỉnh cao & Hệ thống Dual Theme (Light / Dark Slate)
 - **Chế độ Sáng Cao Cấp (High-Contrast Light Mode):** Khắc phục hoàn toàn tình trạng mờ nhạt của giao diện sáng thông thường. Viền thẻ được nâng cấp lên `#cbd5e1` sắc nét, nền thẻ `#ffffff`, các ô dữ liệu bên trong là `#f1f5f9`, chữ màu than đen `#0f172a`, bóng đổ đa tầng tạo chiều sâu rõ rệt khi quan sát ngoài trời nắng.
 - **Chế độ Tối Tinh Tế (Sleek Dark Slate Mode):** Tông màu xám đá phiến huyền bí (`#0f172a` và `#1e293b`), ánh sáng dịu mắt, giảm 60% mức tiêu thụ năng lượng màn hình và chống mỏi mắt cho nhân viên ca trực đêm.
 - **Chuyển đổi Không Chớp Nháy (Zero-Flicker Toggle):** Trạng thái giao diện được lưu trữ trong `localStorage` và kiểm tra ngay từ thẻ `<head>` của trang HTML, loại bỏ hoàn toàn hiện tượng nhấp nháy giao diện khi tải lại trang.
@@ -428,7 +506,8 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 1. Xây dựng thành công một nền tảng quản trị nông nghiệp thông minh toàn diện, tích hợp sâu vào hệ sinh thái Odoo 18.
 2. Ứng dụng thành công công nghệ 3D Digital Twin (Three.js) và định vị thực địa GPS mang lại trải nghiệm quan sát trực quan chưa từng có.
 3. Tích hợp đột phá Trợ lý Trí tuệ Nhân tạo Agri-Copilot (Google Gemini 1.5 Flash) với cơ chế bơm dữ liệu cảm biến thực tế và động cơ dự phòng ngoại tuyến.
-4. Đảm bảo quy trình phát triển phần mềm chuẩn mực thông qua 8 bộ đặc tả kỹ thuật (Spec-Driven Development) và thiết kế giao diện kép cao cấp.
+4. Hoàn thiện cổng đăng nhập kép chuyển động hiện đại (Animated Split-Panel Auth Portal) tự động điều hướng và kiến trúc phân quyền đa tầng RBAC 3 cấp độ (Admin, Manager, Staff) kiểm soát chặt chẽ an ninh hệ thống.
+5. Đảm bảo quy trình phát triển phần mềm chuẩn mực thông qua 10 bộ đặc tả kỹ thuật (Spec-Driven Development) và thiết kế giao diện kép cao cấp.
 
 ### 6.2. Lộ trình Phát triển Mở rộng Tương lai (Roadmap)
 - **Giai đoạn 1: Mở rộng Phần cứng Mạng diện rộng LoRaWAN:** Kết nối mạng vi điều khiển ESP32 / STM32 gắn pin năng lượng mặt trời với bán kính truyền dữ liệu 5 - 10 km ngoài đồng ruộng.
@@ -438,7 +517,7 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 ---
 
-# PHẦN B: DÀN Ý & KỊCH BẢN 16 SLIDE THUYẾT TRÌNH (SLIDE DECK / PPTX)
+# PHẦN B: DÀN Ý & KỊCH BẢN 18 SLIDE THUYẾT TRÌNH (SLIDE DECK / PPTX)
 
 > **Cấu trúc mỗi Slide gồm 4 thành phần:**
 > 1. **Tiêu đề Slide**
@@ -481,33 +560,34 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
   - ⚡ **Giám sát & Tự động hoá Thời gian thực:** Kiểm soát chính xác độ ẩm 3 phân khu chuyên biệt quy mô 12.4 hecta.
   - 🧊 **Trực quan hoá 3D & GPS Thực địa:** Quan sát nhà màng qua không gian 3D và theo dõi máy móc nông nghiệp qua bản đồ toạ độ vệ tinh.
   - 🤖 **Trợ lý AI Đột phá (Agri-Copilot):** Ứng dụng Google Gemini phân tích dữ liệu cảm biến thời gian thực, tư vấn canh tác 24/7.
-  - 🎨 **Trải nghiệm Đỉnh cao:** Giao diện kép High-Contrast Light Mode & Dark Slate Mode tối ưu cả trong nhà và ngoài đồng ruộng.
-- **Visual gợi ý:** Sơ đồ 4 trụ cột chiến lược: *Giám sát tập trung -> Tự động hoá phân khu -> Trực quan hoá không gian -> Trí tuệ nhân tạo AI*.
+  - 🔐 **Bảo mật Đa tầng & Phân quyền RBAC:** Phân cấp rõ rệt giữa Quản trị viên, Quản lý và Công nhân thi hành ngoài thực địa.
+  - 🎨 **Trải nghiệm Đỉnh cao:** Cổng đăng nhập kép chuyển động và giao diện Dual Theme High-Contrast / Dark Slate.
+- **Visual gợi ý:** Sơ đồ 4 trụ cột chiến lược: *Giám sát tập trung -> Tự động hoá phân khu -> Trực quan hoá không gian -> Trí tuệ nhân tạo AI & RBAC*.
 - **Speaker Notes (Lời thoại chi tiết):**
-  > *"Mục tiêu của chúng tôi không chỉ là làm một phần mềm hiển thị dữ liệu, mà là tạo ra một trung tâm điều hành nông trại toàn diện: Người quản lý chỉ cần một chiếc máy tính hay máy tính bảng là có thể nắm bắt độ ẩm từng mét vuông đất, quan sát nhà màng 3D từ xa, theo dõi máy kéo đang chạy ở đâu và nhận được lời tư vấn kỹ thuật trực tiếp từ AI."*
+  > *"Mục tiêu của chúng tôi không chỉ là làm một phần mềm hiển thị dữ liệu, mà là tạo ra một trung tâm điều hành nông trại toàn diện: Người quản lý chỉ cần một chiếc máy tính hay máy tính bảng là có thể nắm bắt độ ẩm từng mét vuông đất, quan sát nhà màng 3D từ xa, theo dõi máy kéo đang chạy ở đâu, phân công công việc bảo mật và nhận được lời tư vấn kỹ thuật trực tiếp từ AI."*
 
 ---
 
 ### SLIDE 4: QUY TRÌNH PHÁT TRIỂN CHUẨN ĐẶC TẢ (SPEC-DRIVEN DEVELOPMENT)
 - **Tiêu đề Slide:** QUY TRÌNH KỸ THUẬT PHẦN MỀM: SPEC-DRIVEN DEVELOPMENT
 - **Nội dung trình chiếu:**
-  - 📐 **Chuẩn hóa 8 Module Specifications:** Hoàn thành trọn vẹn 8 bộ đặc tả kỹ thuật từ `001-farm-task-management` đến `008-gemini-ai-assistant`.
+  - 📐 **Chuẩn hóa 10 Module Specifications:** Hoàn thành trọn vẹn 10 bộ đặc tả kỹ thuật từ `001-farm-task-management` đến `010-staff-management-rbac`.
   - 🔄 **Chu trình 4 bước bắt buộc cho mỗi tính năng:**
     1. *Đặc tả (spec.md):* User Stories & Tiêu chí nghiệm thu rõ ràng.
     2. *Kế hoạch kiến trúc (plan.md):* Thiết kế Mermaid, REST APIs, ORM models.
     3. *Phân rã công việc (tasks.md):* Checklist 4 bước: Code -> Review Diff -> Test -> Commit.
     4. *Triển khai & Nghiệm thu:* Đảm bảo 100% không phát sinh lỗi hồi quy (zero-regression).
   - 🛡️ **Giá trị mang lại:** Mã nguồn sạch, kiến trúc module hóa chặt chẽ, dễ bảo trì và mở rộng lâu dài.
-- **Visual gợi ý:** Sơ đồ quy trình 4 bước hình tròn khép kín kèm danh sách 8 module specs từ 001 đến 008.
+- **Visual gợi ý:** Sơ đồ quy trình 4 bước hình tròn khép kín kèm danh sách 10 module specs từ 001 đến 010.
 - **Speaker Notes (Lời thoại chi tiết):**
-  > *"Để đảm bảo chất lượng kỹ thuật cao nhất, dự án được phát triển theo phương pháp Spec-Driven Development. Mọi tính năng từ quản lý công việc, thời tiết, GPS cho tới AI đều bắt đầu từ tệp đặc tả spec.md, kế hoạch plan.md và bảng nhiệm vụ tasks.md. Toàn bộ 8 bộ tài liệu này đều được lưu trữ trực tiếp trong repository của dự án."*
+  > *"Để đảm bảo chất lượng kỹ thuật cao nhất, dự án được phát triển theo phương pháp Spec-Driven Development. Mọi tính năng từ quản lý công việc, thời tiết, GPS, đăng nhập cho tới phân quyền nhân sự đều bắt đầu từ tệp đặc tả spec.md, kế hoạch plan.md và bảng nhiệm vụ tasks.md. Toàn bộ 10 bộ tài liệu này đều được lưu trữ trực tiếp trong repository của dự án."*
 
 ---
 
 ### SLIDE 5: KIẾN TRÚC KỸ THUẬT & CÔNG NGHỆ NỀN TẢNG
 - **Tiêu đề Slide:** KIẾN TRÚC HỆ THỐNG & NGĂN XẾP CÔNG NGHỆ
 - **Nội dung trình chiếu:**
-  - ⚙️ **Backend:** Odoo 18 (Python 3.12) - ORM mạnh mẽ, bảo mật cao, mở rộng linh hoạt.
+  - ⚙️ **Backend:** Odoo 18 (Python 3.12) - ORM mạnh mẽ, mở rộng `res.users` phân quyền 3 cấp.
   - 🗄️ **Database:** PostgreSQL 15 - Lưu trữ an toàn, truy vấn cảm biến tốc độ cao.
   - 🎨 **Frontend:** QWeb Engine, Vanilla JavaScript, CSS3 Design System - Tải trang dưới 0.8 giây.
   - 🎮 **Đồ hoạ 3D:** Three.js WebGL & OrbitControls - Dựng hình không gian số sống động.
@@ -596,21 +676,50 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 ---
 
-### SLIDE 11: QUẢN LÝ CÔNG VIỆC NÔNG VỤ CHUẨN KANBAN KÉO THẢ
-- **Tiêu đề Slide:** QUẢN LÝ CÔNG VIỆC NÔNG VỤ KANBAN HIỆN ĐẠI
+### SLIDE 11: QUẢN LÝ CÔNG VIỆC NÔNG VỤ CHUẨN KANBAN & PHÂN QUYỀN TÁC VỤ
+- **Tiêu đề Slide:** QUẢN LÝ CÔNG VIỆC NÔNG VỤ KANBAN & KIỂM SOÁT TÁC VỤ
 - **Nội dung trình chiếu:**
   - 📋 **Bảng Nhiệm vụ Chuẩn mực:** Phân chia rõ ràng giữa cột "Cần làm" và "Đã xong".
-  - ✋ **Kéo thả Trực quan (HTML5 Drag & Drop):** Chuyển trạng thái công việc mượt mà chỉ bằng thao tác kéo chuột.
+  - ✋ **Kéo thả Trực quan (HTML5 Drag & Drop):** Chuyển trạng thái công việc mượt mà chỉ bằng thao tác kéo chuột (dành cho Admin/Manager).
   - 🏷️ **Phân loại Công việc:** Huy hiệu riêng biệt cho việc Hàng ngày (Daily), Mùa vụ (Season), Bảo dưỡng (Maintenance).
   - 🔍 **Tìm kiếm & Bộ lọc Tức thời:** Lọc theo mức độ ưu tiên hoặc tìm kiếm theo từ khóa tức thì.
-  - 📈 **Đo lường Hiệu suất:** Tự động tính toán tỷ lệ hoàn thành công việc của đội ngũ nông nghiệp.
-- **Visual gợi ý:** Ảnh chụp giao diện Task Management dạng Kanban kéo thả với các thẻ công việc sinh động.
+  - 📱 **Task Execution Drawer cho Công nhân (Staff):** Nhân viên không được sửa/xóa mà click mở ngăn kéo chi tiết để xem hướng dẫn và tích chọn hoàn thành công việc.
+- **Visual gợi ý:** Ảnh chụp giao diện Task Kanban và hình ảnh Drawer trượt ra từ bên phải màn hình khi click vào nhiệm vụ.
 - **Speaker Notes (Lời thoại chi tiết):**
-  > *"Để loại bỏ tình trạng quên việc và trễ mùa vụ, chúng tôi phát triển bảng quản lý công việc theo chuẩn Kanban. Kỹ sư có thể kéo thả nhiệm vụ để hoàn thành, tìm kiếm nhanh và xem thanh tiến độ công việc trong ngày. Mọi thao tác đều được tự động lưu vào cơ sở dữ liệu Odoo."*
+  > *"Bảng quản lý công việc Kanban được thiết kế để loại bỏ triệt để tình trạng sót việc. Đặc biệt, chúng tôi phân quyền rõ ràng: Quản lý có thể tạo, giao việc và sắp xếp; còn nhân viên hiện trường thì chỉ cần chạm vào thẻ để mở ngăn kéo xem hướng dẫn kỹ thuật và tích hoàn thành nhiệm vụ ngay ngoài vườn cây."*
 
 ---
 
-### SLIDE 12: ĐỘT PHÁ CÔNG NGHỆ: AGRI-COPILOT AI (GOOGLE GEMINI)
+### SLIDE 12: CỔNG XÁC THỰC & ĐĂNG NHẬP KÉP CHUYỂN ĐỘNG HIỆN ĐẠI
+- **Tiêu đề Slide:** CỔNG XÁC THỰC ĐĂNG NHẬP KÉP (ANIMATED SPLIT-PANEL AUTH)
+- **Nội dung trình chiếu:**
+  - 🚪 **Thay thế Giao diện Mặc định Odoo:** Thiết kế hiện đại, đậm chất công nghệ nông nghiệp 4.0.
+  - ✨ **Hiệu ứng Trượt Mượt mà 0.6s (Sliding Overlay Animation):** Tấm nền gradient xanh ngọc chuyển động nhịp nhàng giữa hai nửa Đăng nhập (Sign In) và Đăng ký (Sign Up).
+  - 📝 **Đầy đủ Quy trình Xác thực:** Đăng nhập tài khoản, đăng ký thành viên mới, ghi nhớ phiên và khôi phục mật khẩu.
+  - 🚀 **Cơ chế Tự động Điều hướng (Auto-Redirect):** Sau khi xác thực thành công, hệ thống chuyển hướng thẳng vào `/smart_farm/dashboard` thay vì màn hình backend `/web` cồng kềnh.
+  - 🔔 **Xử lý Ngoại lệ Tinh tế:** Thông báo lỗi mật khẩu với hiệu ứng rung nhẹ (Shake Animation) trực quan.
+- **Visual gợi ý:** Ảnh chụp giao diện Split-Panel Auth với tấm nền xanh lá gradient và hai trạng thái Sign In / Sign Up.
+- **Speaker Notes (Lời thoại chi tiết):**
+  > *"Để mang lại ấn tượng chuyên nghiệp ngay từ điểm chạm đầu tiên, chúng tôi đã thay thế hoàn toàn trang đăng nhập mặc định của Odoo bằng Cổng xác thực Split-Panel. Tấm nền trượt qua lại với hiệu ứng 0.6 giây cực kỳ mượt mà. Đặc biệt, ngay khi đăng nhập xong, hệ thống sẽ tự động đưa người dùng thẳng vào Dashboard Smart Farm mà không phải qua bất kỳ bước trung gian nào."*
+
+---
+
+### SLIDE 13: QUẢN LÝ NHÂN SỰ NÔNG TRẠI & PHÂN QUYỀN ĐA TẦNG RBAC 3 CẤP ĐỘ
+- **Tiêu đề Slide:** QUẢN TRỊ NHÂN SỰ & KIẾN TRÚC PHÂN QUYỀN RBAC 3 CẤP ĐỘ
+- **Nội dung trình chiếu:**
+  - 👥 **Tab "Nhân sự" Chuyên nghiệp:** 4 thẻ KPI quân số (Tổng nhân sự, Quản lý, Nhân viên, Đang hoạt động), bộ lọc vai trò và tìm kiếm tức thì.
+  - 🎖️ **Ma trận Phân quyền 3 Cấp bậc (Admin - Manager - Staff):**
+    - **Quản trị viên (Admin):** Toàn quyền cấu hình, đổi vai trò nhân sự qua Dropdown, quản lý Gemini API Key qua nút Settings ⚙️.
+    - **Quản lý (Manager):** Xem danh bạ nhân sự, giao việc, thêm/sửa/xóa task; nhưng bị khóa chức năng đổi quyền và bị ẩn nút Settings.
+    - **Nhân viên (Staff):** Chỉ thấy 3 tab (Tổng quan, Công việc, Bản đồ); ẩn nút sửa/xóa; chỉ được mở Drawer tích hoàn thành task.
+  - 🛡️ **Bảo mật Phòng thủ Đa tầng (Defense-in-Depth):** Ẩn giao diện ở client và kiểm tra xác thực quyền hạn nghiêm ngặt ở tầng Controller backend.
+- **Visual gợi ý:** Ảnh chụp bảng danh bạ nhân sự, dropdown chọn quyền của Admin và bảng so sánh ma trận 3 vai trò.
+- **Speaker Notes (Lời thoại chi tiết):**
+  > *"Hệ thống xây dựng một kiến trúc phân quyền RBAC 3 cấp độ rất chặt chẽ: Admin có toàn quyền và là người duy nhất nhìn thấy nút Cài đặt để quản lý API Key; Quản lý trang trại có thể giao việc nhưng không thể tự ý sửa role; còn Nhân viên hiện trường chỉ thấy những màn hình cần thiết để làm việc mà không bị rối mắt. Mọi yêu cầu đều được backend kiểm tra bản quyền gắt gao."*
+
+---
+
+### SLIDE 14: ĐỘT PHÁ CÔNG NGHỆ: TRỢ LÝ AI AGRI-COPILOT (GOOGLE GEMINI)
 - **Tiêu đề Slide:** ĐỘT PHÁ CÔNG NGHỆ: TRỢ LÝ AI AGRI-COPILOT
 - **Nội dung trình chiếu:**
   - 🤖 **Bộ não Google Gemini 1.5 Flash:** Xử lý ngôn ngữ tự nhiên tiếng Việt chuyên sâu, tư vấn kỹ thuật nông nghiệp chuẩn xác.
@@ -625,7 +734,7 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 ---
 
-### SLIDE 13: TRẢI NGHIỆM NGƯỜI DÙNG: HỆ THỐNG DUAL THEME ĐỈNH CAO
+### SLIDE 15: TRẢI NGHIỆM NGƯỜI DÙNG: HỆ THỐNG DUAL THEME ĐỈNH CAO
 - **Tiêu đề Slide:** TRẢI NGHIỆM NGƯỜI DÙNG: HỆ THỐNG DUAL THEME ĐẲNG CẤP
 - **Nội dung trình chiếu:**
   - ☀️ **Modern High-Contrast Light Mode:** Tương phản cao, đổ bóng đa tầng, đường viền sắc nét, nhìn rõ ràng dưới ánh nắng chói chang ngoài đồng ruộng.
@@ -638,7 +747,7 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 ---
 
-### SLIDE 14: ĐÁNH GIÁ HIỆU QUẢ VẬN HÀNH & KINH TẾ
+### SLIDE 16: ĐÁNH GIÁ HIỆU QUẢ VẬN HÀNH & KINH TẾ
 - **Tiêu đề Slide:** ĐÁNH GIÁ HIỆU QUẢ VẬN HÀNH & KINH TẾ
 - **Nội dung trình chiếu:**
   - 💧 **Tiết kiệm 25% - 35% chi phí nước & điện:** Nhờ tưới chính xác theo độ ẩm thực tế của từng phân khu.
@@ -652,7 +761,7 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 ---
 
-### SLIDE 15: ĐỊNH HƯỚNG PHÁT TRIỂN TƯƠNG LAI (ROADMAP)
+### SLIDE 17: LỘ TRÌNH MỞ RỘNG & PHÁT TRIỂN TƯƠNG LAI (ROADMAP)
 - **Tiêu đề Slide:** LỘ TRÌNH MỞ RỘNG & PHÁT TRIỂN TƯƠNG LAI
 - **Nội dung trình chiếu:**
   - 📡 **Giai đoạn 1: Mạng cảm biến tầm xa LoRaWAN:** Kết nối phần cứng vi điều khiển ngoài đồng ruộng với bán kính phủ sóng 5 - 10 km.
@@ -665,12 +774,12 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 ---
 
-### SLIDE 16: TỔNG KẾT & PHIÊN HỎI ĐÁP (Q&A)
+### SLIDE 18: TỔNG KẾT & PHIÊN HỎI ĐÁP (Q&A)
 - **Tiêu đề Slide:** TỔNG KẾT DỰ ÁN & LỜI CẢM ƠN
 - **Nội dung trình chiếu:**
-  - ✅ **Hoàn thành trọn vẹn 100% mục tiêu đề ra.**
+  - ✅ **Hoàn thành trọn vẹn 100% mục tiêu đề ra (10 Phân hệ cốt lõi).**
   - ✅ **Hệ thống chạy thực tế mượt mà trên môi trường Docker.**
-  - ✅ **Hợp nhất thành công ERP Odoo 18, 3D Digital Twin và Google Gemini AI.**
+  - ✅ **Hợp nhất thành công ERP Odoo 18, 3D Digital Twin, RBAC Multi-Tier và Gemini AI.**
   - ✅ **Tính ứng dụng thực tiễn cao, thẩm mỹ vượt trội, sẵn sàng triển khai quy mô lớn.**
   - 💬 **Sẵn sàng đón nhận các câu hỏi và đóng góp từ Hội đồng!**
 - **Thông tin liên hệ:**
@@ -678,13 +787,13 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
   - GitHub Repository: `[Link GitHub dự án]`
 - **Visual gợi ý:** Lời cảm ơn nổi bật cùng mã QR demo hệ thống và logo Smart Farm.
 - **Speaker Notes (Lời thoại chi tiết):**
-  > *"Trên đây là toàn bộ phần trình bày về Hệ thống Quản trị Nông trại Thông minh Smart Farm Management. Chúng tôi xin chân thành cảm ơn quý thầy cô và các bạn đã chú ý theo dõi. Rất mong nhận được những câu hỏi và ý kiến đóng góp quý báu từ hội đồng để hệ thống ngày càng hoàn thiện hơn nữa. Xin trân trọng cảm ơn!"*
+  > *"Trên đây là toàn bộ phần trình bày về Hệ thống Quản trị Nông trại Thông minh Smart Farm Management gồm 10 phân hệ toàn diện. Chúng tôi xin chân thành cảm ơn quý thầy cô và các bạn đã chú ý theo dõi. Rất mong nhận được những câu hỏi và ý kiến đóng góp quý báu từ hội đồng để hệ thống ngày càng hoàn thiện hơn nữa. Xin trân trọng cảm ơn!"*
 
 ---
 
-# PHẦN C: PHỤ LỤC TRA CỨU NHANH (APPENDIX)
+# PHẦN C: PHỤ LỤC TRA CỨU NHANH (APPENDIX: SPECS, METRICS & APIS)
 
-### 1. Bảng Tổng Hợp 8 Bộ Đặc Tả Kỹ Thuật (Module Specifications)
+### 1. Bảng Tổng Hợp 10 Bộ Đặc Tả Kỹ Thuật (Module Specifications)
 
 | Mã Spec | Thư mục Lưu trữ | Tên Phân Hệ Kỹ Thuật | Trọng Tâm Nghiệp Vụ & Công Nghệ |
 | :--- | :--- | :--- | :--- |
@@ -696,6 +805,8 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 | **006** | `specs/006-dark-mode` | Giao diện Đa chế độ Dual Theme| Sleek Dark Slate Mode & High-Contrast Light Mode |
 | **007** | `specs/007-gps-tracking-widget` | Widget Giám sát GPS Thực địa | Bản đồ mini, hiệu ứng radar ping, auto-seed data |
 | **008** | `specs/008-gemini-ai-assistant` | Trợ lý AI Agri-Copilot | Google Gemini 1.5 Flash, live context injection, FAB |
+| **009** | `specs/009-login-custom-ui` | Cổng Xác Thực & Đăng Nhập Kép | Split-Panel sliding animation 0.6s, auto-redirect dashboard |
+| **010** | `specs/010-staff-management-rbac` | Quản Trị Nhân Sự & RBAC Đa Tầng | Danh bạ nhân sự, role selector dropdown, task drawer & navbar guard |
 
 ---
 
@@ -715,13 +826,20 @@ Dự án Smart Farm Management đã hoàn thành 100% các mục tiêu đề ra:
 
 | STT | Phương thức | Đường dẫn Endpoint | Quyền hạn | Mô tả Xử lý & Dữ liệu Trao đổi |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | `GET` | `/smart_farm/dashboard` | `auth='user'` | Tải toàn bộ cấu trúc giao diện Dashboard trung tâm |
+| 1 | `GET` | `/smart_farm/dashboard` | `auth='user'` | Tải toàn bộ cấu trúc giao diện Dashboard trung tâm theo vai trò người dùng |
 | 2 | `POST` | `/smart_farm/api/zone/control` | `auth='user'` | Bật/tắt thiết bị phân khu `{ zone: 'a', device: 'pump', state: true }` |
 | 3 | `POST` | `/smart_farm/api/weather/refresh`| `auth='user'` | Đồng bộ khí tượng Open-Meteo, trả về nhiệt độ & mã thời tiết mới nhất |
 | 4 | `POST` | `/smart_farm/api/alert/resolve` | `auth='user'` | Đánh dấu giải quyết 1 cảnh báo `{ alert_id: 12 }` |
 | 5 | `POST` | `/smart_farm/api/alert/resolve_all`| `auth='user'`| Đánh dấu đã xử lý toàn bộ cảnh báo tồn đọng |
-| 6 | `POST` | `/smart_farm/api/task/toggle` | `auth='user'` | Cập nhật kéo thả trạng thái nhiệm vụ `{ task_id: 3, is_done: true }` |
+| 6 | `POST` | `/smart_farm/api/task/toggle` | `auth='user'` | Cập nhật hoàn thành nhiệm vụ `{ task_id: 3, is_done: true }` |
 | 7 | `GET` | `/smart_farm/api/gps` | `auth='public'`| Truy xuất danh sách toạ độ GPS của các phương tiện thực địa |
 | 8 | `POST` | `/smart_farm/api/ai/chat` | `auth='user'` | Gửi tin nhắn tới Agri-Copilot AI kèm nạp ngữ cảnh cảm biến thực tế |
-| 9 | `POST` | `/smart_farm/api/ai/save_key` | `auth='user'` | Lưu Google Gemini API Key vào hệ thống `{ api_key: 'AIzaSy...' }` |
+| 9 | `POST` | `/smart_farm/api/ai/save_key` | `auth='user'` (Admin only) | Lưu Google Gemini API Key toàn cục vào hệ thống `{ api_key: 'AIzaSy...' }` |
 | 10 | `GET` | `/smart_farm/api/ai/get_key_status`| `auth='user'`| Kiểm tra trạng thái đã có key hay chưa `{ has_key: true, masked_key: '...' }` |
+| 11 | `POST` | `/smart_farm/api/user/set_role` | `auth='user'` (Admin only) | Cập nhật vai trò nhân sự nông trại `{ user_id: 5, role: 'manager' }` |
+| 12 | `POST` | `/smart_farm/api/task/create` | `auth='user'` (Admin/Manager) | Tạo mới nhiệm vụ nông vụ & phân công nhân sự `{ name: '...', user_id: 5 }` |
+| 13 | `POST` | `/smart_farm/api/task/update` | `auth='user'` (Admin/Manager) | Cập nhật thông tin chi tiết nhiệm vụ nông vụ |
+| 14 | `POST` | `/smart_farm/api/task/delete` | `auth='user'` (Admin/Manager) | Xóa vĩnh viễn nhiệm vụ khỏi bảng Kanban |
+| 15 | `POST` | `/smart_farm/api/task/reorder` | `auth='user'` (Admin/Manager) | Lưu thứ tự kéo thả sequence của các thẻ công việc |
+| 16 | `GET/POST` | `/web/login & /web/signup` | `auth='public'` | Cổng đăng nhập & đăng ký kép chuyển động, tự động redirect sang `/smart_farm/dashboard` |
+| 17 | `POST` | `/smart_farm/api/auth/signup` | `auth='public'` | API đăng ký tài khoản nhân sự mới (gán nhóm internal user & role staff, mã hóa mật khẩu chuẩn PBKDF2) |

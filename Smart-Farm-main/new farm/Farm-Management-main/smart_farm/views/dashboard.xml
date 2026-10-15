@@ -37,11 +37,103 @@
                         } catch(e) {}
                     })();
                 ]]></script>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=151"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=205"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
                 <style><![CDATA[
+                    /* Critical Inlined Dark Mode Contrast Fixes (Guarantee instant load without caching delay) */
+                    html.sf-dark-mode {
+                        color-scheme: dark;
+                    }
+                    html.sf-dark-mode body,
+                    body.sf-dark-mode {
+                        background: #0f172a !important;
+                        color: #f8fafc !important;
+                    }
+                    html.sf-dark-mode .sf-weather-info,
+                    body.sf-dark-mode .sf-weather-info {
+                        color: #cbd5e1 !important;
+                    }
+                    html.sf-dark-mode .sf-weather-info span,
+                    body.sf-dark-mode .sf-weather-info span,
+                    html.sf-dark-mode #sf-weather-location-val,
+                    body.sf-dark-mode #sf-weather-location-val,
+                    html.sf-dark-mode #sf-weather-wind-val,
+                    body.sf-dark-mode #sf-weather-wind-val,
+                    html.sf-dark-mode #sf-weather-hum-val,
+                    body.sf-dark-mode #sf-weather-hum-val {
+                        color: #f8fafc !important;
+                    }
+                    html.sf-dark-mode .sf-alert-item,
+                    body.sf-dark-mode .sf-alert-item,
+                    html.sf-dark-mode .sf-alert-item:nth-child(even),
+                    body.sf-dark-mode .sf-alert-item:nth-child(even) {
+                        background: #1e293b !important;
+                        border: 1.5px solid #334155 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-item:nth-child(odd),
+                    body.sf-dark-mode .sf-alert-item:nth-child(odd) {
+                        background: #273549 !important;
+                        border: 1.5px solid #334155 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-item:hover,
+                    body.sf-dark-mode .sf-alert-item:hover {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-text,
+                    body.sf-dark-mode .sf-alert-text {
+                        color: #f8fafc !important;
+                    }
+                    html.sf-dark-mode .sf-alert-text.sf-resolved,
+                    body.sf-dark-mode .sf-alert-text.sf-resolved,
+                    html.sf-dark-mode .sf-resolved,
+                    body.sf-dark-mode .sf-resolved {
+                        color: #64748b !important;
+                        text-decoration: line-through !important;
+                    }
+                    html.sf-dark-mode .sf-dash-resolved-tag,
+                    body.sf-dark-mode .sf-dash-resolved-tag {
+                        color: #94a3b8 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-time,
+                    body.sf-dark-mode .sf-alert-time {
+                        color: #94a3b8 !important;
+                    }
+                    html.sf-dark-mode,
+                    body.sf-dark-mode,
+                    html.sf-dark-mode * {
+                        scrollbar-color: #334155 #0f172a !important;
+                        scrollbar-width: thin !important;
+                    }
+                    html.sf-dark-mode ::-webkit-scrollbar,
+                    body.sf-dark-mode ::-webkit-scrollbar,
+                    html.sf-dark-mode *::-webkit-scrollbar,
+                    body.sf-dark-mode *::-webkit-scrollbar,
+                    html.sf-dark-mode #sf-task-list::-webkit-scrollbar,
+                    body.sf-dark-mode #sf-task-list::-webkit-scrollbar {
+                        width: 6px !important;
+                        height: 6px !important;
+                    }
+                    html.sf-dark-mode ::-webkit-scrollbar-track,
+                    body.sf-dark-mode ::-webkit-scrollbar-track,
+                    html.sf-dark-mode *::-webkit-scrollbar-track,
+                    body.sf-dark-mode *::-webkit-scrollbar-track,
+                    html.sf-dark-mode #sf-task-list::-webkit-scrollbar-track,
+                    body.sf-dark-mode #sf-task-list::-webkit-scrollbar-track {
+                        background: #0f172a !important;
+                    }
+                    html.sf-dark-mode ::-webkit-scrollbar-thumb,
+                    body.sf-dark-mode ::-webkit-scrollbar-thumb,
+                    html.sf-dark-mode *::-webkit-scrollbar-thumb,
+                    body.sf-dark-mode *::-webkit-scrollbar-thumb,
+                    html.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb,
+                    body.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb {
+                        background: #334155 !important;
+                        border-radius: 9999px !important;
+                    }
+
                     /* Critical Inlined Map & Drawer CSS */
                     .sf-map-card-pro {
                         border-radius: 18px;
@@ -476,6 +568,527 @@
                         border-top: 1px solid #e2e8f0;
                         background: #f8fafc;
                     }
+
+                    /* ========================================================
+                       FEATURE 010: CRITICAL INLINED STAFF MANAGEMENT STYLES
+                       ======================================================== */
+                    .sf-staff-mgmt-card {
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 20px;
+                        padding: 26px;
+                        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+                        margin-bottom: 24px;
+                    }
+
+                    .sf-staff-hero {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                        padding-bottom: 24px;
+                        border-bottom: 1px solid #f1f5f9;
+                    }
+
+                    .sf-staff-hero-left {
+                        max-width: 520px;
+                    }
+
+                    .sf-staff-hero-title {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        font-size: 21px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        margin: 0 0 6px 0;
+                        letter-spacing: -0.3px;
+                    }
+
+                    .sf-staff-hero-icon {
+                        width: 42px;
+                        height: 42px;
+                        border-radius: 12px;
+                        background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+                        color: #0284c7;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+                    }
+
+                    .sf-staff-hero-desc {
+                        font-size: 13.5px;
+                        color: #64748b;
+                        line-height: 1.5;
+                    }
+
+                    .sf-staff-kpi-grid {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        flex-wrap: wrap;
+                    }
+
+                    .sf-staff-kpi-card {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 10px 18px;
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 14px;
+                        transition: all 0.2s ease;
+                    }
+
+                    .sf-staff-kpi-card:hover {
+                        background: #ffffff;
+                        border-color: #cbd5e1;
+                        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+                    }
+
+                    .sf-staff-kpi-icon {
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 18px;
+                    }
+
+                    .sf-staff-kpi-meta {
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .sf-staff-kpi-num {
+                        font-size: 19px;
+                        font-weight: 800;
+                        line-height: 1.1;
+                        color: #0f172a;
+                    }
+
+                    .sf-staff-kpi-label {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #64748b;
+                        margin-top: 2px;
+                    }
+
+                    .sf-staff-toolbar {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        gap: 16px;
+                        margin: 22px 0 24px 0;
+                    }
+
+                    .sf-staff-search-wrapper {
+                        position: relative;
+                        flex: 1;
+                        min-width: 280px;
+                        max-width: 440px;
+                    }
+
+                    .sf-staff-search-input {
+                        width: 100%;
+                        padding: 10px 38px 10px 40px;
+                        border: 1.5px solid #cbd5e1;
+                        border-radius: 12px;
+                        font-size: 13px;
+                        background: #f8fafc;
+                        color: #0f172a;
+                        transition: all 0.2s ease;
+                    }
+
+                    .sf-staff-search-input:focus {
+                        outline: none;
+                        background: #ffffff;
+                        border-color: #0284c7;
+                        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+                    }
+
+                    .sf-staff-search-icon {
+                        position: absolute;
+                        left: 14px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #94a3b8;
+                        pointer-events: none;
+                    }
+
+                    .sf-staff-search-clear {
+                        position: absolute;
+                        right: 12px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background: #e2e8f0;
+                        border: none;
+                        border-radius: 50%;
+                        width: 22px;
+                        height: 22px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 13px;
+                        color: #475569;
+                        cursor: pointer;
+                    }
+
+                    .sf-staff-filter-pills {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        background: #f1f5f9;
+                        padding: 4px;
+                        border-radius: 12px;
+                        border: 1px solid #e2e8f0;
+                    }
+
+                    .sf-staff-pill {
+                        padding: 6px 14px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-radius: 8px;
+                        border: none;
+                        background: transparent;
+                        color: #64748b;
+                        cursor: pointer;
+                        transition: all 0.18s ease;
+                    }
+
+                    .sf-staff-pill:hover {
+                        color: #0f172a;
+                    }
+
+                    .sf-staff-pill.active {
+                        background: #ffffff;
+                        color: #0284c7;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+                    }
+
+                    .sf-staff-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+                        gap: 20px;
+                    }
+
+                    .sf-staff-card {
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 16px;
+                        padding: 20px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                        position: relative;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+                    }
+
+                    .sf-staff-card:hover {
+                        transform: translateY(-3px);
+                        border-color: #38bdf8;
+                        box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.12);
+                    }
+
+                    .sf-staff-card-top {
+                        display: flex;
+                        align-items: center;
+                        gap: 14px;
+                    }
+
+                    .sf-staff-avatar-wrap {
+                        position: relative;
+                        width: 52px;
+                        height: 52px;
+                        min-width: 52px;
+                        flex-shrink: 0;
+                    }
+
+                    .sf-staff-avatar {
+                        width: 52px;
+                        height: 52px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 2px solid #e2e8f0;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+                        display: block;
+                    }
+
+                    .sf-staff-status-dot {
+                        position: absolute;
+                        bottom: 0;
+                        right: 0;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        border: 2.5px solid #ffffff;
+                    }
+
+                    .sf-staff-status-dot.admin-dot { background: #f59e0b; }
+                    .sf-staff-status-dot.manager-dot { background: #0284c7; }
+                    .sf-staff-status-dot.staff-dot { background: #10b981; }
+
+                    .sf-staff-meta {
+                        flex: 1;
+                        min-width: 0;
+                    }
+
+                    .sf-staff-name-row {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 8px;
+                    }
+
+                    .sf-staff-name {
+                        font-size: 15px;
+                        font-weight: 700;
+                        color: #0f172a;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .sf-role-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 4px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        padding: 3px 9px;
+                        border-radius: 20px;
+                        flex-shrink: 0;
+                    }
+
+                    .sf-role-badge-admin {
+                        background: #fef3c7;
+                        color: #92400e;
+                        border: 1px solid #fde68a;
+                    }
+
+                    .sf-role-badge-manager {
+                        background: #e0f2fe;
+                        color: #0369a1;
+                        border: 1px solid #bae6fd;
+                    }
+
+                    .sf-role-badge-staff {
+                        background: #dcfce7;
+                        color: #15803d;
+                        border: 1px solid #bbf7d0;
+                    }
+
+                    .sf-staff-email {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        font-size: 12px;
+                        color: #64748b;
+                        margin-top: 4px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .sf-staff-work-block {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 12px;
+                        padding: 12px 14px;
+                    }
+
+                    .sf-staff-work-hd {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: 12px;
+                        color: #475569;
+                        margin-bottom: 8px;
+                    }
+
+                    .sf-staff-work-val strong {
+                        color: #0284c7;
+                    }
+
+                    .sf-staff-prog-bar {
+                        height: 6px;
+                        background: #e2e8f0;
+                        border-radius: 6px;
+                        overflow: hidden;
+                    }
+
+                    .sf-staff-prog-fill {
+                        height: 100%;
+                        background: linear-gradient(90deg, #0284c7, #10b981);
+                        border-radius: 6px;
+                        transition: width 0.3s ease;
+                    }
+
+                    .sf-staff-actions {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-top: auto;
+                        padding-top: 12px;
+                        border-top: 1px solid #f1f5f9;
+                    }
+
+                    .sf-btn-staff {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        padding: 8px 14px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-radius: 10px;
+                        border: none;
+                        cursor: pointer;
+                        transition: all 0.18s ease;
+                    }
+
+                    .sf-btn-staff-assign {
+                        background: #f0fdf4;
+                        color: #15803d;
+                        border: 1px solid #bbf7d0;
+                        flex: 1;
+                    }
+
+                    .sf-btn-staff-assign:hover {
+                        background: #16a34a;
+                        color: #ffffff;
+                        border-color: #16a34a;
+                        box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2);
+                    }
+
+                    .sf-staff-role-select-wrap {
+                        flex: 1;
+                    }
+
+                    .sf-staff-role-select {
+                        width: 100%;
+                        padding: 7px 10px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        border: 1.5px solid #cbd5e1;
+                        border-radius: 10px;
+                        background: #ffffff;
+                        color: #334155;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                    }
+
+                    .sf-staff-role-select:focus {
+                        outline: none;
+                        border-color: #0284c7;
+                        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.12);
+                    }
+
+                    .sf-staff-role-lock {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        flex: 1;
+                        padding: 7px 10px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        background: #f1f5f9;
+                        color: #64748b;
+                        border-radius: 10px;
+                        border: 1px dashed #cbd5e1;
+                    }
+
+                    /* Dark mode for Staff Management */
+                    html.sf-dark-mode .sf-staff-mgmt-card,
+                    body.sf-dark-mode .sf-staff-mgmt-card {
+                        background: #1e293b !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-hero,
+                    body.sf-dark-mode .sf-staff-hero {
+                        border-bottom-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-hero-title,
+                    body.sf-dark-mode .sf-staff-hero-title,
+                    html.sf-dark-mode .sf-staff-kpi-num,
+                    body.sf-dark-mode .sf-staff-kpi-num {
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-kpi-card,
+                    body.sf-dark-mode .sf-staff-kpi-card {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-search-input,
+                    body.sf-dark-mode .sf-staff-search-input {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-filter-pills,
+                    body.sf-dark-mode .sf-staff-filter-pills {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-pill.active,
+                    body.sf-dark-mode .sf-staff-pill.active {
+                        background: #1e293b !important;
+                        color: #38bdf8 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-card,
+                    body.sf-dark-mode .sf-staff-card {
+                        background: #1e293b !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-card:hover,
+                    body.sf-dark-mode .sf-staff-card:hover {
+                        border-color: #38bdf8 !important;
+                        box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.4) !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-name,
+                    body.sf-dark-mode .sf-staff-name {
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-work-block,
+                    body.sf-dark-mode .sf-staff-work-block {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-actions,
+                    body.sf-dark-mode .sf-staff-actions {
+                        border-top-color: #334155 !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-role-select,
+                    body.sf-dark-mode .sf-staff-role-select {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                        color: #f8fafc !important;
+                    }
+
+                    html.sf-dark-mode .sf-staff-role-lock,
+                    body.sf-dark-mode .sf-staff-role-lock {
+                        background: #0f172a !important;
+                        border-color: #334155 !important;
+                        color: #94a3b8 !important;
+                    }
                 ]]></style>
             </head>
             <body>
@@ -504,9 +1117,14 @@
                                 <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-map')">
                                     Bản đồ
                                 </button>
-                                <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-inventory')">
-                                    Kho &amp; Sản phẩm
-                                </button>
+                                <t t-if="user_role in ['admin', 'manager']">
+                                    <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-inventory')">
+                                        Kho &amp; Sản phẩm
+                                    </button>
+                                    <button type="button" class="sf-nav-item sf-tab-btn" onclick="sfOpenTab(event, 'tab-staff')">
+                                        Nhân sự
+                                    </button>
+                                </t>
                             </nav>
 
                             <!-- Right: Actions & User Profile -->
@@ -615,8 +1233,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="sf-dropdown-wrapper">
-                                        <button type="button" class="sf-icon-btn" title="Cài đặt hệ thống" onclick="sfToggleDropdown(event, 'sf-settings-menu')">
+                                    <t t-if="user_role == 'admin'">
+                                        <div class="sf-dropdown-wrapper">
+                                            <button type="button" class="sf-icon-btn" title="Cài đặt hệ thống" onclick="sfToggleDropdown(event, 'sf-settings-menu')">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <circle cx="12" cy="12" r="3"></circle>
                                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -648,7 +1267,8 @@
                                             </a>
                                         </div>
                                     </div>
-                                </div>
+                                </t>
+                            </div>
 
                                 <!-- User Profile -->
                                 <div class="sf-dropdown-wrapper">
@@ -1096,7 +1716,7 @@
                                     </div>
                                 </t>
                             </div>
-                            <div style="margin-top:12px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:11px;color:#64748b;">
+                            <div class="sf-task-footer-stats" style="margin-top:12px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:11px;color:#64748b;">
                                 <span style="color:#16a34a;font-weight:600;" id="sf-task-stat-done">✓ <t t-esc="task_done"/> hoàn thành</span>
                                 <span id="sf-task-stat-remaining"><t t-esc="task_remaining"/> còn lại</span>
                             </div>
@@ -1134,13 +1754,15 @@
                                         Lập kế hoạch công việc nông trại, phân loại, tìm kiếm và kéo thả sắp xếp thứ tự ưu tiên.
                                     </div>
                                 </div>
-                                <button type="button" class="sf-btn sf-btn-emerald" onclick="sfOpenTaskModal()" title="Thêm công việc mới">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    <span>Thêm công việc</span>
-                                </button>
+                                <t t-if="user_role in ['admin', 'manager']">
+                                    <button type="button" class="sf-btn sf-btn-emerald" onclick="sfOpenTaskModal()" title="Thêm công việc mới">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                        <span>Thêm công việc</span>
+                                    </button>
+                                </t>
                             </div>
 
                             <!-- Filter & Search Toolbar -->
@@ -1184,17 +1806,19 @@
                                     <span class="sf-count-sep">·</span>
                                     <span class="sf-count-done-badge" id="sf-count-done-text">✓ <t t-esc="len(all_tasks.filtered(lambda t: t.is_done))"/> hoàn thành</span>
                                 </div>
-                                <div class="sf-drag-hint">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.7;">
-                                        <circle cx="9" cy="5" r="1.8"></circle>
-                                        <circle cx="15" cy="5" r="1.8"></circle>
-                                        <circle cx="9" cy="12" r="1.8"></circle>
-                                        <circle cx="15" cy="12" r="1.8"></circle>
-                                        <circle cx="9" cy="19" r="1.8"></circle>
-                                        <circle cx="15" cy="19" r="1.8"></circle>
-                                    </svg>
-                                    Kéo thả biểu tượng ⋮⋮ để sắp xếp thứ tự công việc
-                                </div>
+                                <t t-if="user_role in ['admin', 'manager']">
+                                    <div class="sf-drag-hint">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.7;">
+                                            <circle cx="9" cy="5" r="1.8"></circle>
+                                            <circle cx="15" cy="5" r="1.8"></circle>
+                                            <circle cx="9" cy="12" r="1.8"></circle>
+                                            <circle cx="15" cy="12" r="1.8"></circle>
+                                            <circle cx="9" cy="19" r="1.8"></circle>
+                                            <circle cx="15" cy="19" r="1.8"></circle>
+                                        </svg>
+                                        Kéo thả biểu tượng ⋮⋮ để sắp xếp thứ tự công việc
+                                    </div>
+                                </t>
                             </div>
 
                             <!-- Task List / Items -->
@@ -1209,21 +1833,25 @@
                                              t-att-data-name="t.name"
                                              t-att-data-date="str(t.date)"
                                              t-att-data-notes="t.notes or ''"
-                                             draggable="true">
+                                             t-att-data-user-id="t.user_id.id if t.user_id else ''"
+                                             t-att-data-user-name="t.user_id.name or 'Farm Admin'"
+                                             t-att-draggable="'true' if user_role in ['admin', 'manager'] else 'false'">
                                             
-                                            <!-- Drag Handle -->
-                                            <div class="sf-drag-handle" title="Kéo để đổi thứ tự công việc">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                    <circle cx="9" cy="5" r="1.8"></circle>
-                                                    <circle cx="15" cy="5" r="1.8"></circle>
-                                                    <circle cx="9" cy="12" r="1.8"></circle>
-                                                    <circle cx="15" cy="12" r="1.8"></circle>
-                                                    <circle cx="9" cy="19" r="1.8"></circle>
-                                                    <circle cx="15" cy="19" r="1.8"></circle>
-                                                </svg>
-                                            </div>
+                                            <!-- Drag Handle (Only for Admin & Manager) -->
+                                            <t t-if="user_role in ['admin', 'manager']">
+                                                <div class="sf-drag-handle" title="Kéo để đổi thứ tự công việc">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                        <circle cx="9" cy="5" r="1.8"></circle>
+                                                        <circle cx="15" cy="5" r="1.8"></circle>
+                                                        <circle cx="9" cy="12" r="1.8"></circle>
+                                                        <circle cx="15" cy="12" r="1.8"></circle>
+                                                        <circle cx="9" cy="19" r="1.8"></circle>
+                                                        <circle cx="15" cy="19" r="1.8"></circle>
+                                                    </svg>
+                                                </div>
+                                            </t>
 
-                                            <!-- Checkbox -->
+                                            <!-- Checkbox (For all roles to complete task) -->
                                             <div t-attf-class="sf-check #{'done' if t.is_done else ''}"
                                                  t-att-onclick="'sfToggleMgmtTask(' + str(t.id) + ', this)'"
                                                  title="Đánh dấu hoàn thành">
@@ -1233,10 +1861,20 @@
                                             <!-- Main content -->
                                             <div class="sf-task-content-block">
                                                 <div class="sf-task-row-top">
-                                                    <div t-attf-class="sf-task-title-text #{'done' if t.is_done else ''}"
-                                                         t-att-onclick="'sfToggleMgmtTask(' + str(t.id) + ', this)'">
-                                                        <t t-esc="t.name"/>
-                                                    </div>
+                                                    <t t-if="user_role in ['admin', 'manager']">
+                                                        <div t-attf-class="sf-task-title-text #{'done' if t.is_done else ''}"
+                                                             t-att-onclick="'sfToggleMgmtTask(' + str(t.id) + ', this)'">
+                                                            <t t-esc="t.name"/>
+                                                        </div>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div t-attf-class="sf-task-title-text #{'done' if t.is_done else ''}"
+                                                             t-att-onclick="'sfOpenTaskDetailDrawer(' + str(t.id) + ')'"
+                                                             style="cursor:pointer;"
+                                                             title="Nhấp để xem chi tiết công việc">
+                                                            <t t-esc="t.name"/>
+                                                        </div>
+                                                    </t>
                                                     
                                                     <!-- Badge category -->
                                                     <t t-if="t.task_type == 'irrigation'">
@@ -1289,24 +1927,36 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Actions: Edit & Delete -->
+                                            <!-- Actions: Edit & Delete for Admin/Manager, Detail for Staff -->
                                             <div class="sf-task-action-buttons">
-                                                <button type="button" class="sf-task-btn-action sf-btn-edit" t-att-onclick="'sfOpenTaskModal(' + str(t.id) + ')'" title="Chỉnh sửa công việc">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                    </svg>
-                                                    <span>Sửa</span>
-                                                </button>
-                                                <button type="button" class="sf-task-btn-action sf-btn-delete" t-att-onclick="'sfDeleteTask(' + str(t.id) + ')'" title="Xóa công việc">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                    </svg>
-                                                    <span>Xóa</span>
-                                                </button>
+                                                <t t-if="user_role in ['admin', 'manager']">
+                                                    <button type="button" class="sf-task-btn-action sf-btn-edit" t-att-onclick="'sfOpenTaskModal(' + str(t.id) + ')'" title="Chỉnh sửa công việc">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                        </svg>
+                                                        <span>Sửa</span>
+                                                    </button>
+                                                    <button type="button" class="sf-task-btn-action sf-btn-delete" t-att-onclick="'sfDeleteTask(' + str(t.id) + ')'" title="Xóa công việc">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                        </svg>
+                                                        <span>Xóa</span>
+                                                    </button>
+                                                </t>
+                                                <t t-else="">
+                                                    <button type="button" class="sf-task-btn-action sf-btn-detail" t-att-onclick="'sfOpenTaskDetailDrawer(' + str(t.id) + ')'" title="Xem chi tiết nhiệm vụ">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10"></circle>
+                                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                                        </svg>
+                                                        <span>Chi tiết</span>
+                                                    </button>
+                                                </t>
                                             </div>
                                         </div>
                                     </t>
@@ -1769,65 +2419,256 @@
                         </div>
                     </div>
 
-                    <div id="tab-inventory" class="sf-tab-content" style="display:none;">
-                        <div class="sf-grid2">
-                            <!-- Kho Vật tư -->
-                            <div class="sf-card">
-                                <div class="sf-card-hd">
-                                    <div class="sf-card-title">Kho Vật tư Nông nghiệp</div>
-                                    <span class="badge-demo">Demo</span>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Phân bón NPK 20-20-15</div>
-                                    <div class="sf-sensor-val">250 kg
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:70%;background:#639922;"></div></div>
+                    <t t-if="user_role in ['admin', 'manager']">
+                        <div id="tab-inventory" class="sf-tab-content" style="display:none;">
+                            <div class="sf-grid2">
+                                <!-- Kho Vật tư -->
+                                <div class="sf-card">
+                                    <div class="sf-card-hd">
+                                        <div class="sf-card-title">Kho Vật tư Nông nghiệp</div>
+                                        <span class="badge-demo">Demo</span>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Phân bón NPK 20-20-15</div>
+                                        <div class="sf-sensor-val">250 kg
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:70%;background:#639922;"></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Phân hữu cơ vi sinh</div>
+                                        <div class="sf-sensor-val" style="color:#BA7517;">45 kg
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:20%;background:#BA7517;"></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Hạt giống Cà chua Cherry</div>
+                                        <div class="sf-sensor-val">12 gói
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:50%;background:#185FA5;"></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Thuốc trừ sâu sinh học</div>
+                                        <div class="sf-sensor-val" style="color:#E24B4A;">5 lít
+                                            <div class="sf-bar"><div class="sf-bar-fill" style="width:10%;background:#E24B4A;"></div></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Phân hữu cơ vi sinh</div>
-                                    <div class="sf-sensor-val" style="color:#BA7517;">45 kg
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:20%;background:#BA7517;"></div></div>
+                                
+                                <!-- Kho Thành phẩm -->
+                                <div class="sf-card">
+                                    <div class="sf-card-hd">
+                                        <div class="sf-card-title">Sản phẩm Thu hoạch</div>
+                                        <span class="badge-demo">Demo</span>
                                     </div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Hạt giống Cà chua Cherry</div>
-                                    <div class="sf-sensor-val">12 gói
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:50%;background:#185FA5;"></div></div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Dưa lưới Huỳnh Long (Loại 1)</div>
+                                        <div class="sf-sensor-val" style="color:#639922;">1,200 kg</div>
                                     </div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Thuốc trừ sâu sinh học</div>
-                                    <div class="sf-sensor-val" style="color:#E24B4A;">5 lít
-                                        <div class="sf-bar"><div class="sf-bar-fill" style="width:10%;background:#E24B4A;"></div></div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Cà chua Cherry đỏ</div>
+                                        <div class="sf-sensor-val">340 kg</div>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Kho Thành phẩm -->
-                            <div class="sf-card">
-                                <div class="sf-card-hd">
-                                    <div class="sf-card-title">Sản phẩm Thu hoạch</div>
-                                    <span class="badge-demo">Demo</span>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Dưa lưới Huỳnh Long (Loại 1)</div>
-                                    <div class="sf-sensor-val" style="color:#639922;">1,200 kg</div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Cà chua Cherry đỏ</div>
-                                    <div class="sf-sensor-val">340 kg</div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Rau xà lách thuỷ canh</div>
-                                    <div class="sf-sensor-val">150 kg</div>
-                                </div>
-                                <div class="sf-sensor-row">
-                                    <div class="sf-sensor-name">Dâu tây Hàn Quốc</div>
-                                    <div class="sf-sensor-val">25 kg</div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Rau xà lách thuỷ canh</div>
+                                        <div class="sf-sensor-val">150 kg</div>
+                                    </div>
+                                    <div class="sf-sensor-row">
+                                        <div class="sf-sensor-name">Dâu tây Hàn Quốc</div>
+                                        <div class="sf-sensor-val">25 kg</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Tab: Quản lý Nhân sự (Chỉ dành cho Admin & Manager) -->
+                        <div id="tab-staff" class="sf-tab-content" style="display:none;">
+                            <div class="sf-card sf-staff-mgmt-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; padding:26px; box-shadow:0 4px 20px -2px rgba(15,23,42,0.05); margin-bottom:24px;">
+                                <!-- Hero Header & Stats -->
+                                <div class="sf-staff-hero" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; padding-bottom:22px; border-bottom:1px solid #f1f5f9;">
+                                    <div class="sf-staff-hero-left" style="max-width:540px;">
+                                        <h2 class="sf-staff-hero-title" style="display:flex; align-items:center; gap:12px; font-size:20px; font-weight:800; color:#0f172a; margin:0 0 6px 0;">
+                                            <span class="sf-staff-hero-icon" style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #e0f2fe, #bae6fd); color:#0284c7; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(2,132,199,0.15);">
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="9" cy="7" r="4"></circle>
+                                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                                </svg>
+                                            </span>
+                                            Đội ngũ &amp; Quản lý nhân sự nông trại
+                                        </h2>
+                                        <div class="sf-staff-hero-desc" style="font-size:13px; color:#64748b; line-height:1.5;">
+                                            Theo dõi danh sách thành viên nông trường, phân công nhiệm vụ sản xuất và thiết lập vai trò tài khoản theo phân quyền đa tầng.
+                                        </div>
+                                    </div>
+
+                                    <!-- 3 KPI Cards -->
+                                    <div class="sf-staff-kpi-grid" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                        <div class="sf-staff-kpi-card" style="display:flex; align-items:center; gap:12px; padding:10px 18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px;">
+                                            <div class="sf-staff-kpi-icon" style="width:38px; height:38px; border-radius:10px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                👥
+                                            </div>
+                                            <div class="sf-staff-kpi-meta" style="display:flex; flex-direction:column;">
+                                                <span class="sf-staff-kpi-num" style="font-size:19px; font-weight:800; line-height:1.1; color:#0f172a;"><t t-esc="staff_count"/></span>
+                                                <span class="sf-staff-kpi-label" style="font-size:11px; font-weight:600; color:#64748b; margin-top:2px;">Tổng nhân sự</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="sf-staff-kpi-card" style="display:flex; align-items:center; gap:12px; padding:10px 18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px;">
+                                            <div class="sf-staff-kpi-icon" style="width:38px; height:38px; border-radius:10px; background:#f0fdf4; color:#16a34a; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                🛡️
+                                            </div>
+                                            <div class="sf-staff-kpi-meta" style="display:flex; flex-direction:column;">
+                                                <span class="sf-staff-kpi-num" style="font-size:19px; font-weight:800; line-height:1.1; color:#16a34a;"><t t-esc="manager_count"/></span>
+                                                <span class="sf-staff-kpi-label" style="font-size:11px; font-weight:600; color:#64748b; margin-top:2px;">Ban Quản lý</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="sf-staff-kpi-card" style="display:flex; align-items:center; gap:12px; padding:10px 18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px;">
+                                            <div class="sf-staff-kpi-icon" style="width:38px; height:38px; border-radius:10px; background:#fef9c3; color:#ca8a04; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                🌾
+                                            </div>
+                                            <div class="sf-staff-kpi-meta" style="display:flex; flex-direction:column;">
+                                                <span class="sf-staff-kpi-num" style="font-size:19px; font-weight:800; line-height:1.1; color:#ca8a04;"><t t-esc="employee_count"/></span>
+                                                <span class="sf-staff-kpi-label" style="font-size:11px; font-weight:600; color:#64748b; margin-top:2px;">Nhân viên</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filter Toolbar -->
+                                <div class="sf-staff-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin:22px 0 24px 0;">
+                                    <div class="sf-staff-search-wrapper" style="position:relative; flex:1; min-width:280px; max-width:440px;">
+                                        <svg class="sf-staff-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                        </svg>
+                                        <input type="text" id="sf-staff-search-input" class="sf-staff-search-input" placeholder="Tìm kiếm nhân viên theo tên, email..." oninput="sfFilterStaff()" style="width:100%; padding:10px 38px 10px 40px; border:1.5px solid #cbd5e1; border-radius:12px; font-size:13px; background:#f8fafc; color:#0f172a;"/>
+                                        <button type="button" id="sf-staff-search-clear" class="sf-staff-search-clear" onclick="sfClearStaffSearch()" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); background:#e2e8f0; border:none; border-radius:50%; width:22px; height:22px; align-items:center; justify-content:center; font-size:13px; color:#475569; cursor:pointer;" title="Xóa tìm kiếm">×</button>
+                                    </div>
+
+                                    <div class="sf-staff-filter-group">
+                                        <div class="sf-staff-filter-pills" id="sf-staff-role-filter-pills" style="display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; padding:4px; border-radius:12px; border:1px solid #e2e8f0;">
+                                            <button type="button" class="sf-staff-pill active" data-role="all" onclick="sfSetStaffRoleFilter('all', this)" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; border:none; cursor:pointer;">Tất cả (<t t-esc="staff_count"/>)</button>
+                                            <button type="button" class="sf-staff-pill" data-role="manager" onclick="sfSetStaffRoleFilter('manager', this)" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; border:none; cursor:pointer;">Quản lý (<t t-esc="manager_count"/>)</button>
+                                            <button type="button" class="sf-staff-pill" data-role="staff" onclick="sfSetStaffRoleFilter('staff', this)" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; border:none; cursor:pointer;">Nhân viên (<t t-esc="employee_count"/>)</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Staff Grid -->
+                                <div class="sf-staff-grid" id="sf-staff-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:20px;">
+                                    <t t-if="staff_members">
+                                        <t t-foreach="staff_members" t-as="m">
+                                            <div class="sf-staff-card"
+                                                 t-att-id="'sf-staff-card-' + str(m['id'])"
+                                                 t-att-data-user-id="m['id']"
+                                                 t-att-data-name="m['name']"
+                                                 t-att-data-email="m['email']"
+                                                 t-att-data-role="m['role']"
+                                                 style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.03); position:relative;">
+                                                
+                                                <div class="sf-staff-card-top" style="display:flex; align-items:center; gap:14px;">
+                                                    <div class="sf-staff-avatar-wrap" style="position:relative; width:52px; height:52px; min-width:52px; flex-shrink:0;">
+                                                        <img t-attf-src="/web/image?model=res.users&amp;id=#{m['id']}&amp;field=avatar_128"
+                                                             class="sf-staff-avatar"
+                                                             alt="Avatar"
+                                                             style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; display:block;"
+                                                             t-attf-onerror="'this.src=\'https://ui-avatars.com/api/?name=' + m['name'] + '&amp;background=0284c7&amp;color=fff\''"/>
+                                                        <span t-attf-class="sf-staff-status-dot #{'admin-dot' if m['role'] == 'admin' else ('manager-dot' if m['role'] == 'manager' else 'staff-dot')}"
+                                                              style="position:absolute; bottom:0; right:0; width:14px; height:14px; border-radius:50%; border:2.5px solid #ffffff;"></span>
+                                                    </div>
+                                                    <div class="sf-staff-meta" style="flex:1; min-width:0;">
+                                                        <div class="sf-staff-name-row" style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                                            <div class="sf-staff-name" t-att-title="m['name']" style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><t t-esc="m['name']"/></div>
+                                                            <span t-attf-class="sf-role-badge sf-role-badge-#{m['role']}" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; flex-shrink:0;">
+                                                                <t t-if="m['role'] == 'admin'">👑 </t>
+                                                                <t t-elif="m['role'] == 'manager'">🛡️ </t>
+                                                                <t t-else="">🌾 </t>
+                                                                <t t-esc="m['role_name']"/>
+                                                            </span>
+                                                        </div>
+                                                        <div class="sf-staff-email" t-att-title="m['email']" style="display:flex; align-items:center; gap:6px; font-size:12px; color:#64748b; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                                                <polyline points="22,6 12,13 2,6"></polyline>
+                                                            </svg>
+                                                            <span><t t-esc="m['email']"/></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Work Progress Info -->
+                                                <div class="sf-staff-work-block" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px;">
+                                                    <div class="sf-staff-work-hd" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#475569; margin-bottom:8px;">
+                                                        <span class="sf-staff-work-label">Nhiệm vụ nông trại</span>
+                                                        <span class="sf-staff-work-val">
+                                                            <strong style="color:#0284c7;"><t t-esc="m['task_done_count']"/></strong>/<t t-esc="m['task_count']"/> hoàn thành
+                                                        </span>
+                                                    </div>
+                                                    <div class="sf-staff-prog-bar" style="height:6px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                                                        <div class="sf-staff-prog-fill" t-attf-style="width: #{m['task_progress']}%; height:100%; background:linear-gradient(90deg, #0284c7, #10b981); border-radius:6px;"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Action Buttons Row -->
+                                                <div class="sf-staff-actions" style="display:flex; align-items:center; gap:10px; margin-top:auto; padding-top:12px; border-top:1px solid #f1f5f9;">
+                                                    <!-- Giao việc (Available for Admin & Manager) -->
+                                                    <button type="button"
+                                                            class="sf-btn-staff sf-btn-staff-assign"
+                                                            t-att-onclick="'sfAssignTaskToStaff(' + str(m['id']) + ', \'' + m['name'] + '\')'"
+                                                            title="Giao công việc mới cho nhân sự này"
+                                                            style="display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 14px; font-size:12px; font-weight:600; border-radius:10px; border:1px solid #bbf7d0; background:#f0fdf4; color:#15803d; cursor:pointer; flex:1;">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                            <path d="M12 5v14M5 12h14"></path>
+                                                        </svg>
+                                                        <span>Giao việc</span>
+                                                    </button>
+
+                                                    <!-- Set Role (ONLY available for Admin) -->
+                                                    <t t-if="user_role == 'admin'">
+                                                        <t t-if="m['is_super_admin']">
+                                                            <div class="sf-staff-role-lock" title="Quản trị viên tối cao (Không thể đổi vai trò)" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; padding:7px 10px; font-size:11px; font-weight:600; background:#f1f5f9; color:#64748b; border-radius:10px; border:1px dashed #cbd5e1;">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                                                </svg>
+                                                                <span>Admin gốc</span>
+                                                            </div>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <div class="sf-staff-role-select-wrap" style="flex:1;">
+                                                                <select class="sf-staff-role-select"
+                                                                        t-att-id="'sf-role-sel-' + str(m['id'])"
+                                                                        t-att-onchange="'sfChangeUserRole(' + str(m['id']) + ', this.value)'"
+                                                                        title="Thiết lập vai trò người dùng"
+                                                                        style="width:100%; padding:7px 10px; font-size:12px; font-weight:600; border:1.5px solid #cbd5e1; border-radius:10px; background:#ffffff; color:#334155; cursor:pointer;">
+                                                                    <option value="staff" t-att-selected="'selected' if m['role'] == 'staff' else None">Nhân viên</option>
+                                                                    <option value="manager" t-att-selected="'selected' if m['role'] == 'manager' else None">Quản lý</option>
+                                                                    <option value="admin" t-att-selected="'selected' if m['role'] == 'admin' else None">Quản trị viên</option>
+                                                                </select>
+                                                            </div>
+                                                        </t>
+                                                    </t>
+                                                </div>
+
+                                            </div>
+                                        </t>
+                                    </t>
+                                </div>
+
+                                <!-- Empty Search state -->
+                                <div id="sf-staff-empty-state" style="display:none; text-align:center; padding:32px 16px; color:#94a3b8;" class="sf-task-empty">
+                                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px; display:inline-block; color:#cbd5e1;">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <div class="sf-empty-title" style="font-size:15px; font-weight:700; color:#475569;">Không tìm thấy nhân viên nào phù hợp</div>
+                                    <div class="sf-empty-sub" style="font-size:13px; color:#94a3b8; margin-top:4px;">Hãy thử nhập từ khóa khác hoặc chuyển sang lọc vai trò khác.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
 
 
                 </div>
@@ -1956,6 +2797,19 @@
                                 </div>
 
                                 <div class="sf-form-group">
+                                    <label class="sf-label" for="sf-task-user-input">Người phụ trách (Giao việc)</label>
+                                    <select id="sf-task-user-input" class="sf-input">
+                                        <t t-if="staff_members">
+                                            <t t-foreach="staff_members" t-as="sm">
+                                                <option t-att-value="sm['id']">
+                                                    <t t-esc="sm['name']"/> (<t t-esc="sm['role_name']"/>)
+                                                </option>
+                                            </t>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="sf-form-group">
                                     <label class="sf-label" for="sf-task-notes-input">Ghi chú &amp; Hướng dẫn thực hiện (tùy chọn)</label>
                                     <textarea id="sf-task-notes-input" class="sf-input" rows="3" placeholder="Ghi chú chi tiết vị trí khu vực, chủng loại phân bón, liều lượng..."></textarea>
                                 </div>
@@ -1973,6 +2827,89 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Task Detail Drawer / Modal (Dành cho Nhân viên và các vai trò xem chi tiết công việc) -->
+                <div id="sf-task-detail-modal" class="sf-modal-backdrop" style="display:none;" onclick="sfCloseTaskDetailModal(event)">
+                    <div class="sf-modal-card" onclick="event.stopPropagation()">
+                        <div class="sf-modal-header">
+                            <div class="sf-modal-title-group">
+                                <div class="sf-modal-badge" id="sf-td-badge-icon" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="sf-modal-title" id="sf-td-title">Chi tiết công việc nông trại</h3>
+                                    <p class="sf-modal-subtitle" id="sf-td-sub">Xem phân công nhiệm vụ và hướng dẫn thực hiện</p>
+                                </div>
+                            </div>
+                            <button type="button" class="sf-modal-close" onclick="sfCloseTaskDetailModal()" title="Đóng">×</button>
+                        </div>
+
+                        <div class="sf-modal-body">
+                            <div class="sf-td-info-card">
+                                <div class="sf-td-task-name" id="sf-td-name">Tên nhiệm vụ</div>
+                                <div class="sf-td-status-row">
+                                    <span class="sf-tag" id="sf-td-type-badge">Tưới tiêu</span>
+                                    <span class="sf-td-status-pill" id="sf-td-status-pill">Đang thực hiện</span>
+                                </div>
+                            </div>
+
+                            <div class="sf-td-details-grid">
+                                <div class="sf-td-item">
+                                    <div class="sf-td-label">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                        </svg>
+                                        Ngày thực hiện
+                                    </div>
+                                    <div class="sf-td-val" id="sf-td-date">--/--/----</div>
+                                </div>
+
+                                <div class="sf-td-item">
+                                    <div class="sf-td-label">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                        Người phụ trách
+                                    </div>
+                                    <div class="sf-td-val" id="sf-td-assignee">Farm Admin</div>
+                                </div>
+                            </div>
+
+                            <div class="sf-td-notes-box">
+                                <div class="sf-td-notes-hd">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                    </svg>
+                                    Hướng dẫn &amp; Ghi chú thực hiện:
+                                </div>
+                                <div class="sf-td-notes-content" id="sf-td-notes">Không có ghi chú thêm cho nhiệm vụ này.</div>
+                            </div>
+                        </div>
+
+                        <div class="sf-modal-footer" style="justify-content: space-between;">
+                            <button type="button" class="sf-btn sf-btn-light" onclick="sfCloseTaskDetailModal()">Đóng</button>
+                            <button type="button" id="sf-td-toggle-btn" class="sf-btn sf-btn-emerald" onclick="sfToggleTaskFromDetail()">
+                                <span id="sf-td-toggle-icon">✓</span>
+                                <span id="sf-td-toggle-text">Đánh dấu hoàn thành</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -2207,7 +3144,7 @@
                                     </div>
                                 </div>
 
-                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px; color:#475569;">
+                                <div class="sf-pd-schedule-box" style="border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
                                     <span>🕒 Lịch tưới tiếp theo: <strong id="sf-pd-next-time" style="color:#0284c7;">16:30 Hôm nay (trong 45 phút)</strong></span>
                                 </div>
 
@@ -2357,7 +3294,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=145"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=205"></script>
             </body>
         </html>
     </template>

@@ -10,6 +10,10 @@ window.sfOpenTab = function(evt, tabName) {
         tablinks[i].classList.remove("active");
     }
     var target = document.getElementById(tabName);
+    if (!target) {
+        tabName = 'tab-overview';
+        target = document.getElementById('tab-overview');
+    }
     if (target) {
         target.style.display = "block";
     }
@@ -28,7 +32,8 @@ window.sfOpenTab = function(evt, tabName) {
         'tab-overview': { title: 'Tổng quan trang trại', showBadge: true },
         'tab-tasks': { title: 'Quản lý công việc', showBadge: false },
         'tab-map': { title: 'Bản đồ nông trại', showBadge: false },
-        'tab-inventory': { title: 'Kho vật tư & Sản phẩm', showBadge: false }
+        'tab-inventory': { title: 'Kho vật tư & Sản phẩm', showBadge: false },
+        'tab-staff': { title: 'Quản lý nhân sự nông trại', showBadge: false }
     };
     var currentInfo = tabInfo[tabName] || { title: 'Tổng quan trang trại', showBadge: false };
     if (pageTitleEl) {
@@ -136,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (chartData.labels && chartData.labels.length > 0) {
                 var ctx = document.getElementById('historyChart').getContext('2d');
-                new Chart(ctx, {
+                window.sfHistoryChartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: chartData.labels,
@@ -198,6 +203,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
                     }
                 });
+                if (typeof window.sfApplyChartTheme === 'function') {
+                    window.sfApplyChartTheme(window.sfHistoryChartInstance);
+                }
             }
         } catch (e) {
             console.error("Error parsing chart data: ", e);
@@ -578,7 +586,7 @@ window.sfResetTaskFilters = function() {
 };
 
 // Task Modal (Open, Close, Save)
-window.sfOpenTaskModal = function(taskId) {
+window.sfOpenTaskModal = function(taskId, targetUserId, targetUserName) {
     var modal = document.getElementById('sf-task-modal');
     if (!modal) return;
 
@@ -589,6 +597,7 @@ window.sfOpenTaskModal = function(taskId) {
     var nameInput = document.getElementById('sf-task-name-input');
     var typeInput = document.getElementById('sf-task-type-input');
     var dateInput = document.getElementById('sf-task-date-input');
+    var userInput = document.getElementById('sf-task-user-input');
     var notesInput = document.getElementById('sf-task-notes-input');
     var modalTitle = document.getElementById('sf-task-modal-title');
     var modalSub = document.getElementById('sf-task-modal-sub');
@@ -604,6 +613,9 @@ window.sfOpenTaskModal = function(taskId) {
         typeInput.value = card.dataset.type || 'irrigation';
         dateInput.value = card.dataset.date || '';
         notesInput.value = card.dataset.notes || '';
+        if (userInput && card.dataset.userId) {
+            userInput.value = card.dataset.userId;
+        }
 
         modalTitle.innerText = 'Chỉnh sửa công việc';
         modalSub.innerText = 'Cập nhật nội dung hoặc trạng thái của công việc này';
@@ -617,8 +629,14 @@ window.sfOpenTaskModal = function(taskId) {
         dateInput.value = today;
         notesInput.value = '';
 
-        modalTitle.innerText = 'Thêm công việc mới';
-        modalSub.innerText = 'Điền thông tin chi tiết để lên lịch công việc nông trại';
+        if (targetUserId && userInput) {
+            userInput.value = targetUserId;
+            modalTitle.innerText = targetUserName ? ('Giao việc cho: ' + targetUserName) : 'Giao việc cho nhân sự';
+            modalSub.innerText = 'Tạo nhiệm vụ mới và phân công trực tiếp cho nhân viên';
+        } else {
+            modalTitle.innerText = 'Thêm công việc mới';
+            modalSub.innerText = 'Điền thông tin chi tiết để lên lịch công việc nông trại';
+        }
         saveText.innerText = 'Lưu công việc';
     }
 
@@ -642,6 +660,7 @@ window.sfSaveTask = function(event) {
     var taskType = document.getElementById('sf-task-type-input').value;
     var dateVal = document.getElementById('sf-task-date-input').value;
     var notes = document.getElementById('sf-task-notes-input').value.trim();
+    var userInput = document.getElementById('sf-task-user-input');
     var saveBtn = document.getElementById('sf-task-save-btn');
     var saveText = document.getElementById('sf-task-save-text');
     var alertBox = document.getElementById('sf-task-modal-alert');
@@ -663,6 +682,9 @@ window.sfSaveTask = function(event) {
         date: dateVal,
         notes: notes
     };
+    if (userInput && userInput.value) {
+        payload.user_id = parseInt(userInput.value);
+    }
     if (isEdit) {
         payload.task_id = parseInt(formId);
     }
@@ -758,6 +780,132 @@ window.sfDeleteTask = function(taskId) {
     });
 };
 
+// Task Detail Drawer / Modal for Staff and All Roles
+window.sfCurrentDetailTaskId = null;
+
+window.sfOpenTaskDetailDrawer = function(taskId) {
+    if (!taskId) return;
+    var card = document.getElementById('sf-mgmt-task-' + taskId);
+    if (!card) return;
+
+    window.sfCurrentDetailTaskId = taskId;
+    var modal = document.getElementById('sf-task-detail-modal');
+    if (!modal) return;
+
+    var name = card.dataset.name || '';
+    var date = card.dataset.date || '';
+    var type = card.dataset.type || 'irrigation';
+    var notes = card.dataset.notes || '';
+    var userName = card.dataset.userName || 'Farm Admin';
+    var isDone = card.dataset.status === 'done';
+
+    var nameEl = document.getElementById('sf-td-name');
+    var dateEl = document.getElementById('sf-td-date');
+    var assigneeEl = document.getElementById('sf-td-assignee');
+    var notesEl = document.getElementById('sf-td-notes');
+    var typeBadge = document.getElementById('sf-td-type-badge');
+    var statusPill = document.getElementById('sf-td-status-pill');
+    var toggleBtn = document.getElementById('sf-td-toggle-btn');
+    var toggleIcon = document.getElementById('sf-td-toggle-icon');
+    var toggleText = document.getElementById('sf-td-toggle-text');
+
+    if (nameEl) nameEl.textContent = name;
+    if (dateEl) dateEl.textContent = date;
+    if (assigneeEl) assigneeEl.textContent = userName;
+    if (notesEl) notesEl.textContent = notes ? notes : 'Không có ghi chú thêm cho nhiệm vụ này.';
+
+    // Type badge label & color
+    var typeLabels = {
+        'irrigation': { text: 'Tưới tiêu', cls: 'tag-blue' },
+        'sensor': { text: 'Cảm biến', cls: 'tag-green' },
+        'gps': { text: 'GPS', cls: 'tag-green' },
+        'season': { text: 'Mùa vụ', cls: 'tag-amber' },
+        'inventory': { text: 'Kho & Vật tư', cls: 'tag-amber' },
+        'report': { text: 'Báo cáo', cls: 'tag-blue' }
+    };
+    var tInfo = typeLabels[type] || { text: 'Công việc', cls: 'tag-blue' };
+    if (typeBadge) {
+        typeBadge.className = 'sf-tag ' + tInfo.cls;
+        typeBadge.textContent = tInfo.text;
+    }
+
+    // Status pill
+    if (statusPill) {
+        if (isDone) {
+            statusPill.className = 'sf-td-status-pill done';
+            statusPill.textContent = '✓ Đã hoàn thành';
+        } else {
+            statusPill.className = 'sf-td-status-pill';
+            statusPill.textContent = 'Đang thực hiện';
+        }
+    }
+
+    // Toggle button in drawer
+    if (toggleBtn) {
+        if (isDone) {
+            toggleBtn.className = 'sf-btn sf-btn-light';
+            if (toggleIcon) toggleIcon.textContent = '↺';
+            if (toggleText) toggleText.textContent = 'Đánh dấu chưa xong';
+        } else {
+            toggleBtn.className = 'sf-btn sf-btn-emerald';
+            if (toggleIcon) toggleIcon.textContent = '✓';
+            if (toggleText) toggleText.textContent = 'Đánh dấu hoàn thành';
+        }
+    }
+
+    modal.style.display = 'flex';
+};
+
+window.sfCloseTaskDetailModal = function(e) {
+    if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('sf-modal-close')) {
+        return;
+    }
+    var modal = document.getElementById('sf-task-detail-modal');
+    if (modal) modal.style.display = 'none';
+    window.sfCurrentDetailTaskId = null;
+};
+
+window.sfToggleTaskFromDetail = function() {
+    if (!window.sfCurrentDetailTaskId) return;
+    var taskId = window.sfCurrentDetailTaskId;
+    
+    // Gọi hàm toggle
+    window.sfToggleMgmtTask(taskId);
+
+    // Cập nhật lại UI trong drawer sau một chút
+    setTimeout(function() {
+        var card = document.getElementById('sf-mgmt-task-' + taskId);
+        if (!card) return;
+        var isDone = card.dataset.status === 'done';
+        var statusPill = document.getElementById('sf-td-status-pill');
+        var toggleBtn = document.getElementById('sf-td-toggle-btn');
+        var toggleIcon = document.getElementById('sf-td-toggle-icon');
+        var toggleText = document.getElementById('sf-td-toggle-text');
+
+        if (statusPill) {
+            if (isDone) {
+                statusPill.className = 'sf-td-status-pill done';
+                statusPill.textContent = '✓ Đã hoàn thành';
+            } else {
+                statusPill.className = 'sf-td-status-pill';
+                statusPill.textContent = 'Đang thực hiện';
+            }
+        }
+
+        if (toggleBtn) {
+            if (isDone) {
+                toggleBtn.className = 'sf-btn sf-btn-light';
+                if (toggleIcon) toggleIcon.textContent = '↺';
+                if (toggleText) toggleText.textContent = 'Đánh dấu chưa xong';
+            } else {
+                toggleBtn.className = 'sf-btn sf-btn-emerald';
+                if (toggleIcon) toggleIcon.textContent = '✓';
+                if (toggleText) toggleText.textContent = 'Đánh dấu hoàn thành';
+            }
+        }
+    }, 200);
+};
+
 // Drag and Drop implementation
 window.sfInitTaskDragAndDrop = function() {
     var container = document.getElementById('sf-task-mgmt-list');
@@ -767,7 +915,7 @@ window.sfInitTaskDragAndDrop = function() {
 
     container.addEventListener('dragstart', function(e) {
         var card = e.target.closest('.sf-task-card');
-        if (!card) return;
+        if (!card || card.getAttribute('draggable') === 'false') return;
         draggingElement = card;
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -835,6 +983,137 @@ function sfGetDragAfterElement(container, y) {
         }
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
+
+// ========================================================
+// Staff Management & Role Assignment (Feature 010)
+// ========================================================
+window.sfStaffRoleFilter = 'all';
+
+window.sfFilterStaff = function() {
+    var searchInput = document.getElementById('sf-staff-search-input');
+    var clearBtn = document.getElementById('sf-staff-search-clear');
+    var term = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+    if (clearBtn) {
+        clearBtn.style.display = term ? 'block' : 'none';
+    }
+
+    var cards = document.querySelectorAll('#sf-staff-grid .sf-staff-card');
+    var visibleCount = 0;
+
+    cards.forEach(function(card) {
+        var name = (card.dataset.name || '').toLowerCase();
+        var email = (card.dataset.email || '').toLowerCase();
+        var role = card.dataset.role || 'staff';
+
+        var matchesSearch = !term || name.indexOf(term) !== -1 || email.indexOf(term) !== -1;
+        var matchesRole = window.sfStaffRoleFilter === 'all' || role === window.sfStaffRoleFilter;
+
+        if (matchesSearch && matchesRole) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    var emptyState = document.getElementById('sf-staff-empty-state');
+    if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+};
+
+window.sfClearStaffSearch = function() {
+    var searchInput = document.getElementById('sf-staff-search-input');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    window.sfFilterStaff();
+};
+
+window.sfSetStaffRoleFilter = function(role, btnEl) {
+    window.sfStaffRoleFilter = role;
+    var pills = document.querySelectorAll('#sf-staff-role-filter-pills .sf-filter-pill');
+    pills.forEach(function(pill) {
+        pill.classList.remove('active');
+    });
+    if (btnEl) {
+        btnEl.classList.add('active');
+    }
+    window.sfFilterStaff();
+};
+
+window.sfAssignTaskToStaff = function(userId, userName) {
+    if (window.sfOpenTaskModal) {
+        window.sfOpenTaskModal(null, userId, userName);
+    }
+};
+
+window.sfChangeUserRole = function(userId, newRole) {
+    var sel = document.getElementById('sf-role-sel-' + userId);
+    var oldRole = sel ? sel.getAttribute('data-prev-role') || (newRole === 'admin' ? 'manager' : (newRole === 'manager' ? 'staff' : 'manager')) : 'staff';
+
+    if (!confirm('Bạn có chắc chắn muốn thay đổi vai trò của thành viên này thành "' + (newRole === 'admin' ? 'Quản trị viên' : (newRole === 'manager' ? 'Quản lý' : 'Nhân viên')) + '"?')) {
+        if (sel) sel.value = sel.getAttribute('data-current-role') || oldRole;
+        return;
+    }
+
+    if (sel) {
+        sel.disabled = true;
+    }
+
+    fetch('/smart_farm/api/user/set_role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: parseInt(userId), role: newRole })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (sel) sel.disabled = false;
+        if (data.success) {
+            if (sel) sel.setAttribute('data-current-role', newRole);
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Cập nhật vai trò thành công!', 'success');
+            } else {
+                alert(data.message || 'Cập nhật vai trò thành công!');
+            }
+
+            var card = document.getElementById('sf-staff-card-' + userId);
+            if (card) {
+                card.setAttribute('data-role', newRole);
+                var badge = card.querySelector('.sf-role-badge');
+                if (badge) {
+                    badge.className = 'sf-role-badge sf-role-badge-' + newRole;
+                    badge.textContent = newRole === 'admin' ? 'Quản trị viên' : (newRole === 'manager' ? 'Quản lý' : 'Nhân viên');
+                }
+                var dot = card.querySelector('.sf-staff-status-dot');
+                if (dot) {
+                    dot.className = 'sf-staff-status-dot ' + (newRole === 'admin' ? 'admin-dot' : (newRole === 'manager' ? 'manager-dot' : 'staff-dot'));
+                }
+            }
+        } else {
+            if (sel) sel.value = sel.getAttribute('data-current-role') || oldRole;
+            if (window.sfShowToast) {
+                window.sfShowToast(data.message || 'Không thể cập nhật vai trò', 'error');
+            } else {
+                alert(data.message || 'Không thể cập nhật vai trò');
+            }
+        }
+    })
+    .catch(function(err) {
+        if (sel) {
+            sel.disabled = false;
+            sel.value = sel.getAttribute('data-current-role') || oldRole;
+        }
+        console.error('Error setting role:', err);
+        if (window.sfShowToast) {
+            window.sfShowToast('Lỗi kết nối máy chủ khi cập nhật vai trò!', 'error');
+        } else {
+            alert('Lỗi kết nối máy chủ khi cập nhật vai trò!');
+        }
+    });
+};
 
 // ========================================================
 // Interactive Smart Farm Map JS (Feature 002)
@@ -3709,6 +3988,47 @@ window.sfRefreshWeather = function(btn) {
 // ==========================================================================
 // FEATURE 006: THEME MANAGER (DARK SLATE & HIGH CONTRAST MODE)
 // ==========================================================================
+window.sfApplyChartTheme = function(chart) {
+    if (!chart) return;
+    var isDark = document.documentElement.classList.contains('sf-dark-mode');
+    var textColor = isDark ? '#94a3b8' : '#64748b';
+    var gridColor = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)';
+    
+    try {
+        if (chart.options && chart.options.scales) {
+            if (chart.options.scales.x) {
+                chart.options.scales.x.ticks = chart.options.scales.x.ticks || {};
+                chart.options.scales.x.ticks.color = textColor;
+                chart.options.scales.x.grid = chart.options.scales.x.grid || {};
+                chart.options.scales.x.grid.color = gridColor;
+            }
+            if (chart.options.scales.y) {
+                chart.options.scales.y.ticks = chart.options.scales.y.ticks || {};
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.y.grid = chart.options.scales.y.grid || {};
+                chart.options.scales.y.grid.color = gridColor;
+                if (chart.options.scales.y.title) {
+                    chart.options.scales.y.title.color = textColor;
+                }
+            }
+            if (chart.options.scales.y1) {
+                chart.options.scales.y1.ticks = chart.options.scales.y1.ticks || {};
+                chart.options.scales.y1.ticks.color = textColor;
+                if (chart.options.scales.y1.title) {
+                    chart.options.scales.y1.title.color = textColor;
+                }
+            }
+        }
+        if (chart.options && chart.options.plugins && chart.options.plugins.legend) {
+            chart.options.plugins.legend.labels = chart.options.plugins.legend.labels || {};
+            chart.options.plugins.legend.labels.color = isDark ? '#f8fafc' : '#0f172a';
+        }
+        chart.update();
+    } catch(e) {
+        console.warn('sfApplyChartTheme error:', e);
+    }
+};
+
 window.sfToggleTheme = function(event) {
     if (event) {
         event.preventDefault();
@@ -3735,6 +4055,10 @@ window.sfToggleTheme = function(event) {
     if (svgMoon) svgMoon.style.display = targetDark ? 'none' : 'block';
     if (svgSun) svgSun.style.display = targetDark ? 'block' : 'none';
     if (btn) btn.setAttribute('title', targetDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+
+    if (window.sfHistoryChartInstance) {
+        window.sfApplyChartTheme(window.sfHistoryChartInstance);
+    }
 
     if (typeof window.sfShowToast === 'function') {
         window.sfShowToast({
@@ -3768,6 +4092,10 @@ window.sfInitTheme = function() {
     if (svgMoon) svgMoon.style.display = isDark ? 'none' : 'block';
     if (svgSun) svgSun.style.display = isDark ? 'block' : 'none';
     if (btn) btn.setAttribute('title', isDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+
+    if (window.sfHistoryChartInstance) {
+        window.sfApplyChartTheme(window.sfHistoryChartInstance);
+    }
 };
 
 if (document.readyState === 'loading') {
