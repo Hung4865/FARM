@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (chartData.labels && chartData.labels.length > 0) {
                 var ctx = document.getElementById('historyChart').getContext('2d');
-                new Chart(ctx, {
+                window.sfHistoryChartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: chartData.labels,
@@ -203,6 +203,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
                     }
                 });
+                if (typeof window.sfApplyChartTheme === 'function') {
+                    window.sfApplyChartTheme(window.sfHistoryChartInstance);
+                }
             }
         } catch (e) {
             console.error("Error parsing chart data: ", e);
@@ -3985,6 +3988,47 @@ window.sfRefreshWeather = function(btn) {
 // ==========================================================================
 // FEATURE 006: THEME MANAGER (DARK SLATE & HIGH CONTRAST MODE)
 // ==========================================================================
+window.sfApplyChartTheme = function(chart) {
+    if (!chart) return;
+    var isDark = document.documentElement.classList.contains('sf-dark-mode');
+    var textColor = isDark ? '#94a3b8' : '#64748b';
+    var gridColor = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)';
+    
+    try {
+        if (chart.options && chart.options.scales) {
+            if (chart.options.scales.x) {
+                chart.options.scales.x.ticks = chart.options.scales.x.ticks || {};
+                chart.options.scales.x.ticks.color = textColor;
+                chart.options.scales.x.grid = chart.options.scales.x.grid || {};
+                chart.options.scales.x.grid.color = gridColor;
+            }
+            if (chart.options.scales.y) {
+                chart.options.scales.y.ticks = chart.options.scales.y.ticks || {};
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.y.grid = chart.options.scales.y.grid || {};
+                chart.options.scales.y.grid.color = gridColor;
+                if (chart.options.scales.y.title) {
+                    chart.options.scales.y.title.color = textColor;
+                }
+            }
+            if (chart.options.scales.y1) {
+                chart.options.scales.y1.ticks = chart.options.scales.y1.ticks || {};
+                chart.options.scales.y1.ticks.color = textColor;
+                if (chart.options.scales.y1.title) {
+                    chart.options.scales.y1.title.color = textColor;
+                }
+            }
+        }
+        if (chart.options && chart.options.plugins && chart.options.plugins.legend) {
+            chart.options.plugins.legend.labels = chart.options.plugins.legend.labels || {};
+            chart.options.plugins.legend.labels.color = isDark ? '#f8fafc' : '#0f172a';
+        }
+        chart.update();
+    } catch(e) {
+        console.warn('sfApplyChartTheme error:', e);
+    }
+};
+
 window.sfToggleTheme = function(event) {
     if (event) {
         event.preventDefault();
@@ -4011,6 +4055,10 @@ window.sfToggleTheme = function(event) {
     if (svgMoon) svgMoon.style.display = targetDark ? 'none' : 'block';
     if (svgSun) svgSun.style.display = targetDark ? 'block' : 'none';
     if (btn) btn.setAttribute('title', targetDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+
+    if (window.sfHistoryChartInstance) {
+        window.sfApplyChartTheme(window.sfHistoryChartInstance);
+    }
 
     if (typeof window.sfShowToast === 'function') {
         window.sfShowToast({
@@ -4044,6 +4092,10 @@ window.sfInitTheme = function() {
     if (svgMoon) svgMoon.style.display = isDark ? 'none' : 'block';
     if (svgSun) svgSun.style.display = isDark ? 'block' : 'none';
     if (btn) btn.setAttribute('title', isDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối');
+
+    if (window.sfHistoryChartInstance) {
+        window.sfApplyChartTheme(window.sfHistoryChartInstance);
+    }
 };
 
 if (document.readyState === 'loading') {

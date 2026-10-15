@@ -4,7 +4,31 @@
 
 ---
 
-## [v0.9.0] – 2026-10-10 (Hiện tại)
+## [v0.10.0] – 2026-10-15 (Hiện tại)
+
+### 🌙 Chế Độ Giao Diện Tối Sleek Slate & Khắc Phục Triệt Để Lỗi Tương Phản (Feature 006 - Dark Slate High-Contrast Overhaul)
+1. **Xử Lý Triệt Để Lỗi Chữ Đen Trên Nền Tối**:
+   - Thẻ Thời tiết Hà Nội: Chuyển đổi các thẻ `<span>` thông số (`.sf-weather-info span` - tốc độ gió, độ ẩm, vị trí địa lý) sang màu trắng sáng `#f8fafc !important`, loại bỏ hoàn toàn tình trạng chữ đen `#0f172a` chìm trên nền dark slate.
+   - Thống kê an toàn nông trại: Cập nhật số liệu đã xử lý (`.sf-asb-stats b`) sang màu trắng sáng `#f8fafc !important`.
+2. **Khắc Phục Lỗi Nền Trắng Chữ Trắng & Nền Trắng Lạc Quẻ**:
+   - Danh sách Cảnh báo & Log: Chuẩn hóa CSS cho `.sf-alert-item` để hàng chẵn mang nền `#1e293b !important` (không còn kế thừa nền trắng `#ffffff`), hàng lẻ mang nền `#273549 !important`, hover `#334155 !important`.
+   - Cảnh báo đã giải quyết: Áp dụng chữ xám dịu `#64748b` gạch ngang nhẹ nhàng, nhãn tag `Đã xong` mang màu `#94a3b8 !important`, triệt tiêu 100% tình trạng trắng trên trắng.
+3. **Thanh Cuộn Dark Mode Tinh Tế (Custom Sleek Scrollbars)**:
+   - Kích hoạt `color-scheme: dark` trên `html.sf-dark-mode` để đồng bộ form control và thanh cuộn của trình duyệt.
+   - Bổ sung bộ quy tắc custom scrollbar (`track: #0f172a`, `thumb: #334155`, hover `#475569`, bo tròn 9999px) trên toàn bộ danh sách công việc, cảnh báo, modal và drawer.
+4. **Đồng Bộ Hoàn Chỉnh Toàn Bộ Các Tab, Modal & Drawer**:
+   - Tab Công việc (`tab-tasks`): Toolbar, ô tìm kiếm, nhóm nút lọc (Tất cả / Chưa xong / Đã xong), dropdown danh mục, và thẻ công việc kéo thả (`.sf-task-card`) chuyển sang Dark Slate viền `#334155` sắc nét.
+   - Tab Bản đồ (`tab-map`) & Tab Nhân sự (`tab-staff`): Toàn bộ thanh công cụ, KPI cards, filter pills, thẻ nhân viên và select phân quyền đều mang màu nền tối đồng bộ.
+   - Modals & Drawers: Hộp thoại thêm công việc, hồ sơ người dùng, Zone Drawer, Plant Drawer và Task Detail Drawer đồng bộ 100% giao diện tối.
+5. **Thích Ứng Động Biểu Đồ Môi Trường 24h (`Chart.js`)**:
+   - Xây dựng hàm `window.sfApplyChartTheme()` tự động hoán đổi màu trục toạ độ $X, Y, Y_1$, đường lưới grid (`rgba(51, 65, 85, 0.6)`) và chú giải legend khi bật/tắt Chế độ Tối.
+6. **Vô Hiệu Hóa Cache Trình Duyệt (Cache Busting v=205) & Inlined Critical CSS**:
+   - Tăng version query string lên `dashboard.css?v=205` và `dashboard.js?v=205` nhằm phá vỡ cơ chế lưu cache 7 ngày (`max-age=604800`) của trình duyệt.
+   - Bổ sung khối CSS Dark Mode trọng yếu trực tiếp trong thẻ `<style>` của file `views/dashboard.xml`, đảm bảo người dùng chỉ cần nhấn reload trang (F5) là các sửa đổi hiển thị chuẩn xác 100% ngay lập tức.
+
+---
+
+## [v0.9.0] – 2026-10-10
 
 ### 🌿 Giao Diện Đăng Nhập & Đăng Ký Trượt Kép Hiện Đại (Feature 009 - Modern Sliding Auth Screen)
 1. **Tái Thiết Kế Toàn Diện Trang Xác Thực `/web/login`**:

@@ -37,11 +37,103 @@
                         } catch(e) {}
                     })();
                 ]]></script>
-                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=200"/>
+                <link rel="stylesheet" href="/smart_farm/static/src/css/dashboard.css?v=205"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script src="/smart_farm/static/src/js/libs/three.min.js"></script>
                 <script src="/smart_farm/static/src/js/libs/OrbitControls.js"></script>
                 <style><![CDATA[
+                    /* Critical Inlined Dark Mode Contrast Fixes (Guarantee instant load without caching delay) */
+                    html.sf-dark-mode {
+                        color-scheme: dark;
+                    }
+                    html.sf-dark-mode body,
+                    body.sf-dark-mode {
+                        background: #0f172a !important;
+                        color: #f8fafc !important;
+                    }
+                    html.sf-dark-mode .sf-weather-info,
+                    body.sf-dark-mode .sf-weather-info {
+                        color: #cbd5e1 !important;
+                    }
+                    html.sf-dark-mode .sf-weather-info span,
+                    body.sf-dark-mode .sf-weather-info span,
+                    html.sf-dark-mode #sf-weather-location-val,
+                    body.sf-dark-mode #sf-weather-location-val,
+                    html.sf-dark-mode #sf-weather-wind-val,
+                    body.sf-dark-mode #sf-weather-wind-val,
+                    html.sf-dark-mode #sf-weather-hum-val,
+                    body.sf-dark-mode #sf-weather-hum-val {
+                        color: #f8fafc !important;
+                    }
+                    html.sf-dark-mode .sf-alert-item,
+                    body.sf-dark-mode .sf-alert-item,
+                    html.sf-dark-mode .sf-alert-item:nth-child(even),
+                    body.sf-dark-mode .sf-alert-item:nth-child(even) {
+                        background: #1e293b !important;
+                        border: 1.5px solid #334155 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-item:nth-child(odd),
+                    body.sf-dark-mode .sf-alert-item:nth-child(odd) {
+                        background: #273549 !important;
+                        border: 1.5px solid #334155 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-item:hover,
+                    body.sf-dark-mode .sf-alert-item:hover {
+                        background: #334155 !important;
+                        border-color: #475569 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-text,
+                    body.sf-dark-mode .sf-alert-text {
+                        color: #f8fafc !important;
+                    }
+                    html.sf-dark-mode .sf-alert-text.sf-resolved,
+                    body.sf-dark-mode .sf-alert-text.sf-resolved,
+                    html.sf-dark-mode .sf-resolved,
+                    body.sf-dark-mode .sf-resolved {
+                        color: #64748b !important;
+                        text-decoration: line-through !important;
+                    }
+                    html.sf-dark-mode .sf-dash-resolved-tag,
+                    body.sf-dark-mode .sf-dash-resolved-tag {
+                        color: #94a3b8 !important;
+                    }
+                    html.sf-dark-mode .sf-alert-time,
+                    body.sf-dark-mode .sf-alert-time {
+                        color: #94a3b8 !important;
+                    }
+                    html.sf-dark-mode,
+                    body.sf-dark-mode,
+                    html.sf-dark-mode * {
+                        scrollbar-color: #334155 #0f172a !important;
+                        scrollbar-width: thin !important;
+                    }
+                    html.sf-dark-mode ::-webkit-scrollbar,
+                    body.sf-dark-mode ::-webkit-scrollbar,
+                    html.sf-dark-mode *::-webkit-scrollbar,
+                    body.sf-dark-mode *::-webkit-scrollbar,
+                    html.sf-dark-mode #sf-task-list::-webkit-scrollbar,
+                    body.sf-dark-mode #sf-task-list::-webkit-scrollbar {
+                        width: 6px !important;
+                        height: 6px !important;
+                    }
+                    html.sf-dark-mode ::-webkit-scrollbar-track,
+                    body.sf-dark-mode ::-webkit-scrollbar-track,
+                    html.sf-dark-mode *::-webkit-scrollbar-track,
+                    body.sf-dark-mode *::-webkit-scrollbar-track,
+                    html.sf-dark-mode #sf-task-list::-webkit-scrollbar-track,
+                    body.sf-dark-mode #sf-task-list::-webkit-scrollbar-track {
+                        background: #0f172a !important;
+                    }
+                    html.sf-dark-mode ::-webkit-scrollbar-thumb,
+                    body.sf-dark-mode ::-webkit-scrollbar-thumb,
+                    html.sf-dark-mode *::-webkit-scrollbar-thumb,
+                    body.sf-dark-mode *::-webkit-scrollbar-thumb,
+                    html.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb,
+                    body.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb {
+                        background: #334155 !important;
+                        border-radius: 9999px !important;
+                    }
+
                     /* Critical Inlined Map & Drawer CSS */
                     .sf-map-card-pro {
                         border-radius: 18px;
@@ -1624,7 +1716,7 @@
                                     </div>
                                 </t>
                             </div>
-                            <div style="margin-top:12px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:11px;color:#64748b;">
+                            <div class="sf-task-footer-stats" style="margin-top:12px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:11px;color:#64748b;">
                                 <span style="color:#16a34a;font-weight:600;" id="sf-task-stat-done">✓ <t t-esc="task_done"/> hoàn thành</span>
                                 <span id="sf-task-stat-remaining"><t t-esc="task_remaining"/> còn lại</span>
                             </div>
@@ -3052,7 +3144,7 @@
                                     </div>
                                 </div>
 
-                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px; color:#475569;">
+                                <div class="sf-pd-schedule-box" style="border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
                                     <span>🕒 Lịch tưới tiếp theo: <strong id="sf-pd-next-time" style="color:#0284c7;">16:30 Hôm nay (trong 45 phút)</strong></span>
                                 </div>
 
@@ -3202,7 +3294,7 @@
                     </div>
                 </div>
 
-                <script src="/smart_farm/static/src/js/dashboard.js?v=200"></script>
+                <script src="/smart_farm/static/src/js/dashboard.js?v=205"></script>
             </body>
         </html>
     </template>

@@ -2742,6 +2742,9 @@ body, .sf-wrap, .sf-navbar-sticky, .sf-navbar, .sf-card, .sf-stat, .sf-stat-card
 }
 
 /* Dark Mode Global */
+html.sf-dark-mode {
+    color-scheme: dark;
+}
 html.sf-dark-mode,
 body.sf-dark-mode {
     background: #0f172a !important;
@@ -2750,6 +2753,48 @@ body.sf-dark-mode {
 html.sf-dark-mode .sf-navbar-sticky,
 body.sf-dark-mode .sf-navbar-sticky {
     background: #0f172a !important;
+}
+
+/* Custom Sleek Slate Scrollbars across entire dark mode UI */
+html.sf-dark-mode,
+body.sf-dark-mode,
+html.sf-dark-mode * {
+    scrollbar-color: #334155 #0f172a !important;
+    scrollbar-width: thin !important;
+}
+html.sf-dark-mode ::-webkit-scrollbar,
+body.sf-dark-mode ::-webkit-scrollbar,
+html.sf-dark-mode *::-webkit-scrollbar,
+body.sf-dark-mode *::-webkit-scrollbar,
+html.sf-dark-mode #sf-task-list::-webkit-scrollbar,
+body.sf-dark-mode #sf-task-list::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+html.sf-dark-mode ::-webkit-scrollbar-track,
+body.sf-dark-mode ::-webkit-scrollbar-track,
+html.sf-dark-mode *::-webkit-scrollbar-track,
+body.sf-dark-mode *::-webkit-scrollbar-track,
+html.sf-dark-mode #sf-task-list::-webkit-scrollbar-track,
+body.sf-dark-mode #sf-task-list::-webkit-scrollbar-track {
+    background: #0f172a !important;
+}
+html.sf-dark-mode ::-webkit-scrollbar-thumb,
+body.sf-dark-mode ::-webkit-scrollbar-thumb,
+html.sf-dark-mode *::-webkit-scrollbar-thumb,
+body.sf-dark-mode *::-webkit-scrollbar-thumb,
+html.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb,
+body.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb {
+    background: #334155 !important;
+    border-radius: 9999px !important;
+}
+html.sf-dark-mode ::-webkit-scrollbar-thumb:hover,
+body.sf-dark-mode ::-webkit-scrollbar-thumb:hover,
+html.sf-dark-mode *::-webkit-scrollbar-thumb:hover,
+body.sf-dark-mode *::-webkit-scrollbar-thumb:hover,
+html.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb:hover,
+body.sf-dark-mode #sf-task-list::-webkit-scrollbar-thumb:hover {
+    background: #475569 !important;
 }
 
 /* Navbar in Dark Mode */
@@ -2896,6 +2941,16 @@ html.sf-dark-mode .sf-weather-info,
 body.sf-dark-mode .sf-weather-info {
     color: #cbd5e1 !important;
 }
+html.sf-dark-mode .sf-weather-info span,
+body.sf-dark-mode .sf-weather-info span,
+html.sf-dark-mode #sf-weather-location-val,
+body.sf-dark-mode #sf-weather-location-val,
+html.sf-dark-mode #sf-weather-wind-val,
+body.sf-dark-mode #sf-weather-wind-val,
+html.sf-dark-mode #sf-weather-hum-val,
+body.sf-dark-mode #sf-weather-hum-val {
+    color: #f8fafc !important;
+}
 html.sf-dark-mode .sf-fc-day,
 body.sf-dark-mode .sf-fc-day {
     background: #273549 !important;
@@ -2933,19 +2988,38 @@ body.sf-dark-mode .sf-btn-refresh-weather:hover:not(:disabled) {
     color: #ffffff !important;
 }
 
-/* Alert Card in Dark Mode */
+/* Alert Card in Dark Mode - Fix Alternating Rows & Resolved States */
 html.sf-dark-mode .sf-alert-item,
-body.sf-dark-mode .sf-alert-item {
-    border-bottom-color: #273549 !important;
+body.sf-dark-mode .sf-alert-item,
+html.sf-dark-mode .sf-alert-item:nth-child(even),
+body.sf-dark-mode .sf-alert-item:nth-child(even) {
+    background: #1e293b !important;
+    border: 1.5px solid #334155 !important;
 }
 html.sf-dark-mode .sf-alert-item:nth-child(odd),
 body.sf-dark-mode .sf-alert-item:nth-child(odd) {
     background: #273549 !important;
-    border-color: #334155 !important;
+    border: 1.5px solid #334155 !important;
+}
+html.sf-dark-mode .sf-alert-item:hover,
+body.sf-dark-mode .sf-alert-item:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
 }
 html.sf-dark-mode .sf-alert-text,
 body.sf-dark-mode .sf-alert-text {
     color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-alert-text.sf-resolved,
+body.sf-dark-mode .sf-alert-text.sf-resolved,
+html.sf-dark-mode .sf-resolved,
+body.sf-dark-mode .sf-resolved {
+    color: #64748b !important;
+    text-decoration: line-through !important;
+}
+html.sf-dark-mode .sf-dash-resolved-tag,
+body.sf-dark-mode .sf-dash-resolved-tag {
+    color: #94a3b8 !important;
 }
 html.sf-dark-mode .sf-alert-time,
 body.sf-dark-mode .sf-alert-time {
@@ -2980,6 +3054,10 @@ body.sf-dark-mode .sf-link-btn {
 html.sf-dark-mode .sf-link-btn:hover,
 body.sf-dark-mode .sf-link-btn:hover {
     color: #7dd3fc !important;
+}
+html.sf-dark-mode .sf-dash-alert-empty,
+body.sf-dark-mode .sf-dash-alert-empty {
+    color: #94a3b8 !important;
 }
 
 /* GPS & Map Placeholder in Dark Mode */
@@ -3016,7 +3094,7 @@ body.sf-dark-mode .sf-bar {
     background: #334155 !important;
 }
 
-/* Farm Tasks in Dark Mode */
+/* Farm Tasks (Overview Card) in Dark Mode */
 html.sf-dark-mode .sf-task,
 body.sf-dark-mode .sf-task {
     border-bottom-color: #334155 !important;
@@ -3043,6 +3121,11 @@ body.sf-dark-mode .sf-check.done {
     background: rgba(22, 163, 74, 0.25) !important;
     border-color: #22c55e !important;
     color: #4ade80 !important;
+}
+html.sf-dark-mode .sf-task-footer-stats,
+body.sf-dark-mode .sf-task-footer-stats {
+    border-top-color: #334155 !important;
+    color: #94a3b8 !important;
 }
 
 /* Badges & Tags in Dark Mode */
@@ -3129,12 +3212,372 @@ body.sf-dark-mode .sf-notif-empty {
     color: #94a3b8 !important;
 }
 
-/* Drawers & Footer */
-html.sf-dark-mode .sf-drawer,
-body.sf-dark-mode .sf-drawer {
+/* Feature 001: Task Management Tab in Dark Mode */
+html.sf-dark-mode .sf-task-mgmt-card,
+body.sf-dark-mode .sf-task-mgmt-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-task-mgmt-title,
+body.sf-dark-mode .sf-task-mgmt-title {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-task-mgmt-desc,
+body.sf-dark-mode .sf-task-mgmt-desc {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-task-toolbar,
+body.sf-dark-mode .sf-task-toolbar {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-task-search-input,
+body.sf-dark-mode .sf-task-search-input {
     background: #1e293b !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-task-search-input::placeholder,
+body.sf-dark-mode .sf-task-search-input::placeholder {
+    color: #64748b !important;
+}
+html.sf-dark-mode .sf-search-clear,
+body.sf-dark-mode .sf-search-clear {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-filter-pills,
+body.sf-dark-mode .sf-filter-pills {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+}
+html.sf-dark-mode .sf-filter-pill,
+body.sf-dark-mode .sf-filter-pill {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-filter-pill:hover,
+body.sf-dark-mode .sf-filter-pill:hover {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-filter-pill.active,
+body.sf-dark-mode .sf-filter-pill.active {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-category-select,
+body.sf-dark-mode .sf-category-select {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-task-info-bar,
+body.sf-dark-mode .sf-task-info-bar {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-task-counts strong,
+body.sf-dark-mode .sf-task-counts strong {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-drag-hint,
+body.sf-dark-mode .sf-drag-hint {
+    color: #64748b !important;
+}
+html.sf-dark-mode .sf-task-card,
+body.sf-dark-mode .sf-task-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+html.sf-dark-mode .sf-task-card:hover,
+body.sf-dark-mode .sf-task-card:hover {
+    background: #243247 !important;
+    border-color: #475569 !important;
+}
+html.sf-dark-mode .sf-task-card.dragging,
+body.sf-dark-mode .sf-task-card.dragging {
+    background: #0f172a !important;
+    border-color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-task-title-text,
+body.sf-dark-mode .sf-task-title-text {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-task-title-text:hover,
+body.sf-dark-mode .sf-task-title-text:hover {
+    color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-task-title-text.done,
+body.sf-dark-mode .sf-task-title-text.done {
+    color: #64748b !important;
+    text-decoration: line-through !important;
+}
+html.sf-dark-mode .sf-task-notes-text,
+body.sf-dark-mode .sf-task-notes-text {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-task-btn-action,
+body.sf-dark-mode .sf-task-btn-action {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-task-btn-action:hover,
+body.sf-dark-mode .sf-task-btn-action:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-task-btn-action.sf-btn-edit:hover,
+body.sf-dark-mode .sf-task-btn-action.sf-btn-edit:hover {
+    background: rgba(37, 99, 235, 0.2) !important;
+    border-color: #3b82f6 !important;
+    color: #60a5fa !important;
+}
+html.sf-dark-mode .sf-task-btn-action.sf-btn-delete:hover,
+body.sf-dark-mode .sf-task-btn-action.sf-btn-delete:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #f87171 !important;
+}
+html.sf-dark-mode .sf-task-btn-action.sf-btn-detail:hover,
+body.sf-dark-mode .sf-task-btn-action.sf-btn-detail:hover {
+    background: rgba(2, 132, 199, 0.2) !important;
+    border-color: #0284c7 !important;
+    color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-drag-handle,
+body.sf-dark-mode .sf-drag-handle {
+    color: #64748b !important;
+}
+html.sf-dark-mode .sf-drag-handle:hover,
+body.sf-dark-mode .sf-drag-handle:hover {
+    color: #f8fafc !important;
+    background: #334155 !important;
+}
+html.sf-dark-mode .sf-task-empty,
+body.sf-dark-mode .sf-task-empty {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-empty-title,
+body.sf-dark-mode .sf-empty-title {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-empty-sub,
+body.sf-dark-mode .sf-empty-sub {
+    color: #94a3b8 !important;
+}
+
+/* Feature 002: Map Tab in Dark Mode */
+html.sf-dark-mode .sf-map-toolbar,
+body.sf-dark-mode .sf-map-toolbar {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-toolbar-label,
+body.sf-dark-mode .sf-toolbar-label {
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-layer-btn,
+body.sf-dark-mode .sf-layer-btn {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-layer-btn:hover,
+body.sf-dark-mode .sf-layer-btn:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-layer-btn.active,
+body.sf-dark-mode .sf-layer-btn.active {
+    background: #0f172a !important;
+    color: #38bdf8 !important;
+    border-color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-zone-hint,
+body.sf-dark-mode .sf-zone-hint {
+    background: #1e293b !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
+}
+
+/* Modals in Dark Mode (Task, Staff, Profile) */
+html.sf-dark-mode .sf-modal-card,
+body.sf-dark-mode .sf-modal-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+}
+html.sf-dark-mode .sf-modal-header,
+body.sf-dark-mode .sf-modal-header {
+    background: #0f172a !important;
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-modal-title,
+body.sf-dark-mode .sf-modal-title {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-modal-subtitle,
+body.sf-dark-mode .sf-modal-subtitle {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-modal-badge,
+body.sf-dark-mode .sf-modal-badge {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-modal-close,
+body.sf-dark-mode .sf-modal-close {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-modal-close:hover,
+body.sf-dark-mode .sf-modal-close:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-modal-footer,
+body.sf-dark-mode .sf-modal-footer {
+    background: #0f172a !important;
+    border-top-color: #334155 !important;
+}
+html.sf-dark-mode .sf-label,
+body.sf-dark-mode .sf-label {
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-input,
+body.sf-dark-mode .sf-input,
+html.sf-dark-mode select.sf-input,
+body.sf-dark-mode select.sf-input,
+html.sf-dark-mode textarea.sf-input,
+body.sf-dark-mode textarea.sf-input {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-input:focus,
+body.sf-dark-mode .sf-input:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+}
+html.sf-dark-mode .sf-btn-light,
+body.sf-dark-mode .sf-btn-light {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-btn-light:hover,
+body.sf-dark-mode .sf-btn-light:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-btn-primary,
+body.sf-dark-mode .sf-btn-primary {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-btn-primary:hover,
+body.sf-dark-mode .sf-btn-primary:hover {
+    background: #0369a1 !important;
+}
+
+/* Drawers & Footer in Dark Mode */
+html.sf-dark-mode .sf-drawer,
+body.sf-dark-mode .sf-drawer,
+html.sf-dark-mode .sf-zone-drawer,
+body.sf-dark-mode .sf-zone-drawer,
+html.sf-dark-mode .sf-plant-drawer,
+body.sf-dark-mode .sf-plant-drawer,
+html.sf-dark-mode .sf-task-detail-drawer,
+body.sf-dark-mode .sf-task-detail-drawer {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-drawer-header,
+body.sf-dark-mode .sf-drawer-header {
+    background: #0f172a !important;
+    border-bottom-color: #334155 !important;
+}
+html.sf-dark-mode .sf-drawer-title,
+body.sf-dark-mode .sf-drawer-title {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-drawer-sub,
+body.sf-dark-mode .sf-drawer-sub {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-drawer-close,
+body.sf-dark-mode .sf-drawer-close {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+html.sf-dark-mode .sf-drawer-close:hover,
+body.sf-dark-mode .sf-drawer-close:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+html.sf-dark-mode .sf-drawer-metric,
+body.sf-dark-mode .sf-drawer-metric {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-dm-label,
+body.sf-dark-mode .sf-dm-label {
+    color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-dm-val,
+body.sf-dark-mode .sf-dm-val {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-device-card,
+body.sf-dark-mode .sf-device-card {
+    background: #273549 !important;
+    border-color: #334155 !important;
+}
+html.sf-dark-mode .sf-device-card:hover,
+body.sf-dark-mode .sf-device-card:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+}
+html.sf-dark-mode .sf-device-icon,
+body.sf-dark-mode .sf-device-icon {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+}
+html.sf-dark-mode .sf-drawer-footer,
+body.sf-dark-mode .sf-drawer-footer {
+    background: #0f172a !important;
+    border-top: 1px solid #334155 !important;
+}
+html.sf-dark-mode .sf-btn-back-link,
+body.sf-dark-mode .sf-btn-back-link {
+    color: #38bdf8 !important;
+}
+html.sf-dark-mode .sf-plant-summary-card,
+body.sf-dark-mode .sf-plant-summary-card {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%) !important;
+    border-color: #059669 !important;
+}
+html.sf-dark-mode .sf-psc-label,
+body.sf-dark-mode .sf-psc-label {
+    color: #6ee7b7 !important;
+}
+html.sf-dark-mode .sf-psc-val,
+body.sf-dark-mode .sf-psc-val {
+    color: #f8fafc !important;
+}
+html.sf-dark-mode .sf-psc-progress-wrap,
+body.sf-dark-mode .sf-psc-progress-wrap {
+    background: rgba(0, 0, 0, 0.3) !important;
+}
+html.sf-dark-mode .sf-pd-schedule-box,
+body.sf-dark-mode .sf-pd-schedule-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
 }
 html.sf-dark-mode .sf-footer,
 body.sf-dark-mode .sf-footer {
@@ -3854,6 +4297,10 @@ body.sf-dark-mode .sf-asb-track {
 html.sf-dark-mode .sf-asb-stats,
 body.sf-dark-mode .sf-asb-stats {
     color: #94a3b8 !important;
+}
+html.sf-dark-mode .sf-asb-stats b,
+body.sf-dark-mode .sf-asb-stats b {
+    color: #f8fafc !important;
 }
 
 /* ============================================================
@@ -5000,20 +5447,74 @@ body.sf-dark-mode .sf-staff-header {
     border-bottom-color: #334155 !important;
 }
 
+html.sf-dark-mode .sf-staff-hero,
+body.sf-dark-mode .sf-staff-hero {
+    border-bottom-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-hero-title,
+body.sf-dark-mode .sf-staff-hero-title,
 html.sf-dark-mode .sf-staff-title,
 body.sf-dark-mode .sf-staff-title {
     color: #f8fafc !important;
 }
 
+html.sf-dark-mode .sf-staff-hero-desc,
+body.sf-dark-mode .sf-staff-hero-desc {
+    color: #94a3b8 !important;
+}
+
+html.sf-dark-mode .sf-staff-kpi-card,
+body.sf-dark-mode .sf-staff-kpi-card,
 html.sf-dark-mode .sf-staff-header-stats,
 body.sf-dark-mode .sf-staff-header-stats {
     background: #0f172a !important;
     border-color: #334155 !important;
 }
 
+html.sf-dark-mode .sf-staff-kpi-num,
+body.sf-dark-mode .sf-staff-kpi-num,
 html.sf-dark-mode .sf-ssp-num,
 body.sf-dark-mode .sf-ssp-num {
     color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-kpi-label,
+body.sf-dark-mode .sf-staff-kpi-label {
+    color: #94a3b8 !important;
+}
+
+html.sf-dark-mode .sf-staff-toolbar,
+body.sf-dark-mode .sf-staff-toolbar {
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-filter-pills,
+body.sf-dark-mode .sf-staff-filter-pills {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html.sf-dark-mode .sf-staff-pill,
+body.sf-dark-mode .sf-staff-pill {
+    color: #94a3b8 !important;
+    background: transparent !important;
+}
+
+html.sf-dark-mode .sf-staff-pill:hover,
+body.sf-dark-mode .sf-staff-pill:hover {
+    color: #f8fafc !important;
+}
+
+html.sf-dark-mode .sf-staff-pill.active,
+body.sf-dark-mode .sf-staff-pill.active {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+
+html.sf-dark-mode .sf-staff-email,
+body.sf-dark-mode .sf-staff-email {
+    color: #94a3b8 !important;
 }
 
 html.sf-dark-mode .sf-staff-search-input,
